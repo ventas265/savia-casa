@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#f7e4df" />
+    <title>Savia</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" />
+    <style>
+      :root {
+        --bg: #f7e4df;
+        --surface: #fff;
+        --fg: #1a1a1a;
+        --muted: #5c5654;
+        --pink: #f04880;
+        --teal: #2bb5b0;
+        --red: #e23b4a;
+        --fertile: #5eb3c1;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; background: var(--bg); color: var(--fg); font-family: Outfit, system-ui, sans-serif; }
+      #app { max-width: 430px; margin: 0 auto; min-height: 100dvh; position: relative; padding-bottom: 84px; }
+      header { display: flex; align-items: center; justify-content: space-between; height: 56px; padding: 0 16px; }
+      header strong { font-size: 18px; }
+      .date { text-align: center; font-size: 14px; font-weight: 500; margin-top: 4px; }
+      .week { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; margin: 16px 8px 0; }
+      .week small { font-size: 11px; color: var(--muted); letter-spacing: 0.04em; }
+      .week .n { width: 40px; height: 40px; margin: 8px auto 0; border-radius: 999px; display: flex; align-items: center; justify-content: center; font-weight: 500; }
+      .week .today .n { background: rgba(26,26,26,.12); }
+      .hero { text-align: center; padding: 56px 16px 0; }
+      .hero p { margin: 0; font-size: 18px; }
+      .hero h1 { margin: 6px 0 0; font-size: 56px; letter-spacing: -0.04em; line-height: 1; }
+      .hero .sub { margin-top: 20px; font-size: 16px; }
+      .actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 48px 16px 0; }
+      .actions button { background: none; border: 0; font: inherit; }
+      .dot { width: 64px; height: 64px; border-radius: 999px; margin: 0 auto; display: flex; align-items: center; justify-content: center; background: var(--surface); box-shadow: 0 1px 4px rgba(0,0,0,.06); font-size: 22px; }
+      .dot.pink { background: var(--pink); color: #fff; }
+      .actions span { display: block; margin-top: 8px; font-size: 12px; }
+      h2 { font-size: 18px; margin: 40px 16px 12px; }
+      .tips { display: flex; gap: 12px; overflow-x: auto; padding: 0 16px 8px; }
+      .tip { flex: 0 0 140px; height: 176px; border-radius: 18px; padding: 16px; border: 2px solid rgba(240,72,128,.35); font-weight: 600; font-size: 14px; }
+      .tip.a { background: #d7eef1; }
+      .tip.b { background: #1a1a1a; color: #fff; }
+      .tip.c { background: #fff; }
+      .card { background: var(--surface); border-radius: 24px; margin: 12px 16px; padding: 16px; }
+      .stats { display: grid; grid-template-columns: 1fr 1fr 1fr; text-align: center; }
+      .stats small { color: var(--muted); font-size: 11px; }
+      .stats b { display: block; margin-top: 4px; font-size: 13px; }
+      .month { display: flex; align-items: center; justify-content: space-between; }
+      .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px 2px; margin-top: 8px; }
+      .grid small { text-align: center; color: var(--muted); font-size: 11px; padding: 6px 0; }
+      .cell { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: 13px; border-radius: 8px; }
+      .p { background: var(--red); color: #fff; }
+      .f { background: var(--fertile); }
+      .legend { display: flex; gap: 14px; font-size: 12px; color: var(--muted); margin-top: 14px; }
+      .sw { width: 16px; height: 10px; border-radius: 3px; display: inline-block; margin-right: 6px; }
+      .flows { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+      .flows button { border: 1px solid #edd5d0; background: var(--bg); border-radius: 16px; padding: 18px 4px; font: inherit; font-size: 12px; }
+      .flows button.on { background: var(--pink); color: #fff; border-color: var(--pink); }
+      .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+      .chips button { border: 0; background: var(--bg); border-radius: 999px; padding: 10px 14px; font: inherit; font-size: 13px; }
+      .chips button.on { background: var(--pink); color: #fff; }
+      .save { width: calc(100% - 32px); margin: 8px 16px 0; height: 48px; border: 0; border-radius: 999px; background: var(--pink); color: #fff; font: inherit; font-weight: 600; }
+      .guide a { display: inline-block; background: #fff; border-radius: 999px; padding: 8px 14px; margin: 0 6px 10px 0; font-size: 12px; font-weight: 500; color: inherit; text-decoration: none; }
+      .guide article { background: #fff; border-radius: 24px; padding: 18px; margin-bottom: 12px; }
+      .guide h3 { margin: 0 0 8px; font-size: 18px; }
+      .guide p { margin: 0; font-size: 14px; color: var(--muted); line-height: 1.45; }
+      .list { background: #fff; border-radius: 24px; margin: 16px; overflow: hidden; }
+      .list a { display: flex; justify-content: space-between; align-items: center; min-height: 56px; padding: 0 16px; color: inherit; text-decoration: none; border-top: 1px solid #f0e4e0; font-size: 14px; }
+      .list a:first-child { border-top: 0; }
+      nav { position: fixed; left: 50%; bottom: 0; transform: translateX(-50%); width: 100%; max-width: 430px; background: #fff; border-top: 1px solid #edd5d0; display: grid; grid-template-columns: repeat(5, 1fr); padding-bottom: env(safe-area-inset-bottom); }
+      nav button { background: 0; border: 0; min-height: 56px; font: inherit; font-size: 11px; color: var(--muted); }
+      nav button.on { color: var(--teal); font-weight: 600; }
+      .hidden { display: none; }
+      .page h1 { font-size: 22px; margin: 8px 16px 0; }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script>
+      const today = new Date();
+      const months = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+      const dow = ["D","L","M","X","J","V","S"];
+      const day = today.getDate();
+      const sun = new Date(today); sun.setDate(day - today.getDay());
+      const week = Array.from({length:7}, (_,i) => { const d = new Date(sun); d.setDate(sun.getDate()+i); return d.getDate(); });
+      const y = today.getFullYear(), m = today.getMonth();
+      const first = new Date(y, m, 1);
+      const startPad = first.getDay();
+      const dim = new Date(y, m+1, 0).getDate();
+      const cells = [];
+      for (let i=0;i<startPad;i++) cells.push(null);
+      for (let d=1;d<=dim;d++) cells.push(d);
+      function mark(d) {
+        if (!d) return "";
+        if (d>=26 && d<=31) return "p";
+        if (d>=9 && d<=15) return "f";
+        return "";
+      }
+      let tab = "hoy";
+      let flow = "";
+      const tips = [
+        ["a","Fase lútea"],
+        ["b","Cena caliente, no crudo"],
+        ["c","Manzanilla"],
+      ];
+      function render() {
+        const app = document.getElementById("app");
+        const pages = {
+          hoy: `
+            <header><strong>Savia</strong><span style="font-size:12px;color:var(--muted)">ES</span></header>
+            <p class="date">${day} de ${months[m]}</p>
+            <div class="week">${week.map((n,i)=>`<div class="${n===day?"today":""}"><small>${dow[i]}</small><div class="n">${n}</div></div>`).join("")}</div>
+            <div class="hero"><p>Periodo en</p><h1>6 días</h1><p class="sub">Baja probabilidad de quedarte embarazada</p></div>
+            <div class="actions">
+              <button data-go="log"><div class="dot pink">💧</div><span>Registrar periodo</span></button>
+              <button data-go="log"><div class="dot">+</div><span>Síntomas</span></button>
+              <button data-go="guia"><div class="dot">📖</div><span>Guía</span></button>
+            </div>
+            <h2>Mis consejos diarios</h2>
+            <div class="tips">${tips.map(([c,t])=>`<div class="tip ${c}">${t}</div>`).join("")}</div>
+          `,
+          cal: `
+            <div class="page"><h1>Calendario</h1>
+            <div class="card">
+              <div class="stats">
+                <div><small>Próxima regla</small><b>24 ago</b></div>
+                <div><small>Ventana fértil</small><b>9–16 sept</b></div>
+                <div><small>Ciclo habitual</small><b>28 días</b></div>
+              </div>
+              <div class="month" style="margin-top:16px"><span></span><b>${months[m]} ${y}</b><span></span></div>
+              <div class="grid">${dow.map(d=>`<small>${d}</small>`).join("")}${cells.map(d=>`<div class="cell ${mark(d)}">${d||""}</div>`).join("")}</div>
+              <div class="legend"><span><i class="sw" style="background:var(--red)"></i>Regla</span><span><i class="sw" style="background:var(--fertile)"></i>Puedes quedar embarazada</span></div>
+            </div></div>
+          `,
+          log: `
+            <div class="page"><h1>Registro de hoy</h1>
+            <div class="card"><p style="font-weight:600;margin:0 0 12px">Flujo</p>
+              <div class="flows">${["Manchado","Leve","Medio","Abundante"].map(l=>`<button class="${flow===l?"on":""}" data-flow="${l}">${l}</button>`).join("")}</div>
+            </div>
+            <div class="card"><p style="font-weight:600;margin:0 0 12px">Síntomas</p>
+              <div class="chips">${["Cólicos","Hinchazón","Cansancio","Antojo","Ánimo bajo"].map(l=>`<button>${l}</button>`).join("")}</div>
+            </div>
+            <button class="save" type="button">Guardar</button>
+            </div>
+          `,
+          guia: `
+            <div class="page"><h1>Guía</h1>
+            <div class="guide" style="padding:12px 16px">
+              <a href="#hormonas">Hormonas</a><a href="#tes">Tés</a><a href="#comida">Comida</a><a href="#peri">Perimenopausia</a>
+              <article id="hormonas"><h3>Progesterona</h3><p>Sube después de ovular. Calor, sueño, ganas de nido. Cena caliente ayuda más que ensalada cruda.</p></article>
+              <article id="tes"><h3>Manzanilla</h3><p>Para la lútea y el nervio. 1 cucharadita, 8 minutos tapada. Evítala si tomas anticoagulantes fuertes.</p></article>
+              <article id="comida"><h3>Cena caliente</h3><p>Lentejas, calabaza, avena. Hierro y magnesio cuando el cuerpo se prepara para la regla.</p></article>
+              <article id="peri"><h3>Perimenopausia</h3><p>Ciclos que se alargan, calor de noche, sueño roto. Anota. No es “ya menopausia”.</p></article>
+            </div></div>
+          `,
+          mas: `
+            <div class="page"><h1>Más</h1>
+            <div class="list">
+              <a>Savia Serena — $4.99/mes</a>
+              <a>Cómo pagar (Zinli / Pago Móvil)</a>
+              <a>Instalar en el teléfono</a>
+            </div>
+            <p style="margin:16px;font-size:13px;color:var(--muted)">Versión para mirar. Entra, anota y paga en la app completa.</p>
+          `,
+        };
+        app.innerHTML = pages[tab] + `
+          <nav>
+            <button data-tab="hoy" class="${tab==="hoy"?"on":""}">Hoy</button>
+            <button data-tab="cal" class="${tab==="cal"?"on":""}">Calendario</button>
+            <button data-tab="log" class="${tab==="log"?"on":""}">Registro</button>
+            <button data-tab="guia" class="${tab==="guia"?"on":""}">Guía</button>
+            <button data-tab="mas" class="${tab==="mas"?"on":""}">Más</button>
+          </nav>`;
+      }
+      document.getElementById("app").addEventListener("click", (e) => {
+        const t = e.target.closest("[data-tab],[data-go],[data-flow],.chips button,.save");
+        if (!t) return;
+        if (t.dataset.tab) { tab = t.dataset.tab; render(); }
+        else if (t.dataset.go) { tab = t.dataset.go; render(); }
+        else if (t.dataset.flow) { flow = t.dataset.flow; render(); }
+        else if (t.matches(".chips button")) t.classList.toggle("on");
+        else if (t.classList.contains("save")) { t.textContent = "Guardado"; }
+      });
+      render();
+    </script>
+  </body>
+</html>
