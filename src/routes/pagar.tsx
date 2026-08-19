@@ -1,0 +1,183 @@
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { useI18n } from "@/lib/i18n";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { SiteHeader } from "@/components/site-header";
+import { getPay, markZinliPaid, type PaySettings } from "@/lib/savia-server";
+import { Disclaimer } from "@/components/disclaimer";
+
+export const Route = createFileRoute("/pagar")({ component: Pagar });
+
+type Method = "zinli" | "pm" | "usdt";
+
+function Pagar() {
+  const { t } = useI18n();
+  const [email, setEmail] = useState("");
+  const [plan, setPlan] = useState<"serena" | "year">("serena");
+  const [method, setMethod] = useState<Method>("zinli");
+  const [pay, setPay] = useState<PaySettings | null>(null);
+  const [busy, setBusy] = useState(false);
+  const amount = plan === "year" ? "$39" : "$4.99";
+
+  useEffect(() => {
+    getPay()
+      .then(setPay)
+      .catch(() => setPay(null));
+  }, []);
+
+  const ready =
+    method === "zinli" ? Boolean(pay?.zinli) : method === "pm" ? Boolean(pay?.pmPhone) : Boolean(pay?.usdt);
+
+  async function copy(text: string) {
+    if (!text) return;
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.success(t.zinliCopy);
+    } catch {
+      toast.error(t.errorGeneric);
+    }
+  }
+
+  async function paid(e: React.FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    try {
+      const note = `${method} ${pay?.zinli || pay?.pmPhone || pay?.usdt || ""}`;
+      const res = await markZinliPaid({ data: { email, plan, note } });
+      if (res.ok) toast.success(t.zinliPaidOk);
+      else toast.error(t.waitlistErr);
+    } catch {
+      toast.error(t.waitlistErr);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="min-h-dvh bg-bg">
+      <SiteHeader />
+      <main className="mx-auto max-w-lg px-4 py-8">
+        <h1 className="text-2xl font-semibold">{t.payTitle}</h1>
+        <p className="mt-2 text-sm leading-relaxed text-muted">{t.payBody}</p>
+
+        <div className="mt-6 flex gap-3">
+          <button
+            type="button"
+            onClick={() => setPlan("serena")}
+            className={`flex-1 rounded-3xl p-4 text-left ${plan === "serena" ? "bg-surface ring-2 ring-primary" : "bg-surface"}`}
+          >
+            <p className="text-sm text-muted">{t.proName}</p>
+            <p className="mt-1 text-3xl font-bold">{t.proPrice}</p>
+            <p className="text-sm text-muted">{t.proNote}</p>
+          </button>
+          <button
+            type="button"
+            onClick={() => setPlan("year")}
+            className={`flex-1 rounded-3xl p-4 text-left ${plan === "year" ? "bg-surface ring-2 ring-primary" : "bg-surface"}`}
+          >
+            <p className="text-sm text-muted">{t.yearName}</p>
+            <p className="mt-1 text-3xl font-bold">{t.yearPrice}</p>
+            <p className="text-sm text-muted">{t.yearNote}</p>
+          </button>
+        </div>
+
+        <div className="mt-4 grid grid-cols-3 gap-2">
+          {(
+            [
+              ["zinli", t.methodZinli],
+              ["pm", t.methodPm],
+              ["usdt", t.methodUsdt],
+            ] as const
+          ).map(([key, label]) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => setMethod(key)}
+              className={`min-h-14 rounded-2xl px-2 text-xs font-medium ${method === key ? "bg-primary text-primary-fg" : "bg-surface text-fg"}`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
+        <div className="mt-4 rounded-3xl bg-surface p-5">
+          <p className="text-sm">
+            {t.zinliAmount}: <span className="font-medium">{amount}</span>
+          </p>
+          <p className="text-sm text-muted">{t.zinliConcept}</p>
+          {method === "zinli" ? (
+            pay?.zinli ? (
+              <p className="mt-3 text-3xl font-bold">@{pay.zinli}</p>
+            ) : (
+              <p className="mt-3 text-sm text-muted">{t.zinliNeed}</p>
+            )
+          ) : null}
+          {method === "pm" ? (
+            pay?.pmPhone ? (
+              <div className="mt-3 space-y-1 text-sm">
+                <p>{t.pmPhone}: {pay.pmPhone}</p>
+                <p>{t.pmBank}: {pay.pmBank}</p>
+                <p>{t.pmId}: {pay.pmId}</p>
+              </div>
+            ) : (
+              <p className="mt-3 text-sm text-muted">{t.zinliNeed}</p>
+            )
+          ) : null}
+          {method === "usdt" ? (
+            pay?.usdt ? (
+              <p className="mt-3 break-all text-sm">{pay.usdt}</p>
+            ) : (
+              <p className="mt-3 text-sm text-muted">{t.zinliNeed}</p>
+            )
+          ) : null}
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Button
+              type="button"
+              variant="secondary"
+              disabled={!ready}
+              onClick={() =>
+                void copy(method === "zinli" ? pay?.zinli || "" : method === "pm" ? pay?.pmPhone || "" : pay?.usdt || "")
+              }
+            >
+              {t.zinliCopy}
+            </Button>
+            {method === "zinli" ? (
+              <Button type="button" asChild>
+                <a href="https://www.zinli.com/" target="_blank" rel="noreferrer">
+                  {t.zinliOpen}
+                </a>
+              </Button>
+            ) : null}
+          </div>
+        </div>
+
+        <form className="mt-6 space-y-3" onSubmit={(e) => void paid(e)}>
+          <label className="text-sm font-medium" htmlFor="pay-email">
+            {t.emailWait}
+          </label>
+          <Input
+            id="pay-email"
+            type="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="tu@correo.com"
+          />
+          <Button type="submit" className="w-full" disabled={busy || !ready}>
+            {t.zinliPaid}
+          </Button>
+        </form>
+        <p className="mt-4 text-center text-sm">
+          <Link to="/app/cuaderno" className="text-muted underline">
+            {t.zinliSave}
+          </Link>
+        </p>
+        <div className="mt-10">
+          <Disclaimer />
+        </div>
+      </main>
+    </div>
+  );
+}
