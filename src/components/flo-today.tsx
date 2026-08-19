@@ -97,23 +97,24 @@ export function FloToday({
 
   return (
     <div className="relative -mx-4 overflow-hidden px-4 pb-4">
-      <div className="pointer-events-none absolute -top-24 right-[-30%] h-80 w-80 rounded-full bg-[#e8b4ae]/70 blur-2xl" />
-      <div className="pointer-events-none absolute top-48 left-[-40%] h-72 w-72 rounded-full bg-[#f7e6c8]/80 blur-2xl" />
+      <div className="blob -top-16 right-[-20%] h-64 w-64 bg-[#ff6b9d]/80" />
+      <div className="blob top-36 left-[-28%] h-72 w-72 bg-[#7ee8d8]/70" style={{ animationDelay: "-4s" }} />
+      <div className="blob top-80 right-[-10%] h-52 w-52 bg-[#ffd56a]/75" style={{ animationDelay: "-7s" }} />
+      <div className="blob top-24 right-12 h-24 w-24 bg-[#c9b6ff]/90" style={{ animationDelay: "-2s" }} />
 
-      <p className="relative text-center text-[11px] font-medium uppercase tracking-[0.28em] text-muted">
-        {formatLong(today, lang)}
-      </p>
+      <p className="relative text-center text-sm font-semibold">{formatLong(today, lang)}</p>
 
-      <div className="relative mt-5 grid grid-cols-7 text-center">
-        {days.map((d) => {
+      <div className="relative mt-4 grid grid-cols-7 text-center">
+        {days.map((d, i) => {
           const isToday = d.iso === today;
+          const wash = ["bg-[#ffd56a]/40", "bg-[#7ee8d8]/40", "bg-[#ff9eb5]/50", "bg-primary text-primary-fg", "bg-[#c9b6ff]/50", "bg-[#7ee8d8]/40", "bg-[#ffd56a]/40"];
           return (
             <div key={d.iso} className="flex flex-col items-center gap-2">
-              <span className="text-[10px] font-medium tracking-[0.16em] text-muted">{dow[d.dow]}</span>
+              <span className="text-xs font-semibold text-muted">{dow[d.dow]}</span>
               <span
                 className={cn(
-                  "flex size-10 items-center justify-center rounded-full text-[15px]",
-                  isToday ? "bg-ink text-primary-fg" : "text-fg",
+                  "flex size-10 items-center justify-center rounded-full text-base font-semibold",
+                  isToday ? "bg-primary text-primary-fg shadow-card" : wash[i],
                 )}
               >
                 {d.date}
@@ -123,40 +124,38 @@ export function FloToday({
         })}
       </div>
 
-      <div className="relative mt-14 text-center">
-        {hero.kicker ? (
-          <p className="font-display text-xl italic tracking-tight text-muted">{hero.kicker}</p>
-        ) : null}
+      <div className="hero-pop relative mt-12 text-center">
+        {hero.kicker ? <p className="text-lg font-semibold text-fg/80">{hero.kicker}</p> : null}
         <h1
           className={cn(
-            "font-display font-medium tracking-tight text-ink",
-            hero.kicker ? "mt-1 text-7xl" : "text-6xl leading-[0.95]",
+            "bg-gradient-to-br from-[#ff2d6a] via-[#ff6b4a] to-[#c45bff] bg-clip-text font-extrabold tracking-tight text-transparent",
+            hero.kicker ? "mt-1 text-6xl" : "text-5xl leading-[1.05]",
           )}
         >
           {hero.title}
         </h1>
-        <p className="mt-5 text-sm tracking-wide text-muted">{chance}</p>
+        <p className="mt-4 text-base font-medium">{chance}</p>
         {!onPeriod && onCameToday ? (
           <button
             type="button"
             onClick={onCameToday}
-            className="mt-6 min-h-11 rounded-full border border-ink/20 bg-transparent px-6 text-xs font-medium uppercase tracking-[0.18em] text-fg"
+            className="mt-5 min-h-12 rounded-full bg-primary px-6 text-sm font-semibold text-primary-fg shadow-card"
           >
             {t.cameToday}
           </button>
         ) : null}
         {onCycleChange ? (
-          <div className="mt-8">
-            <p className="text-[11px] uppercase tracking-[0.18em] text-muted">{t.cycleAsk}</p>
-            <div className="mt-3 flex flex-wrap justify-center gap-1.5">
+          <div className="mt-6">
+            <p className="text-xs font-medium text-muted">{t.cycleAsk}</p>
+            <div className="mt-2 flex flex-wrap justify-center gap-1.5">
               {CYCLE_CHOICES.map((n) => (
                 <button
                   key={n}
                   type="button"
                   onClick={() => onCycleChange(n)}
                   className={cn(
-                    "h-9 min-w-10 rounded-full px-2 text-xs",
-                    cycleLength === n ? "bg-ink text-primary-fg" : "bg-surface/80 text-fg",
+                    "h-10 min-w-10 rounded-full px-2 text-sm font-semibold",
+                    cycleLength === n ? "bg-primary text-primary-fg shadow-card" : "bg-surface text-fg",
                   )}
                 >
                   {n}
@@ -167,29 +166,30 @@ export function FloToday({
         ) : null}
       </div>
 
-      <div className="relative mt-12 grid grid-cols-3 gap-3">
-        <ActionCircle label={t.logPeriod} onClick={onLog}>
-          <Droplets className="size-6" strokeWidth={1.6} />
+      <div className="relative mt-10 grid grid-cols-3 gap-3">
+        <ActionCircle label={t.logPeriod} onClick={onLog} tone="pink">
+          <Droplets className="size-7" />
         </ActionCircle>
-        <ActionCircle label={t.symptoms} onClick={onLog}>
-          <Plus className="size-6" strokeWidth={1.6} />
+        <ActionCircle label={t.symptoms} onClick={onLog} tone="mint">
+          <Plus className="size-7" />
         </ActionCircle>
-        <ActionCircle label={t.askMark} onClick={onAsk} filled>
-          <AskGlyph className="text-2xl" />
+        <ActionCircle label={t.askMark} onClick={onAsk} tone="gold">
+          <AskGlyph className="text-3xl" />
         </ActionCircle>
       </div>
 
-      <div className="relative mt-12">
+      <div className="relative mt-10">
         <div className="flex items-center justify-between">
-          <h2 className="font-display text-2xl italic tracking-tight">{t.dailyTips}</h2>
-          <button type="button" onClick={onCal} className="text-[11px] uppercase tracking-[0.16em] text-muted">
+          <h2 className="text-lg font-bold">{t.dailyTips}</h2>
+          <button type="button" onClick={onCal} className="text-sm font-semibold text-primary">
             {t.navCal}
           </button>
         </div>
         <div className="-mx-4 mt-4 flex gap-3 overflow-x-auto px-4 pb-2">
-          <TipCard tone="blush" title={pick(phaseName[phase], lang)} onClick={onGuia} />
+          <TipCard tone="mint" title={pick(phaseName[phase], lang)} onClick={onGuia} />
           {food ? <TipCard tone="ink" title={pick(food.title, lang)} onClick={onGuia} /> : null}
-          <TipCard tone="rose" title={pick(tea.name, lang)} onClick={onGuia} />
+          <TipCard tone="gold" title={pick(tea.name, lang)} onClick={onGuia} />
+          <TipCard tone="lilac" title={t.askMark} onClick={onAsk} />
         </div>
       </div>
     </div>
@@ -199,25 +199,27 @@ export function FloToday({
 function ActionCircle({
   label,
   onClick,
-  filled,
+  tone,
   children,
 }: {
   label: string;
   onClick: () => void;
-  filled?: boolean;
+  tone: "pink" | "mint" | "gold";
   children: ReactNode;
 }) {
   return (
     <button type="button" onClick={onClick} className="flex flex-col items-center gap-2">
       <span
         className={cn(
-          "flex size-[4.25rem] items-center justify-center rounded-full",
-          filled ? "bg-ink text-primary-fg" : "border border-ink/15 bg-surface text-fg",
+          "float-slow flex size-[4.4rem] items-center justify-center rounded-full shadow-card",
+          tone === "pink" && "bg-[#ff6b9d] text-white",
+          tone === "mint" && "bg-[#5ee4d6] text-ink",
+          tone === "gold" && "bg-[#ffd56a] text-ink",
         )}
       >
         {children}
       </span>
-      <span className="max-w-24 text-center text-[11px] leading-snug tracking-wide">{label}</span>
+      <span className="max-w-24 text-center text-xs font-semibold leading-snug">{label}</span>
     </button>
   );
 }
@@ -228,7 +230,7 @@ function TipCard({
   onClick,
 }: {
   title: string;
-  tone: "blush" | "ink" | "rose";
+  tone: "mint" | "ink" | "gold" | "lilac";
   onClick: () => void;
 }) {
   return (
@@ -236,13 +238,16 @@ function TipCard({
       type="button"
       onClick={onClick}
       className={cn(
-        "h-48 w-40 shrink-0 rounded-[1.75rem] p-5 text-left",
-        tone === "blush" && "bg-[#ead0c8] text-ink",
+        "relative h-48 w-40 shrink-0 overflow-hidden rounded-[1.6rem] p-4 text-left shadow-card",
+        tone === "mint" && "bg-[#5ee4d6] text-ink",
         tone === "ink" && "bg-ink text-primary-fg",
-        tone === "rose" && "bg-primary text-primary-fg",
+        tone === "gold" && "bg-[#ffd56a] text-ink",
+        tone === "lilac" && "bg-[#c9b6ff] text-ink",
       )}
     >
-      <p className="font-display text-2xl font-medium leading-tight tracking-tight">{title}</p>
+      <span className="absolute -right-6 -top-6 size-24 rounded-full bg-white/25" />
+      <span className="absolute -bottom-8 left-8 size-20 rounded-full bg-primary/20" />
+      <p className="relative text-[17px] font-bold leading-snug">{title}</p>
     </button>
   );
 }

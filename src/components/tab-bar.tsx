@@ -32,13 +32,13 @@ export function TabBar({
           const active = current === item.key;
           const className = cn(
             "flex min-h-14 flex-col items-center justify-center gap-0.5 text-xs",
-            active ? "font-semibold text-accent" : "text-muted",
+            active ? "font-semibold text-primary" : "text-muted",
           );
           const icon = (
             <span
               className={cn(
                 "flex size-8 items-center justify-center rounded-full",
-                active && "bg-accent/15",
+                active && "bg-primary/15",
               )}
             >
               <Icon className="size-5" strokeWidth={active ? 2.4 : 1.8} />
