@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { authMiddleware } from "@/lib/auth/middleware";
 import { getSql } from "@/lib/db";
-import { cyclePattern, fertileWindow, nextPeriodDate, averageCycle, snapshotMeta, symptomByPhase, todayISO } from "@/lib/cycle";
+import { cyclePattern, fertileWindow, nextPeriodDate, averageCycle, snapshotMeta, symptomByPhase, todayISO, learnedCycle } from "@/lib/cycle";
 import type { DailyLog, Flow, Intention, Mucus, SaviaProfile, SexKind, Stage, TodaySnapshot } from "@/lib/types";
 import { moneyToNumber } from "@/lib/utils";
 
@@ -231,13 +231,15 @@ export const saveLog = createServerFn({ method: "POST" })
       returning *
     `;
     if (data.periodStarted) {
+      const nextLen = learnedCycle(profile.lastPeriodStart, data.day, profile.cycleLength);
       await sql`
         insert into period_starts (user_id, start_date)
         values (${context.userId}, ${data.day})
         on conflict (user_id, start_date) do nothing
       `;
       await sql`
-        update savia_profiles set last_period_start = ${data.day}, updated_at = now()
+        update savia_profiles
+        set last_period_start = ${data.day}, cycle_length = ${nextLen}, updated_at = now()
         where user_id = ${context.userId}
       `;
     }
@@ -337,9 +339,18 @@ export type PaySettings = {
   pmId: string;
   usdt: string;
   cardUrl: string;
+  paypalUrl: string;
 };
 
-const emptyPay: PaySettings = { zinli: "", pmPhone: "", pmBank: "", pmId: "", usdt: "", cardUrl: "" };
+const emptyPay: PaySettings = {
+  zinli: "",
+  pmPhone: "",
+  pmBank: "",
+  pmId: "",
+  usdt: "",
+  cardUrl: "",
+  paypalUrl: "",
+};
 
 async function readPay(): Promise<PaySettings> {
   const sql = await getSql();
@@ -376,6 +387,7 @@ export const savePay = createServerFn({ method: "POST" })
       pmId: data.pmId.trim(),
       usdt: data.usdt.trim(),
       cardUrl: data.cardUrl.trim(),
+      paypalUrl: data.paypalUrl.trim(),
     };
     const sql = await getSql();
     await sql`

@@ -11,7 +11,7 @@ import { useCurrentUserState } from "@/lib/auth/use-current-user";
 
 export const Route = createFileRoute("/pagar")({ component: Pagar });
 
-type Method = "zinli" | "pm" | "usdt" | "card";
+type Method = "zinli" | "pm" | "usdt" | "card" | "paypal";
 
 function Pagar() {
   const { t } = useI18n();
@@ -49,7 +49,9 @@ function Pagar() {
         ? Boolean(pay?.pmPhone)
         : method === "usdt"
           ? Boolean(pay?.usdt)
-          : Boolean(pay?.zinli || pay?.cardUrl);
+          : method === "paypal"
+            ? Boolean(pay?.paypalUrl)
+            : Boolean(pay?.cardUrl);
 
   async function copy(text: string) {
     if (!text) return;
@@ -70,7 +72,17 @@ function Pagar() {
     }
     setBusy(true);
     try {
-      const note = `${method} ${pay?.zinli || pay?.pmPhone || pay?.usdt || pay?.cardUrl || ""}`;
+      const dest =
+        method === "zinli"
+          ? pay?.zinli
+          : method === "pm"
+            ? pay?.pmPhone
+            : method === "usdt"
+              ? pay?.usdt
+              : method === "paypal"
+                ? pay?.paypalUrl
+                : pay?.cardUrl;
+      const note = `${method} ${dest || ""}`;
       const res = await claimSerena({ data: { email, plan, note } });
       if (res.ok) {
         setActive(true);
@@ -124,6 +136,7 @@ function Pagar() {
             [
               ["zinli", t.methodZinli],
               ["card", t.methodCard],
+              ["paypal", t.methodPaypal],
               ["pm", t.methodPm],
               ["usdt", t.methodUsdt],
             ] as const
@@ -172,7 +185,21 @@ function Pagar() {
           {method === "card" ? (
             <div className="mt-3 space-y-2">
               <p className="text-sm leading-relaxed">{t.cardBody}</p>
-              {pay?.zinli ? <p className="text-xl font-bold">@{pay.zinli}</p> : null}
+              {pay?.cardUrl ? (
+                <p className="break-all text-xs text-muted">{pay.cardUrl}</p>
+              ) : (
+                <p className="text-sm text-muted">{t.zinliNeed}</p>
+              )}
+            </div>
+          ) : null}
+          {method === "paypal" ? (
+            <div className="mt-3 space-y-2">
+              <p className="text-sm leading-relaxed">{t.paypalBody}</p>
+              {pay?.paypalUrl ? (
+                <p className="break-all text-sm font-medium">{pay.paypalUrl}</p>
+              ) : (
+                <p className="text-sm text-muted">{t.zinliNeed}</p>
+              )}
             </div>
           ) : null}
           <div className="mt-4 flex flex-wrap gap-2">
@@ -182,17 +209,21 @@ function Pagar() {
               disabled={!ready}
               onClick={() =>
                 void copy(
-                  method === "zinli" || method === "card"
+                  method === "zinli"
                     ? pay?.zinli || ""
                     : method === "pm"
                       ? pay?.pmPhone || ""
-                      : pay?.usdt || "",
+                      : method === "card"
+                        ? pay?.cardUrl || ""
+                        : method === "paypal"
+                          ? pay?.paypalUrl || ""
+                          : pay?.usdt || "",
                 )
               }
             >
               {t.zinliCopy}
             </Button>
-            {method === "zinli" || method === "card" ? (
+            {method === "zinli" ? (
               <Button type="button" asChild>
                 <a href="https://www.zinli.com/" target="_blank" rel="noreferrer">
                   {t.zinliOpen}
@@ -203,6 +234,13 @@ function Pagar() {
               <Button type="button" asChild>
                 <a href={pay.cardUrl} target="_blank" rel="noreferrer">
                   {t.cardOpen}
+                </a>
+              </Button>
+            ) : null}
+            {method === "paypal" && pay?.paypalUrl ? (
+              <Button type="button" asChild>
+                <a href={pay.paypalUrl} target="_blank" rel="noreferrer">
+                  {t.paypalOpen}
                 </a>
               </Button>
             ) : null}

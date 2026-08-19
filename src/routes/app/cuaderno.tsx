@@ -11,7 +11,15 @@ import { getPay, savePay, type PaySettings } from "@/lib/savia-server";
 
 export const Route = createFileRoute("/app/cuaderno")({ component: Cuaderno });
 
-const empty: PaySettings = { zinli: "", pmPhone: "", pmBank: "", pmId: "", usdt: "", cardUrl: "" };
+const empty: PaySettings = {
+  zinli: "",
+  pmPhone: "",
+  pmBank: "",
+  pmId: "",
+  usdt: "",
+  cardUrl: "",
+  paypalUrl: "",
+};
 
 function Cuaderno() {
   const { t } = useI18n();
@@ -29,8 +37,8 @@ function Cuaderno() {
     try {
       const res = await savePay({ data: pay });
       if (res.ok) {
-        const { zinli, pmPhone, pmBank, pmId, usdt, cardUrl } = res;
-        setPay({ zinli, pmPhone, pmBank, pmId, usdt, cardUrl });
+        const { zinli, pmPhone, pmBank, pmId, usdt, cardUrl, paypalUrl } = res;
+        setPay({ zinli, pmPhone, pmBank, pmId, usdt, cardUrl, paypalUrl: paypalUrl || "" });
         toast.success(t.saved);
       } else toast.error(t.errorGeneric);
     } catch {
@@ -109,6 +117,17 @@ function Cuaderno() {
             placeholder="https://"
           />
           <p className="mt-1 text-xs text-muted">{t.cardUrlHint}</p>
+        </div>
+        <div>
+          <Label htmlFor="paypalUrl">{t.paypalUrl}</Label>
+          <Input
+            id="paypalUrl"
+            className="mt-2"
+            value={pay.paypalUrl}
+            onChange={(e) => setPay({ ...pay, paypalUrl: e.target.value })}
+            placeholder="https://paypal.me/tuusuario/4.99"
+          />
+          <p className="mt-1 text-xs text-muted">{t.paypalHint}</p>
         </div>
         <Button type="button" disabled={busy} onClick={() => void save()}>
           {t.save}

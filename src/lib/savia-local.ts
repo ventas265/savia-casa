@@ -1,4 +1,4 @@
-import { averageCycle, cyclePattern, fertileWindow, nextPeriodDate, periodDaysFromLogs, snapshotMeta, symptomByPhase, todayISO } from "@/lib/cycle";
+import { averageCycle, cyclePattern, fertileWindow, learnedCycle, nextPeriodDate, periodDaysFromLogs, snapshotMeta, symptomByPhase, todayISO } from "@/lib/cycle";
 import type { DailyLog, Flow, Intention, Mucus, SaviaProfile, SexKind, Stage, TodaySnapshot } from "@/lib/types";
 
 const KEY = "savia.beta.v1";
@@ -130,6 +130,8 @@ export function localSaveLog(data: {
   };
   store.logs = [log, ...store.logs.filter((l) => l.day !== data.day)].slice(0, 180);
   if (data.periodStarted) {
+    const prev = store.profile.lastPeriodStart;
+    store.profile.cycleLength = learnedCycle(prev, data.day, store.profile.cycleLength);
     store.starts = Array.from(new Set([data.day, ...store.starts])).sort().reverse().slice(0, 12);
     store.profile.lastPeriodStart = data.day;
   }
@@ -215,4 +217,24 @@ export function localReport() {
     logCount: store.logs.length,
     periodDays: periodDaysFromLogs(store.logs),
   };
+}
+
+export function localSetCycle(n: number) {
+  const store = read();
+  store.profile.cycleLength = Math.min(45, Math.max(21, n));
+  write(store);
+  return localToday();
+}
+
+export function localCameToday() {
+  return localSaveLog({
+    day: todayISO(),
+    flow: "medium",
+    mood: null,
+    energy: null,
+    sleepHours: null,
+    notes: "",
+    symptoms: [],
+    periodStarted: true,
+  });
 }

@@ -1,9 +1,12 @@
+import { todayISO } from "@/lib/cycle";
 import { SAVIA_BETA } from "@/lib/beta";
 import {
   localAskFile,
+  localCameToday,
   localReport,
   localSaveLog,
   localSaveProfile,
+  localSetCycle,
   localSetSex,
   localToday,
 } from "@/lib/savia-local";
@@ -71,4 +74,40 @@ export async function askGuide(input: {
 
 export function betaPaid() {
   return SAVIA_BETA;
+}
+
+export async function setCycleLength(n: number) {
+  if (SAVIA_BETA) return localSetCycle(n);
+  const snap = await loadToday();
+  return writeProfile({
+    displayName: snap.profile.displayName,
+    stage: snap.profile.stage,
+    birthYear: snap.profile.birthYear,
+    cycleLength: n,
+    periodLength: snap.profile.periodLength,
+    lastPeriodStart: snap.profile.lastPeriodStart,
+    dueDate: snap.profile.dueDate,
+    lastPeriodYear: snap.profile.lastPeriodYear,
+    onboardingDone: true,
+    locale: snap.profile.locale,
+    intention: snap.profile.intention,
+  }).then(() => loadToday());
+}
+
+export async function markCameToday() {
+  if (SAVIA_BETA) {
+    localCameToday();
+    return localToday();
+  }
+  await writeLog({
+    day: todayISO(),
+    flow: "medium",
+    mood: null,
+    energy: null,
+    sleepHours: null,
+    notes: "",
+    symptoms: [],
+    periodStarted: true,
+  });
+  return loadToday();
 }

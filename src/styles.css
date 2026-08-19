@@ -3,22 +3,24 @@
 @import "tw-animate-css";
 
 @theme {
-  --color-bg: #f6e6e1;
-  --color-surface: #ffffff;
-  --color-surface-2: #f1d6d0;
-  --color-ink: #2b2423;
-  --color-fg: #2b2423;
-  --color-muted: #6d615e;
-  --color-primary: #e4577a;
+  --color-bg: #ffd9cf;
+  --color-surface: #fff7f4;
+  --color-surface-2: #ffb7c5;
+  --color-ink: #3a2428;
+  --color-fg: #3a2428;
+  --color-muted: #8a5e68;
+  --color-primary: #ff4d7a;
   --color-primary-fg: #ffffff;
-  --color-accent: #2aa8a3;
-  --color-border: #ead4ce;
-  --color-danger: #d94856;
-  --color-ring: #e4577a;
-  --color-cal-period: #e24b5a;
+  --color-accent: #1fb8a8;
+  --color-border: #f3c4c8;
+  --color-danger: #e23b55;
+  --color-ring: #ff4d7a;
+  --color-cal-period: #ff4d7a;
   --color-cal-peak: #0f5c6b;
-  --color-cal-fertile: #7ec8d1;
-  --color-cal-quiet: #ffffff;
+  --color-cal-fertile: #7ee0d0;
+  --color-cal-quiet: #fff7f4;
+  --color-lilac: #c9b6ff;
+  --color-gold: #ffc85c;
   --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Outfit", ui-sans-serif, system-ui, sans-serif;
   --radius-sm: 10px;

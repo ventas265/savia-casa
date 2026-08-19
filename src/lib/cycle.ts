@@ -151,6 +151,15 @@ export function cycleGaps(starts: string[]) {
   return gaps;
 }
 
+export function learnedCycle(prevStart: string | null, newStart: string, fallback: number) {
+  if (!prevStart || prevStart === newStart) return fallback;
+  const gap = differenceInCalendarDays(fromISO(newStart), fromISO(prevStart));
+  if (gap < 18 || gap > 45) return fallback;
+  return gap;
+}
+
+export const CYCLE_CHOICES = [21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 32, 35];
+
 export function averageCycle(starts: string[], fallback: number) {
   const gaps = cycleGaps(starts);
   if (!gaps.length) return fallback;

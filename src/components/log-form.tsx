@@ -161,25 +161,75 @@ export function LogForm({
       </div>
 
       <div className="rounded-3xl bg-surface p-5">
-        <div className="space-y-4">
-          <div>
-            <Label>
-              {t.mood}: {mood}
-            </Label>
-            <input type="range" min={1} max={5} value={mood} onChange={(e) => setMood(Number(e.target.value))} className="mt-2 w-full accent-primary" />
-          </div>
-          <div>
-            <Label>
-              {t.energy}: {energy}
-            </Label>
-            <input type="range" min={1} max={5} value={energy} onChange={(e) => setEnergy(Number(e.target.value))} className="mt-2 w-full accent-primary" />
-          </div>
-          <div>
-            <Label>
-              {t.sleep}: {sleepHours}
-            </Label>
-            <input type="range" min={0} max={12} step={0.5} value={sleepHours} onChange={(e) => setSleepHours(Number(e.target.value))} className="mt-2 w-full accent-primary" />
-          </div>
+        <p className="text-sm font-semibold">{t.moodAsk}</p>
+        <p className="mt-1 text-xs text-muted">{t.moodHint}</p>
+        <div className="mt-3 grid grid-cols-5 gap-1.5">
+          {(
+            [
+              [1, "😣", t.mood1],
+              [2, "😕", t.mood2],
+              [3, "🙂", t.mood3],
+              [4, "😊", t.mood4],
+              [5, "🤩", t.mood5],
+            ] as const
+          ).map(([n, face, label]) => (
+            <button
+              key={n}
+              type="button"
+              onClick={() => setMood(n)}
+              className={cn(
+                "flex flex-col items-center gap-1 rounded-2xl py-3 text-[11px] leading-tight",
+                mood === n ? "bg-primary text-primary-fg" : "bg-bg text-fg",
+              )}
+            >
+              <span className="text-xl">{face}</span>
+              {label}
+            </button>
+          ))}
+        </div>
+
+        <p className="mt-6 text-sm font-semibold">{t.energyAsk}</p>
+        <p className="mt-1 text-xs text-muted">{t.energyHint}</p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {(
+            [
+              [1, t.energy1],
+              [2, t.energy2],
+              [3, t.energy3],
+              [4, t.energy4],
+              [5, t.energy5],
+            ] as const
+          ).map(([n, label]) => (
+            <button
+              key={n}
+              type="button"
+              onClick={() => setEnergy(n)}
+              className={cn(
+                "h-11 rounded-full px-4 text-sm",
+                energy === n ? "bg-primary text-primary-fg" : "bg-bg text-fg",
+              )}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
+        <p className="mt-6 text-sm font-semibold">{t.sleepAsk}</p>
+        <p className="mt-1 text-xs text-muted">{t.sleepHint}</p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {[4, 5, 6, 7, 8, 9, 10].map((h) => (
+            <button
+              key={h}
+              type="button"
+              onClick={() => setSleepHours(h)}
+              className={cn(
+                "h-11 min-w-12 rounded-full px-3 text-sm",
+                sleepHours === h ? "bg-primary text-primary-fg" : "bg-bg text-fg",
+              )}
+            >
+              {h === 10 ? "10+" : `${h} h`}
+            </button>
+          ))}
         </div>
       </div>
 

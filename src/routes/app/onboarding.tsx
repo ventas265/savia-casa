@@ -10,7 +10,7 @@ import { useI18n } from "@/lib/i18n";
 import { pick, stageName } from "@/lib/savia-content";
 import { STAGES, INTENTIONS, type Intention, type Stage } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { todayISO } from "@/lib/cycle";
+import { CYCLE_CHOICES, todayISO } from "@/lib/cycle";
 
 export const Route = createFileRoute("/app/onboarding")({ component: Onboarding });
 
@@ -130,27 +130,34 @@ function Onboarding() {
                 onChange={(e) => setLastPeriodStart(e.target.value)}
               />
             </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <Label htmlFor="cl">{t.cycleLength}</Label>
-                <Input
-                  id="cl"
-                  type="number"
-                  className="mt-1"
-                  value={cycleLength}
-                  onChange={(e) => setCycleLength(Number(e.target.value) || 28)}
-                />
+            <div>
+              <Label>{t.cycleLength}</Label>
+              <p className="mt-1 text-xs text-muted">{t.cycleHint}</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {CYCLE_CHOICES.map((n) => (
+                  <button
+                    key={n}
+                    type="button"
+                    onClick={() => setCycleLength(n)}
+                    className={cn(
+                      "h-11 min-w-11 rounded-full px-3 text-sm",
+                      cycleLength === n ? "bg-primary text-primary-fg" : "bg-bg text-fg",
+                    )}
+                  >
+                    {n}
+                  </button>
+                ))}
               </div>
-              <div>
-                <Label htmlFor="pl">{t.periodLength}</Label>
-                <Input
-                  id="pl"
-                  type="number"
-                  className="mt-1"
-                  value={periodLength}
-                  onChange={(e) => setPeriodLength(Number(e.target.value) || 5)}
-                />
-              </div>
+            </div>
+            <div>
+              <Label htmlFor="pl">{t.periodLength}</Label>
+              <Input
+                id="pl"
+                type="number"
+                className="mt-1"
+                value={periodLength}
+                onChange={(e) => setPeriodLength(Number(e.target.value) || 5)}
+              />
             </div>
           </>
         ) : null}

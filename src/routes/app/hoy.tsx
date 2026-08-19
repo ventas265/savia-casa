@@ -4,7 +4,7 @@ import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FloToday } from "@/components/flo-today";
-import { loadToday } from "@/lib/savia-api";
+import { loadToday, markCameToday, setCycleLength } from "@/lib/savia-api";
 import { useI18n } from "@/lib/i18n";
 import { averageCycle, nextPeriodDate } from "@/lib/cycle";
 import type { TodaySnapshot } from "@/lib/types";
@@ -45,6 +45,7 @@ function HoyTab() {
       <FloToday
         stage={data.profile.stage}
         phase={data.phase}
+        cycleLength={data.profile.cycleLength}
         nextPeriod={nextPeriodDate(
           data.profile.lastPeriodStart,
           averageCycle(data.periodStarts, data.profile.cycleLength),
@@ -53,6 +54,12 @@ function HoyTab() {
         onLog={() => void navigate({ to: "/app/registro" })}
         onGuia={() => void navigate({ to: "/app/guia" })}
         onAsk={() => void navigate({ to: "/app/preguntar" })}
+        onCameToday={() => {
+          void markCameToday().then(setData);
+        }}
+        onCycleChange={(n) => {
+          void setCycleLength(n).then(setData);
+        }}
         notify
       />
     </AppShell>
