@@ -4,7 +4,7 @@ import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FloToday } from "@/components/flo-today";
-import { getToday } from "@/lib/savia-server";
+import { loadToday } from "@/lib/savia-api";
 import { useI18n } from "@/lib/i18n";
 import { averageCycle, nextPeriodDate } from "@/lib/cycle";
 import type { TodaySnapshot } from "@/lib/types";
@@ -17,7 +17,7 @@ function HoyTab() {
   const [data, setData] = useState<TodaySnapshot | null>(null);
 
   useEffect(() => {
-    getToday()
+    loadToday()
       .then(setData)
       .catch(() => setData(null));
   }, []);

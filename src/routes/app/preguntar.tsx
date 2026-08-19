@@ -5,7 +5,9 @@ import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { Disclaimer } from "@/components/disclaimer";
-import { askSavia, type ChatTurn } from "@/lib/savia-server";
+import { type ChatTurn } from "@/lib/savia-server";
+import { askGuide } from "@/lib/savia-api";
+import { SAVIA_BETA } from "@/lib/beta";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
@@ -30,7 +32,7 @@ function Preguntar() {
     setTurns((prev) => [...prev, { role: "user", content: question }]);
     setBusy(true);
     try {
-      const res = await askSavia({ data: { question, locale: lang, history } });
+      const res = await askGuide({ question, locale: lang, history });
       if (!res.ok) {
         toast.error(res.error === "pay" ? t.payWall : t.aiMissing);
         return;
@@ -89,9 +91,13 @@ function Preguntar() {
         </div>
       )}
 
-      <p className="mt-2 text-xs text-muted">
-        {t.asksLeft}: 3 · <Link to="/pagar" className="underline">{t.navPricing}</Link>
-      </p>
+      {SAVIA_BETA ? (
+        <p className="mt-2 text-xs text-muted">{t.serenaOn}</p>
+      ) : (
+        <p className="mt-2 text-xs text-muted">
+          {t.asksLeft}: 3 · <Link to="/pagar" className="underline">{t.navPricing}</Link>
+        </p>
+      )}
       <form
         className="mt-6 flex gap-2"
         onSubmit={(e) => {

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useI18n } from "@/lib/i18n";
-import { saveLog } from "@/lib/savia-server";
+import { writeLog } from "@/lib/savia-api";
 import { pick, symptomLabel } from "@/lib/savia-content";
 import { FLOWS, MUCUS, SYMPTOMS, type DailyLog, type Flow, type Mucus } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -48,8 +48,7 @@ export function LogForm({
   async function save() {
     setBusy(true);
     try {
-      const res = await saveLog({
-        data: {
+      const res = await writeLog({
           day,
           flow,
           mood,
@@ -60,7 +59,6 @@ export function LogForm({
           periodStarted,
           mucus,
           sex: paid ? sex : undefined,
-        },
       });
       if (res.ok) {
         toast.success(t.saved);

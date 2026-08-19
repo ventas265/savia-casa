@@ -5,7 +5,7 @@ import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { saveProfile } from "@/lib/savia-server";
+import { writeProfile } from "@/lib/savia-api";
 import { useI18n } from "@/lib/i18n";
 import { pick, stageName } from "@/lib/savia-content";
 import { STAGES, INTENTIONS, type Intention, type Stage } from "@/lib/types";
@@ -31,8 +31,7 @@ function Onboarding() {
   async function save() {
     setBusy(true);
     try {
-      const res = await saveProfile({
-        data: {
+      const res = await writeProfile({
           displayName,
           stage,
           birthYear: birthYear ? Number(birthYear) : null,
@@ -44,7 +43,6 @@ function Onboarding() {
           onboardingDone: true,
           locale: lang,
           intention,
-        },
       });
       if (!res.ok) {
         toast.error(t.errorGeneric);

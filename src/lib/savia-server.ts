@@ -538,3 +538,76 @@ Her file (use it, don't recite it unless asked):
     }
     return { ok: true as const, text, remaining };
   });
+
+export type AskFile = {
+  displayName?: string;
+  birthYear?: number | null;
+  stage?: string;
+  intention?: string;
+  cycleLength?: number;
+  periodLength?: number;
+  lastPeriodStart?: string | null;
+  dueDate?: string | null;
+  cycleDay?: number | null;
+  phase?: string;
+  pregnancyWeek?: number | null;
+  flow?: string;
+  mucus?: string;
+  symptoms?: string[];
+  mood?: number | null;
+};
+
+export const askSaviaOpen = createServerFn({ method: "POST" })
+  .validator((input: { question: string; locale: string; history?: ChatTurn[]; file?: AskFile }) => input)
+  .handler(async ({ data }) => {
+    const apiKey = process.env.XAI_API_KEY;
+    if (!apiKey) return { ok: false as const, error: "ai" as const };
+    const lang = data.locale === "en" ? "English" : "Spanish";
+    const f = data.file || {};
+    const history = (data.history ?? [])
+      .filter((m) => m.content.trim())
+      .slice(-8)
+      .map((m) => ({ role: m.role, content: m.content.slice(0, 1500) }));
+    const res = await fetch("https://api.x.ai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: "grok-4.5",
+        max_tokens: 650,
+        temperature: 0.5,
+        messages: [
+          {
+            role: "system",
+            content: `You are Savia, the in-app specialist for this women's health companion (open beta).
+You know menstrual cycles, ovulation, fertile windows, cervical mucus, PMS/PMDD, perimenopause, menopause, postpartum, pregnancy (food/tea caution), hormones, iron, sleep, and everyday food/teas that match a phase.
+You teach. You do not diagnose, prescribe, or replace a clinician.
+If red flags (soaking a pad/hour, fainting, pregnancy bleeding, severe one-sided pain, suicidal thoughts, fever after birth), say go to emergency care now. In Venezuela: urgencias / 911.
+Be warm, concrete, short paragraphs. Answer in ${lang}.
+
+Her file:
+- Name: ${f.displayName || "not set"}
+- Age: ${f.birthYear ? new Date().getFullYear() - f.birthYear : "unknown"}
+- Season: ${f.stage || "cycle"}
+- Intention: ${f.intention || "track"}
+- Cycle length: ${f.cycleLength ?? 28}, period ${f.periodLength ?? 5}
+- Last period: ${f.lastPeriodStart ?? "unknown"}
+- Cycle day: ${f.cycleDay ?? "n/a"}
+- Phase: ${f.phase ?? "n/a"}
+- Pregnancy week: ${f.pregnancyWeek ?? "n/a"}
+- Today: flow ${f.flow ?? "none"}, mucus ${f.mucus ?? "none"}, symptoms ${(f.symptoms || []).join(", ") || "none"}, mood ${f.mood ?? "n/a"}`,
+          },
+          ...history,
+          { role: "user", content: data.question.slice(0, 2000) },
+        ],
+      }),
+    });
+    if (!res.ok) return { ok: false as const, error: "ai" as const };
+    const body = (await res.json()) as { choices?: { message?: { content?: string } }[] };
+    const text = body.choices?.[0]?.message?.content ?? "";
+    if (!text) return { ok: false as const, error: "ai" as const };
+    return { ok: true as const, text, remaining: null as number | null };
+  });
+

@@ -11,7 +11,6 @@ import { FloToday } from "@/components/flo-today";
 import { LibraryBody } from "@/components/library-body";
 import { Shell } from "@/components/shell";
 import { sampleLastStart, nextPeriodDate, addDaysISO } from "@/lib/cycle";
-import { SignedIn, SignedOut } from "@/lib/auth/gates";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({ component: Home });
@@ -34,16 +33,9 @@ function Home() {
           )}
           <div className="flex items-center gap-2">
             <LangToggle />
-            <SignedOut>
-              <Button size="sm" asChild>
-                <Link to="/login">{t.start}</Link>
+            <Button size="sm" asChild>
+                <Link to="/app/hoy">{t.start}</Link>
               </Button>
-            </SignedOut>
-            <SignedIn>
-              <Button size="sm" asChild>
-                <Link to="/app/hoy">{t.goApp}</Link>
-              </Button>
-            </SignedIn>
           </div>
         </div>
       }

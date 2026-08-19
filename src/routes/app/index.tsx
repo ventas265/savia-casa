@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CycleCalendar } from "@/components/cycle-calendar";
 import { Predictions } from "@/components/predictions";
-import { getToday, toggleSex } from "@/lib/savia-server";
+import { loadToday, writeSex, betaPaid } from "@/lib/savia-api";
 import { useI18n } from "@/lib/i18n";
 import { isCycling, periodDaysFromLogs } from "@/lib/cycle";
 import type { SexKind, TodaySnapshot } from "@/lib/types";
@@ -21,7 +21,7 @@ function CalendarTab() {
   const [sexMarks, setSexMarks] = useState<{ day: string; kind: SexKind }[]>([]);
 
   useEffect(() => {
-    getToday()
+    loadToday()
       .then((snap) => {
         setData(snap);
         setSexMarks(snap.sexMarks);
@@ -30,13 +30,13 @@ function CalendarTab() {
   }, []);
 
   async function onHeart(iso: string, kind: SexKind) {
-    const paid = data?.profile.plan === "serena" || data?.profile.plan === "year";
+    const paid = betaPaid() || data?.profile.plan === "serena" || data?.profile.plan === "year";
     if (!paid) {
       toast.error(t.sexPay);
       void navigate({ to: "/pagar" });
       return;
     }
-    const res = await toggleSex({ data: { day: iso, kind } });
+    const res = await writeSex(iso, kind);
     if (!res.ok) {
       toast.error(t.sexPay);
       void navigate({ to: "/pagar" });
@@ -77,7 +77,7 @@ function CalendarTab() {
     );
   }
 
-  const paid = data.profile.plan === "serena" || data.profile.plan === "year";
+  const paid = betaPaid() || data.profile.plan === "serena" || data.profile.plan === "year";
 
   return (
     <AppShell current="cal">

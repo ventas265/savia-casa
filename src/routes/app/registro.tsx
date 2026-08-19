@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { AppShell } from "@/components/app-shell";
 import { LogForm } from "@/components/log-form";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getToday } from "@/lib/savia-server";
+import { loadToday, betaPaid } from "@/lib/savia-api";
 import { useI18n } from "@/lib/i18n";
 import type { TodaySnapshot } from "@/lib/types";
 
@@ -14,7 +14,7 @@ function Registro() {
   const [data, setData] = useState<TodaySnapshot | null>(null);
 
   useEffect(() => {
-    getToday().then(setData).catch(() => setData(null));
+    loadToday().then(setData).catch(() => setData(null));
   }, []);
 
   if (!data) {
@@ -33,7 +33,7 @@ function Registro() {
         <LogForm
           day={data.day}
           initial={data.log}
-          paid={data.profile.plan === "serena" || data.profile.plan === "year"}
+          paid={betaPaid() || data.profile.plan === "serena" || data.profile.plan === "year"}
           onSaved={(log) => setData({ ...data, log })}
         />
       </div>

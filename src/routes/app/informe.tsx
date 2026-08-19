@@ -5,7 +5,7 @@ import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Disclaimer } from "@/components/disclaimer";
-import { getReport } from "@/lib/savia-server";
+import { loadReport } from "@/lib/savia-api";
 import { useI18n } from "@/lib/i18n";
 import { formatDay } from "@/lib/cycle";
 import { pick, phaseName, stageName, symptomLabel } from "@/lib/savia-content";
@@ -24,10 +24,10 @@ function Row({ label, value }: { label: string; value: string }) {
 
 function Informe() {
   const { t, lang } = useI18n();
-  const [data, setData] = useState<Awaited<ReturnType<typeof getReport>> | null>(null);
+  const [data, setData] = useState<Awaited<ReturnType<typeof loadReport>> | null>(null);
 
   useEffect(() => {
-    getReport()
+    loadReport()
       .then(setData)
       .catch(() => setData({ ok: false, error: "pay" }));
   }, []);
