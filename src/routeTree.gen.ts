@@ -21,6 +21,7 @@ import { Route as AppCicloRouteImport } from './routes/app/ciclo'
 import { Route as AppCuadernoRouteImport } from './routes/app/cuaderno'
 import { Route as AppGuiaRouteImport } from './routes/app/guia'
 import { Route as AppHoyRouteImport } from './routes/app/hoy'
+import { Route as AppInformeRouteImport } from './routes/app/informe'
 import { Route as AppMasRouteImport } from './routes/app/mas'
 import { Route as AppOnboardingRouteImport } from './routes/app/onboarding'
 import { Route as AppPreguntarRouteImport } from './routes/app/preguntar'
@@ -87,6 +88,11 @@ const AppHoyRoute = AppHoyRouteImport.update({
   path: '/hoy',
   getParentRoute: () => AppRoute,
 } as any)
+const AppInformeRoute = AppInformeRouteImport.update({
+  id: '/informe',
+  path: '/informe',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppMasRoute = AppMasRouteImport.update({
   id: '/mas',
   path: '/mas',
@@ -125,6 +131,7 @@ export interface FileRoutesByFullPath {
   '/app/cuaderno': typeof AppCuadernoRoute
   '/app/guia': typeof AppGuiaRoute
   '/app/hoy': typeof AppHoyRoute
+  '/app/informe': typeof AppInformeRoute
   '/app/mas': typeof AppMasRoute
   '/app/onboarding': typeof AppOnboardingRoute
   '/app/preguntar': typeof AppPreguntarRoute
@@ -143,6 +150,7 @@ export interface FileRoutesByTo {
   '/app/cuaderno': typeof AppCuadernoRoute
   '/app/guia': typeof AppGuiaRoute
   '/app/hoy': typeof AppHoyRoute
+  '/app/informe': typeof AppInformeRoute
   '/app/mas': typeof AppMasRoute
   '/app/onboarding': typeof AppOnboardingRoute
   '/app/preguntar': typeof AppPreguntarRoute
@@ -163,6 +171,7 @@ export interface FileRoutesById {
   '/app/cuaderno': typeof AppCuadernoRoute
   '/app/guia': typeof AppGuiaRoute
   '/app/hoy': typeof AppHoyRoute
+  '/app/informe': typeof AppInformeRoute
   '/app/mas': typeof AppMasRoute
   '/app/onboarding': typeof AppOnboardingRoute
   '/app/preguntar': typeof AppPreguntarRoute
@@ -184,6 +193,7 @@ export interface FileRouteTypes {
     | '/app/cuaderno'
     | '/app/guia'
     | '/app/hoy'
+    | '/app/informe'
     | '/app/mas'
     | '/app/onboarding'
     | '/app/preguntar'
@@ -202,6 +212,7 @@ export interface FileRouteTypes {
     | '/app/cuaderno'
     | '/app/guia'
     | '/app/hoy'
+    | '/app/informe'
     | '/app/mas'
     | '/app/onboarding'
     | '/app/preguntar'
@@ -221,6 +232,7 @@ export interface FileRouteTypes {
     | '/app/cuaderno'
     | '/app/guia'
     | '/app/hoy'
+    | '/app/informe'
     | '/app/mas'
     | '/app/onboarding'
     | '/app/preguntar'
@@ -326,6 +338,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppHoyRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/informe': {
+      id: '/app/informe'
+      path: '/informe'
+      fullPath: '/app/informe'
+      preLoaderRoute: typeof AppInformeRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/mas': {
       id: '/app/mas'
       path: '/mas'
@@ -369,6 +388,7 @@ interface AppRouteChildren {
   AppCuadernoRoute: typeof AppCuadernoRoute
   AppGuiaRoute: typeof AppGuiaRoute
   AppHoyRoute: typeof AppHoyRoute
+  AppInformeRoute: typeof AppInformeRoute
   AppMasRoute: typeof AppMasRoute
   AppOnboardingRoute: typeof AppOnboardingRoute
   AppPreguntarRoute: typeof AppPreguntarRoute
@@ -381,6 +401,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppCuadernoRoute: AppCuadernoRoute,
   AppGuiaRoute: AppGuiaRoute,
   AppHoyRoute: AppHoyRoute,
+  AppInformeRoute: AppInformeRoute,
   AppMasRoute: AppMasRoute,
   AppOnboardingRoute: AppOnboardingRoute,
   AppPreguntarRoute: AppPreguntarRoute,

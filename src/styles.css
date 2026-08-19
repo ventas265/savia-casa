@@ -3,21 +3,21 @@
 @import "tw-animate-css";
 
 @theme {
-  --color-bg: #f7e4df;
+  --color-bg: #f6e6e1;
   --color-surface: #ffffff;
-  --color-surface-2: #f3d5cf;
-  --color-ink: #1a1a1a;
-  --color-fg: #1a1a1a;
-  --color-muted: #5c5654;
-  --color-primary: #f04880;
+  --color-surface-2: #f1d6d0;
+  --color-ink: #2b2423;
+  --color-fg: #2b2423;
+  --color-muted: #6d615e;
+  --color-primary: #e4577a;
   --color-primary-fg: #ffffff;
-  --color-accent: #2bb5b0;
-  --color-border: #edd5d0;
-  --color-danger: #e23b4a;
-  --color-ring: #f04880;
-  --color-cal-period: #e23b4a;
+  --color-accent: #2aa8a3;
+  --color-border: #ead4ce;
+  --color-danger: #d94856;
+  --color-ring: #e4577a;
+  --color-cal-period: #e24b5a;
   --color-cal-peak: #0f5c6b;
-  --color-cal-fertile: #5eb3c1;
+  --color-cal-fertile: #7ec8d1;
   --color-cal-quiet: #ffffff;
   --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Outfit", ui-sans-serif, system-ui, sans-serif;
@@ -26,6 +26,9 @@
   --radius-lg: 22px;
   --radius-xl: 28px;
   --radius-2xl: 36px;
+  --shadow-card: 0 1px 3px rgb(43 36 35 / 0.06);
+  --shadow-border: 0 0 0 1px rgb(43 36 35 / 0.06), 0 1px 2px -1px rgb(43 36 35 / 0.06);
+  --spacing-hit: 2.75rem;
 }
 
 @layer base {

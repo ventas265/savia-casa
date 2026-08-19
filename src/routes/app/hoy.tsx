@@ -6,7 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { FloToday } from "@/components/flo-today";
 import { getToday } from "@/lib/savia-server";
 import { useI18n } from "@/lib/i18n";
-import { nextPeriodDate } from "@/lib/cycle";
+import { averageCycle, nextPeriodDate } from "@/lib/cycle";
 import type { TodaySnapshot } from "@/lib/types";
 
 export const Route = createFileRoute("/app/hoy")({ component: HoyTab });
@@ -45,10 +45,15 @@ function HoyTab() {
       <FloToday
         stage={data.profile.stage}
         phase={data.phase}
-        nextPeriod={nextPeriodDate(data.profile.lastPeriodStart, data.profile.cycleLength)}
+        nextPeriod={nextPeriodDate(
+          data.profile.lastPeriodStart,
+          averageCycle(data.periodStarts, data.profile.cycleLength),
+        )}
         onCal={() => void navigate({ to: "/app" })}
         onLog={() => void navigate({ to: "/app/registro" })}
         onGuia={() => void navigate({ to: "/app/guia" })}
+        onAsk={() => void navigate({ to: "/app/preguntar" })}
+        notify
       />
     </AppShell>
   );

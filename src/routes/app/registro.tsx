@@ -30,7 +30,12 @@ function Registro() {
       <h1 className="text-2xl font-semibold">{t.logToday}</h1>
       <p className="mt-1 text-sm text-muted">{data.day}</p>
       <div className="mt-6">
-        <LogForm day={data.day} initial={data.log} onSaved={(log) => setData({ ...data, log })} />
+        <LogForm
+          day={data.day}
+          initial={data.log}
+          paid={data.profile.plan === "serena" || data.profile.plan === "year"}
+          onSaved={(log) => setData({ ...data, log })}
+        />
       </div>
     </AppShell>
   );

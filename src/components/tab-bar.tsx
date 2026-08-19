@@ -32,19 +32,29 @@ export function TabBar({
           const active = current === item.key;
           const className = cn(
             "flex min-h-14 flex-col items-center justify-center gap-0.5 text-xs",
-            active ? "text-accent" : "text-muted",
+            active ? "font-semibold text-accent" : "text-muted",
+          );
+          const icon = (
+            <span
+              className={cn(
+                "flex size-8 items-center justify-center rounded-full",
+                active && "bg-accent/15",
+              )}
+            >
+              <Icon className="size-5" strokeWidth={active ? 2.4 : 1.8} />
+            </span>
           );
           if (onPick) {
             return (
               <button key={item.key} type="button" className={className} onClick={() => onPick(item.key)}>
-                <Icon className="size-5" />
+                {icon}
                 {item.label}
               </button>
             );
           }
           return (
             <Link key={item.key} to={item.to} className={className}>
-              <Icon className="size-5" />
+              {icon}
               {item.label}
             </Link>
           );

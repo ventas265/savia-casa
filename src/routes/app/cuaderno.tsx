@@ -11,7 +11,7 @@ import { getPay, savePay, type PaySettings } from "@/lib/savia-server";
 
 export const Route = createFileRoute("/app/cuaderno")({ component: Cuaderno });
 
-const empty: PaySettings = { zinli: "", pmPhone: "", pmBank: "", pmId: "", usdt: "" };
+const empty: PaySettings = { zinli: "", pmPhone: "", pmBank: "", pmId: "", usdt: "", cardUrl: "" };
 
 function Cuaderno() {
   const { t } = useI18n();
@@ -29,8 +29,8 @@ function Cuaderno() {
     try {
       const res = await savePay({ data: pay });
       if (res.ok) {
-        const { zinli, pmPhone, pmBank, pmId, usdt } = res;
-        setPay({ zinli, pmPhone, pmBank, pmId, usdt });
+        const { zinli, pmPhone, pmBank, pmId, usdt, cardUrl } = res;
+        setPay({ zinli, pmPhone, pmBank, pmId, usdt, cardUrl });
         toast.success(t.saved);
       } else toast.error(t.errorGeneric);
     } catch {
@@ -98,6 +98,17 @@ function Cuaderno() {
             onChange={(e) => setPay({ ...pay, usdt: e.target.value })}
             placeholder="T…"
           />
+        </div>
+        <div>
+          <Label htmlFor="cardUrl">{t.cardUrl}</Label>
+          <Input
+            id="cardUrl"
+            className="mt-2"
+            value={pay.cardUrl}
+            onChange={(e) => setPay({ ...pay, cardUrl: e.target.value })}
+            placeholder="https://"
+          />
+          <p className="mt-1 text-xs text-muted">{t.cardUrlHint}</p>
         </div>
         <Button type="button" disabled={busy} onClick={() => void save()}>
           {t.save}

@@ -1,27 +1,52 @@
-import { Link, createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CycleCalendar } from "@/components/cycle-calendar";
 import { Predictions } from "@/components/predictions";
-import { getToday } from "@/lib/savia-server";
+import { getToday, toggleSex } from "@/lib/savia-server";
 import { useI18n } from "@/lib/i18n";
 import { isCycling, periodDaysFromLogs } from "@/lib/cycle";
-import type { TodaySnapshot } from "@/lib/types";
+import type { SexKind, TodaySnapshot } from "@/lib/types";
 
 export const Route = createFileRoute("/app/")({ component: CalendarTab });
 
 function CalendarTab() {
   const { t } = useI18n();
+  const navigate = useNavigate();
   const [data, setData] = useState<TodaySnapshot | null>(null);
   const [err, setErr] = useState(false);
+  const [sexMarks, setSexMarks] = useState<{ day: string; kind: SexKind }[]>([]);
 
   useEffect(() => {
     getToday()
-      .then(setData)
+      .then((snap) => {
+        setData(snap);
+        setSexMarks(snap.sexMarks);
+      })
       .catch(() => setErr(true));
   }, []);
+
+  async function onHeart(iso: string, kind: SexKind) {
+    const paid = data?.profile.plan === "serena" || data?.profile.plan === "year";
+    if (!paid) {
+      toast.error(t.sexPay);
+      void navigate({ to: "/pagar" });
+      return;
+    }
+    const res = await toggleSex({ data: { day: iso, kind } });
+    if (!res.ok) {
+      toast.error(t.sexPay);
+      void navigate({ to: "/pagar" });
+      return;
+    }
+    setSexMarks((prev) => {
+      const rest = prev.filter((s) => s.day !== iso);
+      return res.sex ? [...rest, { day: iso, kind: res.kind }] : rest;
+    });
+  }
 
   if (!data && !err) {
     return (
@@ -52,6 +77,8 @@ function CalendarTab() {
     );
   }
 
+  const paid = data.profile.plan === "serena" || data.profile.plan === "year";
+
   return (
     <AppShell current="cal">
       {isCycling(data.profile.stage) ? (
@@ -69,6 +96,10 @@ function CalendarTab() {
             periodLength={data.profile.periodLength}
             periodStarts={data.periodStarts}
             periodDays={periodDaysFromLogs(data.recentLogs)}
+            sexDays={sexMarks.map((s) => s.day)}
+            sexMarks={sexMarks}
+            paid={paid}
+            onSetSex={(iso, kind) => void onHeart(iso, kind)}
           />
         </div>
       ) : (

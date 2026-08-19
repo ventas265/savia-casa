@@ -14,13 +14,18 @@ export function AppShell({
   current: TabKey | "other";
 }) {
   const { t } = useI18n();
+  const immersive = current === "hoy";
   return (
     <Shell
       header={
-        <div className="flex h-14 items-center justify-between gap-3 px-4">
-          <Link to="/app/hoy" className="text-lg font-semibold tracking-tight">
-            {t.brand}
-          </Link>
+        <div className="flex h-12 items-center justify-between gap-3 px-4">
+          {immersive ? (
+            <span className="w-16" />
+          ) : (
+            <Link to="/app/hoy" className="text-lg font-semibold tracking-tight">
+              {t.brand}
+            </Link>
+          )}
           <div className="flex items-center gap-2">
             <LangToggle />
             <AuthSlot compact />
@@ -28,6 +33,7 @@ export function AppShell({
         </div>
       }
       footer={current !== "other" ? <TabBar current={current} /> : undefined}
+      ask
     >
       {children}
     </Shell>

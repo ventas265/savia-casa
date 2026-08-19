@@ -1,10 +1,13 @@
 import type { ReactNode } from "react";
-import { Droplets, Plus, BookOpen } from "lucide-react";
+import { useEffect } from "react";
+import { Droplets, Plus } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { daysUntil, formatLong, todayISO, weekStrip } from "@/lib/cycle";
 import { foodsFor, phaseName, pick, teaFor } from "@/lib/savia-content";
 import type { Phase, Stage } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { AskGlyph } from "@/components/ask-fab";
+import { maybeNotify, periodAlert } from "@/lib/notify";
 
 const DOW_ES = ["D", "L", "M", "X", "J", "V", "S"];
 const DOW_EN = ["S", "M", "T", "W", "T", "F", "S"];
@@ -16,6 +19,8 @@ export function FloToday({
   onCal,
   onLog,
   onGuia,
+  onAsk,
+  notify = false,
 }: {
   stage: Stage;
   phase: Phase;
@@ -23,6 +28,8 @@ export function FloToday({
   onCal: () => void;
   onLog: () => void;
   onGuia: () => void;
+  onAsk: () => void;
+  notify?: boolean;
 }) {
   const { t, lang } = useI18n();
   const today = todayISO();
@@ -33,6 +40,54 @@ export function FloToday({
   const food = foodsFor(stage, phase)[0];
   const tea = teaFor(stage, phase);
   const dow = lang === "es" ? DOW_ES : DOW_EN;
+  const kind = periodAlert(left, onPeriod);
+
+  const hero =
+    kind === "period"
+      ? { kicker: null as string | null, title: t.periodToday }
+      : kind === "today"
+        ? { kicker: null, title: t.periodComesToday }
+        : kind === "tomorrow"
+          ? { kicker: null, title: t.periodComesTomorrow }
+          : kind === "soon"
+            ? { kicker: null, title: t.periodComesSoon }
+            : kind === "late"
+              ? { kicker: t.periodLate, title: `${Math.abs(left ?? 0)} ${t.daysLeft}` }
+              : { kicker: t.periodIn, title: left == null ? "—" : `${left} ${left === 1 ? t.dayLeft : t.daysLeft}` };
+
+  const chance = onPeriod ? t.chanceLow : fertile ? t.ovToday : t.chanceLow;
+
+  const notifyTitle =
+    kind === "period"
+      ? t.periodToday
+      : kind === "today"
+        ? t.periodComesToday
+        : kind === "tomorrow"
+          ? t.periodComesTomorrow
+        : kind === "soon"
+          ? t.periodComesSoon
+          : kind === "late"
+            ? t.periodLate
+            : fertile
+              ? t.fertileToday
+              : "";
+  const notifyBody =
+    kind === "period"
+      ? t.notifyBodyPeriod
+      : kind === "today"
+        ? t.notifyBodyToday
+        : kind === "tomorrow"
+          ? t.notifyBodyTomorrow
+          : kind === "soon"
+            ? t.notifyBodySoon
+            : kind === "late"
+              ? t.notifyBodyLate
+              : t.notifyBodyFertile;
+
+  useEffect(() => {
+    if (!notify) return;
+    maybeNotify({ kind: kind ?? (fertile ? "fertile" : null), fertile, title: notifyTitle, body: notifyBody });
+  }, [notify, kind, fertile, notifyTitle, notifyBody]);
 
   return (
     <div className="relative -mx-4 overflow-hidden px-4 pb-4">
@@ -61,28 +116,20 @@ export function FloToday({
       </div>
 
       <div className="relative mt-16 text-center">
-        {onPeriod ? (
-          <h1 className="text-5xl font-bold tracking-tight">{t.periodToday}</h1>
-        ) : (
-          <>
-            <p className="text-lg">{t.periodIn}</p>
-            <p className="mt-1 text-6xl font-bold tracking-tight">
-              {left == null ? "—" : left} {left === 1 ? t.dayLeft : t.daysLeft}
-            </p>
-          </>
-        )}
-        <p className="mt-5 text-base">{fertile ? t.chanceHigh : t.chanceLow}</p>
+        {hero.kicker ? <p className="text-lg">{hero.kicker}</p> : null}
+        <h1 className={cn("font-bold tracking-tight", hero.kicker ? "mt-1 text-6xl" : "text-5xl")}>{hero.title}</h1>
+        <p className="mt-5 text-base">{chance}</p>
       </div>
 
       <div className="relative mt-12 grid grid-cols-3 gap-3">
-        <ActionCircle label={t.logPeriod} onClick={onLog} filled>
+        <ActionCircle label={t.logPeriod} onClick={onLog}>
           <Droplets className="size-7" />
         </ActionCircle>
         <ActionCircle label={t.symptoms} onClick={onLog}>
           <Plus className="size-7" />
         </ActionCircle>
-        <ActionCircle label={t.library} onClick={onGuia}>
-          <BookOpen className="size-7" />
+        <ActionCircle label={t.askMark} onClick={onAsk} filled>
+          <AskGlyph className="text-3xl" />
         </ActionCircle>
       </div>
 
@@ -143,8 +190,8 @@ function TipCard({
       type="button"
       onClick={onClick}
       className={cn(
-        "h-44 w-36 shrink-0 rounded-2xl border-2 border-primary/40 p-4 text-left",
-        tone === "blue" && "bg-cal-fertile/30 text-fg",
+        "h-44 w-36 shrink-0 rounded-2xl p-4 text-left shadow-sm",
+        tone === "blue" && "bg-cal-fertile/45 text-fg",
         tone === "dark" && "bg-ink text-primary-fg",
         tone === "cream" && "bg-surface text-fg",
       )}

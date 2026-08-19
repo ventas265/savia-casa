@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Heart } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import {
@@ -49,14 +49,22 @@ export function CycleCalendar({
   periodLength = 5,
   periodStarts = [],
   periodDays = [],
+  sexDays = [],
+  sexMarks = [],
+  paid = false,
   onSelect,
+  onSetSex,
 }: {
   lastStart: string | null;
   cycleLength?: number;
   periodLength?: number;
   periodStarts?: string[];
   periodDays?: string[];
+  sexDays?: string[];
+  sexMarks?: { day: string; kind: string }[];
+  paid?: boolean;
   onSelect?: (iso: string) => void;
+  onSetSex?: (iso: string, kind: "protected" | "unprotected" | "withdrawal") => void;
 }) {
   const { t, lang } = useI18n();
   const today = todayISO();
@@ -91,20 +99,9 @@ export function CycleCalendar({
             ? t.legendQuiet
             : t.calEmpty;
 
+  const sexSet = useMemo(() => new Set(sexDays.length ? sexDays : sexMarks.map((s) => s.day)), [sexDays, sexMarks]);
+  const kindByDay = useMemo(() => Object.fromEntries(sexMarks.map((s) => [s.day, s.kind])), [sexMarks]);
   const marks = cells.map((c) => mark(c.iso));
-
-  function shape(i: number, m: DayMark | null) {
-    const run = m === "period" || m === "fertile" || m === "peak";
-    if (!run) return "rounded-md";
-    const kind = m === "peak" ? "fertile" : m;
-    const col = i % 7;
-    const prev = col > 0 && (marks[i - 1] === kind || (kind === "fertile" && marks[i - 1] === "peak"));
-    const next = col < 6 && (marks[i + 1] === kind || (kind === "fertile" && marks[i + 1] === "peak"));
-    if (!prev && !next) return "rounded-lg";
-    if (!prev && next) return "rounded-l-lg rounded-r-sm";
-    if (prev && !next) return "rounded-r-lg rounded-l-sm";
-    return "rounded-sm";
-  }
 
   return (
     <div>
@@ -149,37 +146,51 @@ export function CycleCalendar({
               : m === "peak" || m === "fertile"
                 ? "bg-cal-fertile text-ink"
                 : "text-fg";
+          const hasSex = sexSet.has(cell.iso);
           return (
             <button
               key={cell.iso}
               type="button"
               onClick={() => choose(cell.iso)}
               className={cn(
-                "relative mx-0.5 flex aspect-square min-h-10 items-center justify-center text-sm tabular-nums",
-                shape(i, m),
+                "flex aspect-square items-center justify-center",
                 !cell.inMonth && "opacity-30",
-                fill,
-                isPicked && "ring-2 ring-primary ring-offset-1 ring-offset-surface",
-                isToday && "font-semibold",
               )}
             >
-              {cell.date}
-              {m === "peak" ? (
-                <span className="absolute bottom-1 size-1.5 rounded-full bg-cal-peak" />
-              ) : null}
+              <span
+                className={cn(
+                  "relative flex size-11 items-center justify-center rounded-full text-sm tabular-nums",
+                  fill,
+                  isToday && "font-semibold ring-2 ring-ink/20",
+                  isPicked && m !== "period" && "ring-2 ring-primary",
+                )}
+              >
+                {cell.date}
+                {hasSex ? (
+                  <Heart
+                    className={cn(
+                      "absolute bottom-0.5 size-2.5 fill-current",
+                      m === "period" ? "text-primary-fg" : "text-primary",
+                    )}
+                  />
+                ) : null}
+              </span>
             </button>
           );
         })}
       </div>
       <ul className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-xs text-muted">
         <li className="inline-flex items-center gap-1.5">
-          <span className="h-2.5 w-4 rounded-sm bg-cal-period" /> {t.legendPeriod}
+          <span className="size-2.5 rounded-full bg-cal-period" /> {t.legendPeriod}
         </li>
         <li className="inline-flex items-center gap-1.5">
-          <span className="h-2.5 w-4 rounded-sm bg-cal-fertile" /> {t.legendFertile}
+          <span className="size-2.5 rounded-full bg-cal-fertile" /> {t.legendFertile}
         </li>
         <li className="inline-flex items-center gap-1.5">
-          <span className="size-2 rounded-full bg-cal-peak" /> {t.legendPeak}
+          <span className="size-2.5 rounded-full bg-cal-peak" /> {t.legendPeak}
+        </li>
+        <li className="inline-flex items-center gap-1.5">
+          <Heart className="size-2.5 fill-primary text-primary" /> {t.legendSex}
         </li>
       </ul>
       <div className="mt-4 border-t border-border pt-3">
@@ -189,6 +200,32 @@ export function CycleCalendar({
           {phase !== "none" ? ` · ${pick(phaseName[phase], lang)}` : ""}
         </p>
         <p className="mt-1 text-sm text-muted">{caption}</p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {(
+            [
+              ["protected", t.sexProtected],
+              ["unprotected", t.sexUnprotected],
+              ["withdrawal", t.sexWithdrawal],
+            ] as const
+          ).map(([kind, label]) => {
+            const on = kindByDay[picked] === kind;
+            return (
+              <button
+                key={kind}
+                type="button"
+                onClick={() => onSetSex?.(picked, kind)}
+                className={cn(
+                  "inline-flex min-h-11 items-center gap-1.5 rounded-full px-3 text-xs font-medium",
+                  on ? "bg-primary text-primary-fg" : "bg-bg text-fg",
+                )}
+              >
+                <Heart className={cn("size-3.5", on && "fill-current")} />
+                {label}
+              </button>
+            );
+          })}
+        </div>
+        {paid ? null : <p className="mt-2 text-xs text-muted">{t.sexPay}</p>}
       </div>
     </div>
   );

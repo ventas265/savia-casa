@@ -1,24 +1,28 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SiteHeader } from "@/components/site-header";
-import { getPay, markZinliPaid, type PaySettings } from "@/lib/savia-server";
+import { claimSerena, getAskStatus, getPay, type PaySettings } from "@/lib/savia-server";
 import { Disclaimer } from "@/components/disclaimer";
+import { useCurrentUserState } from "@/lib/auth/use-current-user";
 
 export const Route = createFileRoute("/pagar")({ component: Pagar });
 
-type Method = "zinli" | "pm" | "usdt";
+type Method = "zinli" | "pm" | "usdt" | "card";
 
 function Pagar() {
   const { t } = useI18n();
+  const navigate = useNavigate();
+  const { user, isPending } = useCurrentUserState();
   const [email, setEmail] = useState("");
   const [plan, setPlan] = useState<"serena" | "year">("serena");
   const [method, setMethod] = useState<Method>("zinli");
   const [pay, setPay] = useState<PaySettings | null>(null);
   const [busy, setBusy] = useState(false);
+  const [active, setActive] = useState(false);
   const amount = plan === "year" ? "$39" : "$4.99";
 
   useEffect(() => {
@@ -27,8 +31,25 @@ function Pagar() {
       .catch(() => setPay(null));
   }, []);
 
+  useEffect(() => {
+    if (user?.primaryEmail && !email) setEmail(user.primaryEmail);
+  }, [user, email]);
+
+  useEffect(() => {
+    if (!user) return;
+    getAskStatus()
+      .then((s) => setActive(s.paid))
+      .catch(() => setActive(false));
+  }, [user]);
+
   const ready =
-    method === "zinli" ? Boolean(pay?.zinli) : method === "pm" ? Boolean(pay?.pmPhone) : Boolean(pay?.usdt);
+    method === "zinli"
+      ? Boolean(pay?.zinli)
+      : method === "pm"
+        ? Boolean(pay?.pmPhone)
+        : method === "usdt"
+          ? Boolean(pay?.usdt)
+          : Boolean(pay?.zinli || pay?.cardUrl);
 
   async function copy(text: string) {
     if (!text) return;
@@ -42,14 +63,23 @@ function Pagar() {
 
   async function paid(e: React.FormEvent) {
     e.preventDefault();
+    if (!user) {
+      toast.error(t.payNeedLogin);
+      void navigate({ to: "/login" });
+      return;
+    }
     setBusy(true);
     try {
-      const note = `${method} ${pay?.zinli || pay?.pmPhone || pay?.usdt || ""}`;
-      const res = await markZinliPaid({ data: { email, plan, note } });
-      if (res.ok) toast.success(t.zinliPaidOk);
-      else toast.error(t.waitlistErr);
+      const note = `${method} ${pay?.zinli || pay?.pmPhone || pay?.usdt || pay?.cardUrl || ""}`;
+      const res = await claimSerena({ data: { email, plan, note } });
+      if (res.ok) {
+        setActive(true);
+        toast.success(t.zinliPaidOk);
+        void navigate({ to: "/app/hoy" });
+      } else toast.error(t.waitlistErr);
     } catch {
-      toast.error(t.waitlistErr);
+      toast.error(t.payNeedLogin);
+      void navigate({ to: "/login" });
     } finally {
       setBusy(false);
     }
@@ -60,7 +90,13 @@ function Pagar() {
       <SiteHeader />
       <main className="mx-auto max-w-lg px-4 py-8">
         <h1 className="text-2xl font-semibold">{t.payTitle}</h1>
-        <p className="mt-2 text-sm leading-relaxed text-muted">{t.payBody}</p>
+        <p className="mt-2 text-sm leading-relaxed text-muted">{t.payAuto}</p>
+        {active ? <p className="mt-3 text-sm font-medium">{t.serenaActive}</p> : null}
+        {!isPending && !user ? (
+          <Button className="mt-4" asChild>
+            <Link to="/login">{t.payNeedLogin}</Link>
+          </Button>
+        ) : null}
 
         <div className="mt-6 flex gap-3">
           <button
@@ -83,10 +119,11 @@ function Pagar() {
           </button>
         </div>
 
-        <div className="mt-4 grid grid-cols-3 gap-2">
+        <div className="mt-4 grid grid-cols-2 gap-2">
           {(
             [
               ["zinli", t.methodZinli],
+              ["card", t.methodCard],
               ["pm", t.methodPm],
               ["usdt", t.methodUsdt],
             ] as const
@@ -132,21 +169,40 @@ function Pagar() {
               <p className="mt-3 text-sm text-muted">{t.zinliNeed}</p>
             )
           ) : null}
+          {method === "card" ? (
+            <div className="mt-3 space-y-2">
+              <p className="text-sm leading-relaxed">{t.cardBody}</p>
+              {pay?.zinli ? <p className="text-xl font-bold">@{pay.zinli}</p> : null}
+            </div>
+          ) : null}
           <div className="mt-4 flex flex-wrap gap-2">
             <Button
               type="button"
               variant="secondary"
               disabled={!ready}
               onClick={() =>
-                void copy(method === "zinli" ? pay?.zinli || "" : method === "pm" ? pay?.pmPhone || "" : pay?.usdt || "")
+                void copy(
+                  method === "zinli" || method === "card"
+                    ? pay?.zinli || ""
+                    : method === "pm"
+                      ? pay?.pmPhone || ""
+                      : pay?.usdt || "",
+                )
               }
             >
               {t.zinliCopy}
             </Button>
-            {method === "zinli" ? (
+            {method === "zinli" || method === "card" ? (
               <Button type="button" asChild>
                 <a href="https://www.zinli.com/" target="_blank" rel="noreferrer">
                   {t.zinliOpen}
+                </a>
+              </Button>
+            ) : null}
+            {method === "card" && pay?.cardUrl ? (
+              <Button type="button" asChild>
+                <a href={pay.cardUrl} target="_blank" rel="noreferrer">
+                  {t.cardOpen}
                 </a>
               </Button>
             ) : null}

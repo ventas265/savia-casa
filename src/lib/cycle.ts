@@ -157,6 +157,45 @@ export function averageCycle(starts: string[], fallback: number) {
   return Math.round(gaps.reduce((a, b) => a + b, 0) / gaps.length);
 }
 
+export function cyclePattern(starts: string[], fallback: number) {
+  const gaps = cycleGaps(starts);
+  if (!gaps.length) {
+    return { avg: fallback, min: fallback, max: fallback, variation: 0, n: 0, irregular: false };
+  }
+  const min = Math.min(...gaps);
+  const max = Math.max(...gaps);
+  const avg = Math.round(gaps.reduce((a, b) => a + b, 0) / gaps.length);
+  return {
+    avg,
+    min,
+    max,
+    variation: max - min,
+    n: gaps.length,
+    irregular: max - min >= 8 || min < 21 || max > 35,
+  };
+}
+
+export function symptomByPhase(logs: DailyLog[], lastStart: string | null, cycleLength: number, periodLength: number) {
+  const buckets: Record<string, Record<string, number>> = {
+    menstrual: {},
+    follicular: {},
+    ovulatory: {},
+    luteal: {},
+  };
+  for (const log of logs) {
+    const n = cycleDay(lastStart, cycleLength, log.day);
+    const phase = phaseForDay(n, periodLength, cycleLength);
+    if (phase === "none") continue;
+    for (const s of log.symptoms) {
+      buckets[phase]![s] = (buckets[phase]![s] || 0) + 1;
+    }
+  }
+  return (Object.keys(buckets) as Array<keyof typeof buckets>).map((phase) => {
+    const entries = Object.entries(buckets[phase] || {}).sort((a, b) => b[1] - a[1]);
+    return { phase, top: entries.slice(0, 3).map(([id, count]) => ({ id, count })) };
+  });
+}
+
 export function sampleLastStart(cycleDayWanted = 24) {
   return addDaysISO(todayISO(), -(cycleDayWanted - 1));
 }

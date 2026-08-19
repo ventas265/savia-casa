@@ -1,3 +1,4 @@
+import { Heart } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -12,10 +13,12 @@ import { cn } from "@/lib/utils";
 export function LogForm({
   day,
   initial,
+  paid = false,
   onSaved,
 }: {
   day: string;
   initial: DailyLog | null;
+  paid?: boolean;
   onSaved?: (log: DailyLog) => void;
 }) {
   const { t, lang } = useI18n();
@@ -27,6 +30,7 @@ export function LogForm({
   const [symptoms, setSymptoms] = useState<string[]>(initial?.symptoms || []);
   const [periodStarted, setPeriodStarted] = useState(initial?.periodStarted || false);
   const [mucus, setMucus] = useState<Mucus>(initial?.mucus || "none");
+  const [sex, setSex] = useState(Boolean(initial?.sex));
   const [busy, setBusy] = useState(false);
 
   const flowLabel: Record<Flow, string> = {
@@ -55,6 +59,7 @@ export function LogForm({
           symptoms,
           periodStarted,
           mucus,
+          sex: paid ? sex : undefined,
         },
       });
       if (res.ok) {
@@ -99,6 +104,24 @@ export function LogForm({
           />
           {t.periodStarted}
         </label>
+        <button
+          type="button"
+          onClick={() => {
+            if (!paid) {
+              toast.error(t.sexPay);
+              return;
+            }
+            setSex((s) => !s);
+          }}
+          className={cn(
+            "mt-3 inline-flex min-h-11 items-center gap-2 rounded-full px-4 text-sm",
+            sex && paid ? "bg-primary text-primary-fg" : "bg-bg text-fg",
+          )}
+        >
+          <Heart className={cn("size-4", sex && paid && "fill-current")} />
+          {sex && paid ? t.sexOn : t.sexOff}
+        </button>
+        {paid ? null : <p className="mt-2 text-xs text-muted">{t.sexPay}</p>}
       </div>
 
       <div className="rounded-3xl bg-surface p-5">

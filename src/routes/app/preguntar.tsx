@@ -1,31 +1,41 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { AskGlyph } from "@/components/ask-fab";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Disclaimer } from "@/components/disclaimer";
-import { askSavia } from "@/lib/savia-server";
+import { askSavia, type ChatTurn } from "@/lib/savia-server";
 import { useI18n } from "@/lib/i18n";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/app/preguntar")({ component: Preguntar });
 
 function Preguntar() {
   const { t, lang } = useI18n();
   const [q, setQ] = useState("");
-  const [a, setA] = useState("");
+  const [turns, setTurns] = useState<ChatTurn[]>([]);
   const [busy, setBusy] = useState(false);
+  const end = useRef<HTMLDivElement>(null);
 
-  async function ask() {
-    if (q.trim().length < 4) return;
+  useEffect(() => {
+    end.current?.scrollIntoView({ behavior: "smooth" });
+  }, [turns, busy]);
+
+  async function ask(text = q) {
+    const question = text.trim();
+    if (question.length < 4 || busy) return;
+    const history = turns.slice(-8);
+    setQ("");
+    setTurns((prev) => [...prev, { role: "user", content: question }]);
     setBusy(true);
     try {
-      const res = await askSavia({ data: { question: q, locale: lang } });
+      const res = await askSavia({ data: { question, locale: lang, history } });
       if (!res.ok) {
-        toast.error(t.aiMissing);
+        toast.error(res.error === "pay" ? t.payWall : t.aiMissing);
         return;
       }
-      setA(res.text);
+      setTurns((prev) => [...prev, { role: "assistant", content: res.text }]);
     } catch {
       toast.error(t.aiMissing);
     } finally {
@@ -35,24 +45,70 @@ function Preguntar() {
 
   return (
     <AppShell current="mas">
-      <h1 className="text-2xl font-semibold">{t.askTitle}</h1>
+      <div className="flex items-center gap-3">
+        <span className="flex size-12 items-center justify-center rounded-full bg-primary text-primary-fg">
+          <AskGlyph className="size-7" />
+        </span>
+        <div>
+          <h1 className="text-2xl font-semibold">{t.askTitle}</h1>
+          <p className="text-sm text-muted">{t.askSub}</p>
+        </div>
+      </div>
       <div className="mt-3">
         <Disclaimer compact />
       </div>
-      <Textarea
-        className="mt-6 min-h-32"
-        placeholder={t.askHint}
-        value={q}
-        onChange={(e) => setQ(e.target.value)}
-      />
-      <Button className="mt-4 w-full" type="button" disabled={busy || q.trim().length < 4} onClick={() => void ask()}>
-        {busy ? t.asking : t.askCta}
-      </Button>
-      {a ? (
-        <div className="mt-8 whitespace-pre-wrap rounded-3xl bg-surface p-5 text-sm leading-relaxed">
-          {a}
+
+      {turns.length === 0 ? (
+        <div className="mt-6 flex flex-wrap gap-2">
+          {t.askChips.map((chip) => (
+            <button
+              key={chip}
+              type="button"
+              className="rounded-full bg-surface px-4 py-2.5 text-left text-sm"
+              onClick={() => void ask(chip)}
+            >
+              {chip}
+            </button>
+          ))}
         </div>
-      ) : null}
+      ) : (
+        <div className="mt-6 space-y-3">
+          {turns.map((m, i) => (
+            <div
+              key={`${m.role}-${i}`}
+              className={cn(
+                "max-w-[92%] whitespace-pre-wrap rounded-3xl px-4 py-3 text-sm leading-relaxed",
+                m.role === "user" ? "ml-auto bg-primary text-primary-fg" : "bg-surface",
+              )}
+            >
+              {m.content}
+            </div>
+          ))}
+          {busy ? <p className="text-sm text-muted">{t.asking}</p> : null}
+          <div ref={end} />
+        </div>
+      )}
+
+      <p className="mt-2 text-xs text-muted">
+        {t.asksLeft}: 3 · <Link to="/pagar" className="underline">{t.navPricing}</Link>
+      </p>
+      <form
+        className="mt-6 flex gap-2"
+        onSubmit={(e) => {
+          e.preventDefault();
+          void ask();
+        }}
+      >
+        <input
+          className="min-h-12 flex-1 rounded-full border-0 bg-surface px-4 text-sm outline-none ring-primary focus:ring-2"
+          placeholder={t.askHint}
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+        />
+        <Button type="submit" className="rounded-full px-5" disabled={busy || q.trim().length < 4}>
+          {busy ? t.asking : t.askCta}
+        </Button>
+      </form>
     </AppShell>
   );
 }

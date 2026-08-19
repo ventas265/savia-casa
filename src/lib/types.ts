@@ -3,6 +3,7 @@ export type Phase = "menstrual" | "follicular" | "ovulatory" | "luteal" | "none"
 export type Flow = "none" | "spotting" | "light" | "medium" | "heavy";
 export type Intention = "track" | "avoid" | "ttc";
 export type Mucus = "none" | "sticky" | "creamy" | "eggwhite" | "watery";
+export type SexKind = "none" | "protected" | "unprotected" | "withdrawal";
 
 export type SaviaProfile = {
   userId: string;
@@ -18,6 +19,7 @@ export type SaviaProfile = {
   locale: string;
   plan: string;
   intention: Intention;
+  askCount: number;
 };
 
 export type DailyLog = {
@@ -32,6 +34,8 @@ export type DailyLog = {
   symptoms: string[];
   periodStarted: boolean;
   mucus: Mucus;
+  sex: boolean;
+  sexKind: SexKind;
 };
 
 export type TodaySnapshot = {
@@ -43,12 +47,15 @@ export type TodaySnapshot = {
   log: DailyLog | null;
   recentLogs: DailyLog[];
   periodStarts: string[];
+  sexDays: string[];
+  sexMarks: { day: string; kind: SexKind }[];
 };
 
 export const STAGES: Stage[] = ["cycle", "pregnancy", "postpartum", "peri", "meno"];
 export const FLOWS: Flow[] = ["none", "spotting", "light", "medium", "heavy"];
 export const INTENTIONS: Intention[] = ["track", "avoid", "ttc"];
 export const MUCUS: Mucus[] = ["none", "sticky", "creamy", "eggwhite", "watery"];
+export const SEX_KINDS: SexKind[] = ["protected", "unprotected", "withdrawal"];
 export const SYMPTOMS = [
   "cramps",
   "headache",

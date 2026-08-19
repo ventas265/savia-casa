@@ -30,7 +30,7 @@ export function LibraryBody() {
           <a
             key={id}
             href={`#${id}`}
-            className="shrink-0 rounded-full bg-surface px-4 py-2 text-xs font-medium"
+            className="shrink-0 rounded-full bg-surface px-4 py-2 text-xs font-medium shadow-sm"
           >
             {label}
           </a>

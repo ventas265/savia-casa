@@ -20,7 +20,7 @@ export const Route = createRootRoute({
       { title: APP_NAME },
       { name: "description", content: "Ciclo, embarazo, peri y menopausia. Hormonas, comida y tés, en cristiano." },
       { name: "apple-mobile-web-app-title", content: APP_NAME },
-      { name: "theme-color", content: "#f7e4df" },
+      { name: "theme-color", content: "#f6e6e1" },
       { name: "twitter:card", content: "summary_large_image" },
       { property: "og:type", content: "website" },
       { property: "og:title", content: APP_NAME },

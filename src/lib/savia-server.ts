@@ -1,8 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { authMiddleware } from "@/lib/auth/middleware";
 import { getSql } from "@/lib/db";
-import { snapshotMeta, todayISO } from "@/lib/cycle";
-import type { DailyLog, Flow, Intention, Mucus, SaviaProfile, Stage, TodaySnapshot } from "@/lib/types";
+import { cyclePattern, fertileWindow, nextPeriodDate, averageCycle, snapshotMeta, symptomByPhase, todayISO } from "@/lib/cycle";
+import type { DailyLog, Flow, Intention, Mucus, SaviaProfile, SexKind, Stage, TodaySnapshot } from "@/lib/types";
 import { moneyToNumber } from "@/lib/utils";
 
 type ProfileRow = {
@@ -19,6 +19,7 @@ type ProfileRow = {
   locale: string;
   plan: string;
   intention?: string;
+  ask_count?: number;
 };
 
 type LogRow = {
@@ -33,6 +34,8 @@ type LogRow = {
   symptoms: unknown;
   period_started: boolean;
   mucus?: string;
+  sex?: boolean;
+  sex_kind?: string;
 };
 
 function asStringArray(value: unknown): string[] {
@@ -63,6 +66,7 @@ function mapProfile(row: ProfileRow): SaviaProfile {
     locale: row.locale || "es",
     plan: row.plan || "free",
     intention: (row.intention as Intention) || "track",
+    askCount: Number(row.ask_count || 0),
   };
 }
 
@@ -79,6 +83,8 @@ function mapLog(row: LogRow): DailyLog {
     symptoms: asStringArray(row.symptoms),
     periodStarted: Boolean(row.period_started),
     mucus: (row.mucus as Mucus) || "none",
+    sex: Boolean(row.sex),
+    sexKind: (row.sex_kind as SexKind) || "none",
   };
 }
 
@@ -111,7 +117,17 @@ export const getToday = createServerFn({ method: "GET" })
     const starts = await sql<{ start_date: string }>`
       select start_date from period_starts where user_id = ${context.userId} order by start_date desc limit 12
     `;
+    const sexRows = await sql<{ day: string; sex_kind?: string }>`
+      select day, sex_kind from daily_logs
+      where user_id = ${context.userId} and sex = true
+      order by day desc
+      limit 90
+    `;
     const meta = snapshotMeta(profile, day);
+    const sexMarks = sexRows.map((s) => ({
+      day: String(s.day).slice(0, 10),
+      kind: ((s.sex_kind as SexKind) || "unprotected") as SexKind,
+    }));
     return {
       profile,
       day,
@@ -119,6 +135,8 @@ export const getToday = createServerFn({ method: "GET" })
       log: logRows[0] ? mapLog(logRows[0]) : null,
       recentLogs: recent.map(mapLog),
       periodStarts: starts.map((s) => String(s.start_date).slice(0, 10)),
+      sexDays: sexMarks.map((s) => s.day),
+      sexMarks,
     };
   });
 
@@ -182,19 +200,22 @@ export const saveLog = createServerFn({ method: "POST" })
       symptoms: string[];
       periodStarted: boolean;
       mucus?: Mucus;
+      sex?: boolean;
     }) => input,
   )
   .handler(async ({ context, data }) => {
     const sql = await getSql();
-    await getOrCreateProfile(context.userId);
+    const profile = await getOrCreateProfile(context.userId);
     const symptomsJson = JSON.stringify(data.symptoms);
     const mucus = data.mucus || "none";
+    const paid = profile.plan === "serena" || profile.plan === "year";
+    const sex = paid ? Boolean(data.sex) : false;
     const rows = await sql<LogRow>`
       insert into daily_logs (
-        user_id, day, flow, mood, energy, sleep_hours, notes, symptoms, period_started, mucus, updated_at
+        user_id, day, flow, mood, energy, sleep_hours, notes, symptoms, period_started, mucus, sex, updated_at
       ) values (
         ${context.userId}, ${data.day}, ${data.flow}, ${data.mood}, ${data.energy},
-        ${data.sleepHours}, ${data.notes.trim()}, ${symptomsJson}::jsonb, ${data.periodStarted}, ${mucus}, now()
+        ${data.sleepHours}, ${data.notes.trim()}, ${symptomsJson}::jsonb, ${data.periodStarted}, ${mucus}, ${sex}, now()
       )
       on conflict (user_id, day) do update set
         flow = excluded.flow,
@@ -205,6 +226,7 @@ export const saveLog = createServerFn({ method: "POST" })
         symptoms = excluded.symptoms,
         period_started = excluded.period_started,
         mucus = excluded.mucus,
+        sex = case when ${paid} then excluded.sex else daily_logs.sex end,
         updated_at = now()
       returning *
     `;
@@ -220,6 +242,80 @@ export const saveLog = createServerFn({ method: "POST" })
       `;
     }
     return { ok: true as const, log: mapLog(rows[0]!) };
+  });
+
+export const toggleSex = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .validator((input: { day: string; kind?: SexKind }) => input)
+  .handler(async ({ context, data }) => {
+    const profile = await getOrCreateProfile(context.userId);
+    if (profile.plan !== "serena" && profile.plan !== "year") {
+      return { ok: false as const, error: "pay" as const };
+    }
+    const sql = await getSql();
+    const existing = await sql<LogRow>`
+      select * from daily_logs where user_id = ${context.userId} and day = ${data.day} limit 1
+    `;
+    const current = (existing[0]?.sex_kind as SexKind) || "none";
+    const kind: SexKind = data.kind
+      ? data.kind === current
+        ? "none"
+        : data.kind
+      : existing[0]?.sex
+        ? "none"
+        : "unprotected";
+    const on = kind !== "none";
+    const rows = await sql<LogRow>`
+      insert into daily_logs (user_id, day, sex, sex_kind, updated_at)
+      values (${context.userId}, ${data.day}, ${on}, ${kind}, now())
+      on conflict (user_id, day) do update set sex = ${on}, sex_kind = ${kind}, updated_at = now()
+      returning *
+    `;
+    return { ok: true as const, log: mapLog(rows[0]!), sex: on, kind };
+  });
+
+export const getReport = createServerFn({ method: "GET" })
+  .middleware([authMiddleware])
+  .handler(async ({ context }) => {
+    const profile = await getOrCreateProfile(context.userId);
+    if (profile.plan !== "serena" && profile.plan !== "year") {
+      return { ok: false as const, error: "pay" as const };
+    }
+    const sql = await getSql();
+    const starts = await sql<{ start_date: string }>`
+      select start_date from period_starts where user_id = ${context.userId} order by start_date desc limit 12
+    `;
+    const logs = await sql<LogRow>`
+      select * from daily_logs where user_id = ${context.userId} order by day desc limit 90
+    `;
+    const periodStarts = starts.map((s) => String(s.start_date).slice(0, 10));
+    const mapped = logs.map(mapLog);
+    const avg = averageCycle(periodStarts, profile.cycleLength);
+    const pattern = cyclePattern(periodStarts, profile.cycleLength);
+    const meta = snapshotMeta(profile);
+    const symptoms = symptomByPhase(mapped, profile.lastPeriodStart, avg, profile.periodLength);
+    const sexMarks = mapped
+      .filter((l) => l.sex)
+      .map((l) => ({ day: l.day, kind: l.sexKind }));
+    const heavyDays = mapped.filter((l) => l.flow === "heavy").length;
+    const flowDays = mapped.filter((l) => l.flow !== "none").length;
+    const age = profile.birthYear ? new Date().getFullYear() - profile.birthYear : null;
+    return {
+      ok: true as const,
+      issued: todayISO(),
+      profile,
+      age,
+      periodStarts,
+      pattern,
+      meta,
+      fertile: fertileWindow(profile.lastPeriodStart, avg, profile.periodLength),
+      symptoms,
+      sexMarks,
+      nextPeriod: nextPeriodDate(profile.lastPeriodStart, avg),
+      heavyDays,
+      flowDays,
+      logCount: mapped.length,
+    };
   });
 
 export const joinWaitlist = createServerFn({ method: "POST" })
@@ -240,9 +336,10 @@ export type PaySettings = {
   pmBank: string;
   pmId: string;
   usdt: string;
+  cardUrl: string;
 };
 
-const emptyPay: PaySettings = { zinli: "", pmPhone: "", pmBank: "", pmId: "", usdt: "" };
+const emptyPay: PaySettings = { zinli: "", pmPhone: "", pmBank: "", pmId: "", usdt: "", cardUrl: "" };
 
 async function readPay(): Promise<PaySettings> {
   const sql = await getSql();
@@ -278,6 +375,7 @@ export const savePay = createServerFn({ method: "POST" })
       pmBank: data.pmBank.trim(),
       pmId: data.pmId.trim(),
       usdt: data.usdt.trim(),
+      cardUrl: data.cardUrl.trim(),
     };
     const sql = await getSql();
     await sql`
@@ -314,16 +412,77 @@ export const markZinliPaid = createServerFn({ method: "POST" })
     return { ok: true as const };
   });
 
+const FREE_ASKS = 3;
+
+function isSerena(plan: string) {
+  return plan === "serena" || plan === "year";
+}
+
+export const getAskStatus = createServerFn({ method: "GET" })
+  .middleware([authMiddleware])
+  .handler(async ({ context }) => {
+    const profile = await getOrCreateProfile(context.userId);
+    const used = profile.askCount;
+    const paid = isSerena(profile.plan);
+    return {
+      plan: profile.plan,
+      paid,
+      used,
+      limit: FREE_ASKS,
+      remaining: paid ? null : Math.max(0, FREE_ASKS - used),
+    };
+  });
+
+export const claimSerena = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .validator((input: { email: string; plan: "serena" | "year"; note: string }) => input)
+  .handler(async ({ context, data }) => {
+    const mail = data.email.trim().toLowerCase();
+    const email = mail.includes("@") ? mail : `cuenta-${context.userId.slice(0, 8)}@savia.app`;
+    const amount = data.plan === "year" ? 39 : 4.99;
+    const sql = await getSql();
+    await sql`
+      insert into savia_payments (email, plan, amount, note)
+      values (${email}, ${data.plan}, ${amount}, ${data.note.trim()})
+    `;
+    await getOrCreateProfile(context.userId);
+    await sql`
+      update savia_profiles set plan = ${data.plan}, updated_at = now()
+      where user_id = ${context.userId}
+    `;
+    return { ok: true as const };
+  });
+
+
+export type ChatTurn = { role: "user" | "assistant"; content: string };
+
 export const askSavia = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
-  .validator((input: { question: string; locale: string }) => input)
+  .validator((input: { question: string; locale: string; history?: ChatTurn[] }) => input)
   .handler(async ({ context, data }) => {
     const apiKey = process.env.XAI_API_KEY;
     if (!apiKey) return { ok: false as const, error: "ai" };
+    const sql = await getSql();
     const profile = await getOrCreateProfile(context.userId);
+    const paid = isSerena(profile.plan);
+    if (!paid && profile.askCount >= FREE_ASKS) {
+      return { ok: false as const, error: "pay" as const };
+    }
     const day = todayISO();
     const meta = snapshotMeta(profile, day);
+    const logRows = await sql<LogRow>`
+      select * from daily_logs where user_id = ${context.userId} and day = ${day} limit 1
+    `;
+    const log = logRows[0] ? mapLog(logRows[0]) : null;
     const lang = data.locale === "en" ? "English" : "Spanish";
+    const age = profile.birthYear ? new Date().getFullYear() - profile.birthYear : "unknown";
+    const history = (data.history ?? [])
+      .filter((m) => m.content.trim())
+      .slice(-8)
+      .map((m) => ({
+        role: m.role,
+        content: m.content.slice(0, 1500),
+      }));
     const res = await fetch("https://api.x.ai/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -332,12 +491,33 @@ export const askSavia = createServerFn({ method: "POST" })
       },
       body: JSON.stringify({
         model: "grok-4.5",
-        max_tokens: 700,
+        max_tokens: 650,
+        temperature: 0.5,
         messages: [
           {
             role: "system",
-            content: `You are Savia, a calm women's health companion. You teach; you do not diagnose or prescribe. Always remind to see a clinician for red flags. Life stage: ${profile.stage}. Cycle day: ${meta.cycleDay ?? "n/a"}. Phase: ${meta.phase}. Pregnancy week: ${meta.pregnancyWeek ?? "n/a"}. Answer in ${lang}. Short paragraphs. Practical: food, tea, rest, when to seek care. No scare tactics, no miracle claims.`,
+            content: `You are Savia, the in-app specialist for this women's health companion.
+You know menstrual cycles, ovulation, fertile windows, cervical mucus, PMS/PMDD, perimenopause, menopause, postpartum, pregnancy (food/tea caution), hormones (estrogen, progesterone, FSH, LH, cortisol), iron, sleep, and everyday food/teas that match a phase.
+You teach. You do not diagnose, prescribe, or replace a clinician.
+If red flags (soaking a pad/hour, fainting, pregnancy bleeding, severe one-sided pain, suicidal thoughts, fever after birth), say go to emergency care now. In Venezuela: urgencias / 911.
+Be warm, concrete, short paragraphs. Prefer what to eat, rest, track, and when to see a doctor.
+No scare tactics. No miracle cures. No medical doses of herbs in pregnancy.
+Answer in ${lang}.
+
+Her file (use it, don't recite it unless asked):
+- Name: ${profile.displayName || "not set"}
+- Age (approx): ${age}
+- Season: ${profile.stage}
+- Intention: ${profile.intention}
+- Cycle length: ${profile.cycleLength} days, period ${profile.periodLength} days
+- Last period start: ${profile.lastPeriodStart ?? "unknown"}
+- Cycle day: ${meta.cycleDay ?? "n/a"}
+- Phase: ${meta.phase}
+- Pregnancy week: ${meta.pregnancyWeek ?? "n/a"}
+- Due date: ${profile.dueDate ?? "n/a"}
+- Today log: flow ${log?.flow ?? "none"}, mucus ${log?.mucus ?? "none"}, symptoms ${(log?.symptoms ?? []).join(", ") || "none"}, mood ${log?.mood ?? "n/a"}`,
           },
+          ...history,
           { role: "user", content: data.question.slice(0, 2000) },
         ],
       }),
@@ -346,5 +526,15 @@ export const askSavia = createServerFn({ method: "POST" })
     const body = (await res.json()) as { choices?: { message?: { content?: string } }[] };
     const text = body.choices?.[0]?.message?.content ?? "";
     if (!text) return { ok: false as const, error: "ai" };
-    return { ok: true as const, text };
+    let remaining: number | null = null;
+    if (!paid) {
+      const next = await sql<{ ask_count: number }>`
+        update savia_profiles
+        set ask_count = ask_count + 1, updated_at = now()
+        where user_id = ${context.userId}
+        returning ask_count
+      `;
+      remaining = Math.max(0, FREE_ASKS - Number(next[0]?.ask_count || 0));
+    }
+    return { ok: true as const, text, remaining };
   });
