@@ -1,35 +1,33 @@
-@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600;1,700&family=Outfit:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
 @import "tw-animate-css";
 
 @theme {
-  --color-bg: #ffd9cf;
-  --color-surface: #fff7f4;
-  --color-surface-2: #ffb7c5;
-  --color-ink: #3a2428;
-  --color-fg: #3a2428;
-  --color-muted: #8a5e68;
-  --color-primary: #ff4d7a;
-  --color-primary-fg: #ffffff;
-  --color-accent: #1fb8a8;
-  --color-border: #f3c4c8;
-  --color-danger: #e23b55;
-  --color-ring: #ff4d7a;
-  --color-cal-period: #ff4d7a;
-  --color-cal-peak: #0f5c6b;
-  --color-cal-fertile: #7ee0d0;
-  --color-cal-quiet: #fff7f4;
-  --color-lilac: #c9b6ff;
-  --color-gold: #ffc85c;
+  --color-bg: #f4ddd6;
+  --color-surface: #fff8f5;
+  --color-surface-2: #e8c4bc;
+  --color-ink: #1a1214;
+  --color-fg: #1a1214;
+  --color-muted: #7a5c62;
+  --color-primary: #c43d5a;
+  --color-primary-fg: #fff8f5;
+  --color-accent: #1a1214;
+  --color-border: #e8cfc8;
+  --color-danger: #c43d5a;
+  --color-ring: #c43d5a;
+  --color-cal-period: #c43d5a;
+  --color-cal-peak: #1a1214;
+  --color-cal-fertile: #d4a5a0;
+  --color-cal-quiet: #fff8f5;
   --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Cormorant Garamond", Georgia, "Times New Roman", serif;
   --radius-sm: 10px;
   --radius-md: 16px;
   --radius-lg: 22px;
   --radius-xl: 28px;
   --radius-2xl: 36px;
-  --shadow-card: 0 1px 3px rgb(43 36 35 / 0.06);
-  --shadow-border: 0 0 0 1px rgb(43 36 35 / 0.06), 0 1px 2px -1px rgb(43 36 35 / 0.06);
+  --shadow-card: 0 1px 3px rgb(26 18 20 / 0.06);
+  --shadow-border: 0 0 0 1px rgb(26 18 20 / 0.06), 0 1px 2px -1px rgb(26 18 20 / 0.06);
   --spacing-hit: 2.75rem;
 }
 
