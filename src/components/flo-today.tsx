@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Droplets, Plus } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { CYCLE_CHOICES, daysUntil, formatLong, todayISO, weekStrip } from "@/lib/cycle";
@@ -17,6 +17,7 @@ export function FloToday({
   phase,
   nextPeriod,
   cycleLength = 28,
+  name,
   onCal,
   onLog,
   onGuia,
@@ -29,6 +30,7 @@ export function FloToday({
   phase: Phase;
   nextPeriod?: string | null;
   cycleLength?: number;
+  name?: string;
   onCal: () => void;
   onLog: () => void;
   onGuia: () => void;
@@ -38,6 +40,7 @@ export function FloToday({
   notify?: boolean;
 }) {
   const { t, lang } = useI18n();
+  const [adjust, setAdjust] = useState(false);
   const today = todayISO();
   const days = weekStrip(today);
   const left = daysUntil(nextPeriod ?? null);
@@ -120,10 +123,11 @@ export function FloToday({
       </div>
 
       <div className="hero-pop relative mt-12 text-center">
+        {name ? <p className="mb-2 text-sm font-semibold text-muted">{t.hello}, {name}</p> : null}
         {hero.kicker ? <p className="text-lg font-semibold text-fg/80">{hero.kicker}</p> : null}
         <h1
           className={cn(
-            "bg-gradient-to-br from-[#ff2d6a] via-[#ff6b4a] to-[#c45bff] bg-clip-text font-extrabold tracking-tight text-transparent",
+            "bg-gradient-to-br from-primary to-[#ff7a3b] bg-clip-text font-extrabold tracking-tight text-transparent",
             hero.kicker ? "mt-1 text-6xl" : "text-5xl leading-[1.05]",
           )}
         >
@@ -141,22 +145,30 @@ export function FloToday({
         ) : null}
         {onCycleChange ? (
           <div className="mt-6">
-            <p className="text-xs font-medium text-muted">{t.cycleAsk}</p>
-            <div className="mt-2 flex flex-wrap justify-center gap-1.5">
-              {CYCLE_CHOICES.map((n) => (
-                <button
-                  key={n}
-                  type="button"
-                  onClick={() => onCycleChange(n)}
-                  className={cn(
-                    "h-10 min-w-10 rounded-full px-2 text-sm font-semibold",
-                    cycleLength === n ? "bg-primary text-primary-fg shadow-card" : "bg-surface text-fg",
-                  )}
-                >
-                  {n}
-                </button>
-              ))}
-            </div>
+            <button
+              type="button"
+              onClick={() => setAdjust((v) => !v)}
+              className="text-xs font-semibold text-muted underline-offset-4 hover:underline"
+            >
+              {adjust ? t.hideAdjust : t.adjustCycle}
+            </button>
+            {adjust ? (
+              <div className="mt-2 flex flex-wrap justify-center gap-1.5">
+                {CYCLE_CHOICES.map((n) => (
+                  <button
+                    key={n}
+                    type="button"
+                    onClick={() => onCycleChange(n)}
+                    className={cn(
+                      "h-10 min-w-10 rounded-full px-2 text-sm font-semibold",
+                      cycleLength === n ? "bg-primary text-primary-fg shadow-card" : "bg-surface text-fg",
+                    )}
+                  >
+                    {n}
+                  </button>
+                ))}
+              </div>
+            ) : null}
           </div>
         ) : null}
       </div>

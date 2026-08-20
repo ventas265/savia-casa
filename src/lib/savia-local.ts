@@ -182,6 +182,7 @@ export function localAskFile() {
     cycleDay: snap.cycleDay,
     phase: snap.phase,
     pregnancyWeek: snap.pregnancyWeek,
+    nextPeriod: nextPeriodDate(p.lastPeriodStart, averageCycle(snap.periodStarts, p.cycleLength)),
     flow: snap.log?.flow ?? "none",
     mucus: snap.log?.mucus ?? "none",
     symptoms: snap.log?.symptoms ?? [],

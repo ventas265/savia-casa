@@ -525,6 +525,7 @@ Her file (use it, don't recite it unless asked):
 - Last period start: ${profile.lastPeriodStart ?? "unknown"}
 - Cycle day: ${meta.cycleDay ?? "n/a"}
 - Phase: ${meta.phase}
+- Next period: ${nextPeriodDate(profile.lastPeriodStart, profile.cycleLength) ?? "n/a"}
 - Pregnancy week: ${meta.pregnancyWeek ?? "n/a"}
 - Due date: ${profile.dueDate ?? "n/a"}
 - Today log: flow ${log?.flow ?? "none"}, mucus ${log?.mucus ?? "none"}, symptoms ${(log?.symptoms ?? []).join(", ") || "none"}, mood ${log?.mood ?? "n/a"}`,
@@ -563,6 +564,7 @@ export type AskFile = {
   cycleDay?: number | null;
   phase?: string;
   pregnancyWeek?: number | null;
+  nextPeriod?: string | null;
   flow?: string;
   mucus?: string;
   symptoms?: string[];
@@ -608,6 +610,7 @@ Her file:
 - Last period: ${f.lastPeriodStart ?? "unknown"}
 - Cycle day: ${f.cycleDay ?? "n/a"}
 - Phase: ${f.phase ?? "n/a"}
+- Next period: ${f.nextPeriod ?? "n/a"}
 - Pregnancy week: ${f.pregnancyWeek ?? "n/a"}
 - Today: flow ${f.flow ?? "none"}, mucus ${f.mucus ?? "none"}, symptoms ${(f.symptoms || []).join(", ") || "none"}, mood ${f.mood ?? "n/a"}`,
           },

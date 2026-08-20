@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PageTitle } from "@/components/color-blobs";
 import { FloToday } from "@/components/flo-today";
 import { loadToday, markCameToday, setCycleLength } from "@/lib/savia-api";
 import { useI18n } from "@/lib/i18n";
@@ -33,7 +34,8 @@ function HoyTab() {
   if (!data.profile.onboardingDone) {
     return (
       <AppShell current="hoy">
-        <Button asChild>
+        <PageTitle kicker={t.notebookNote} title={t.onboardingTitle} />
+        <Button className="mt-6" asChild>
           <Link to="/app/onboarding">{t.start}</Link>
         </Button>
       </AppShell>
@@ -43,6 +45,7 @@ function HoyTab() {
   return (
     <AppShell current="hoy">
       <FloToday
+        name={data.profile.displayName}
         stage={data.profile.stage}
         phase={data.phase}
         cycleLength={data.profile.cycleLength}

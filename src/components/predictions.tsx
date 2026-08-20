@@ -33,7 +33,7 @@ export function Predictions({
             {win ? `${formatDay(win.start, lang)}–${formatDay(win.end, lang)}` : "—"}
           </p>
         </div>
-        <div className="rounded-2xl bg-[#ffd56a] px-2 py-3 text-center text-ink shadow-card">
+        <div className="rounded-2xl bg-surface px-2 py-3 text-center text-ink shadow-card ring-1 ring-ink/8">
           <p className="text-[10px] font-semibold uppercase tracking-wide opacity-70">{t.predAvg}</p>
           <p className="mt-1 text-sm font-bold">
             {avg} {t.daysWord}
