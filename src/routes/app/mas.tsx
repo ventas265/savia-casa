@@ -62,6 +62,10 @@ function MasTab() {
         </li>
       </ul>
       <p className="mt-6 text-sm leading-relaxed text-muted">{t.privacyNote}</p>
+      <div className="mt-3 flex gap-4 text-sm font-semibold text-primary">
+        <Link to="/privacidad">{t.navPrivacy}</Link>
+        <Link to="/terminos">{t.navTerms}</Link>
+      </div>
       <div className="mt-8">
         <Disclaimer compact />
       </div>

@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { SiteHeader } from "@/components/site-header";
 import { claimSerena, getAskStatus, getPay, type PaySettings } from "@/lib/savia-server";
 import { Disclaimer } from "@/components/disclaimer";
+import { whopFor } from "@/lib/pay-links";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 
 export const Route = createFileRoute("/pagar")({ component: Pagar });
@@ -42,6 +43,8 @@ function Pagar() {
       .catch(() => setActive(false));
   }, [user]);
 
+  const cardLink = pay?.cardUrl || whopFor(plan);
+  const paypalLink = pay?.paypalUrl || whopFor(plan);
   const ready =
     method === "zinli"
       ? Boolean(pay?.zinli)
@@ -49,9 +52,7 @@ function Pagar() {
         ? Boolean(pay?.pmPhone)
         : method === "usdt"
           ? Boolean(pay?.usdt)
-          : method === "paypal"
-            ? Boolean(pay?.paypalUrl)
-            : Boolean(pay?.cardUrl);
+          : true;
 
   async function copy(text: string) {
     if (!text) return;
@@ -80,8 +81,8 @@ function Pagar() {
             : method === "usdt"
               ? pay?.usdt
               : method === "paypal"
-                ? pay?.paypalUrl
-                : pay?.cardUrl;
+                ? paypalLink
+                : cardLink;
       const note = `${method} ${dest || ""}`;
       const res = await claimSerena({ data: { email, plan, note } });
       if (res.ok) {
@@ -185,21 +186,13 @@ function Pagar() {
           {method === "card" ? (
             <div className="mt-3 space-y-2">
               <p className="text-sm leading-relaxed">{t.cardBody}</p>
-              {pay?.cardUrl ? (
-                <p className="break-all text-xs text-muted">{pay.cardUrl}</p>
-              ) : (
-                <p className="text-sm text-muted">{t.zinliNeed}</p>
-              )}
+              <p className="break-all text-xs text-muted">{cardLink}</p>
             </div>
           ) : null}
           {method === "paypal" ? (
             <div className="mt-3 space-y-2">
               <p className="text-sm leading-relaxed">{t.paypalBody}</p>
-              {pay?.paypalUrl ? (
-                <p className="break-all text-sm font-medium">{pay.paypalUrl}</p>
-              ) : (
-                <p className="text-sm text-muted">{t.zinliNeed}</p>
-              )}
+              <p className="break-all text-sm font-medium">{paypalLink}</p>
             </div>
           ) : null}
           <div className="mt-4 flex flex-wrap gap-2">
@@ -214,9 +207,9 @@ function Pagar() {
                     : method === "pm"
                       ? pay?.pmPhone || ""
                       : method === "card"
-                        ? pay?.cardUrl || ""
+                        ? cardLink
                         : method === "paypal"
-                          ? pay?.paypalUrl || ""
+                          ? paypalLink
                           : pay?.usdt || "",
                 )
               }
@@ -230,16 +223,16 @@ function Pagar() {
                 </a>
               </Button>
             ) : null}
-            {method === "card" && pay?.cardUrl ? (
+            {method === "card" ? (
               <Button type="button" asChild>
-                <a href={pay.cardUrl} target="_blank" rel="noreferrer">
+                <a href={cardLink} target="_blank" rel="noreferrer">
                   {t.cardOpen}
                 </a>
               </Button>
             ) : null}
-            {method === "paypal" && pay?.paypalUrl ? (
+            {method === "paypal" ? (
               <Button type="button" asChild>
-                <a href={pay.paypalUrl} target="_blank" rel="noreferrer">
+                <a href={paypalLink} target="_blank" rel="noreferrer">
                   {t.paypalOpen}
                 </a>
               </Button>

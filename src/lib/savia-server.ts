@@ -4,6 +4,7 @@ import { getSql } from "@/lib/db";
 import { cyclePattern, fertileWindow, nextPeriodDate, averageCycle, snapshotMeta, symptomByPhase, todayISO, learnedCycle } from "@/lib/cycle";
 import type { DailyLog, Flow, Intention, Mucus, SaviaProfile, SexKind, Stage, TodaySnapshot } from "@/lib/types";
 import { moneyToNumber } from "@/lib/utils";
+import { WHOP_MONTH } from "@/lib/pay-links";
 
 type ProfileRow = {
   user_id: string;
@@ -348,7 +349,7 @@ const emptyPay: PaySettings = {
   pmBank: "",
   pmId: "",
   usdt: "",
-  cardUrl: "",
+  cardUrl: WHOP_MONTH,
   paypalUrl: "",
 };
 

@@ -219,6 +219,8 @@ const copy = {
     reportNotDx: "No es un diagnóstico ni una orden médica. Registro elaborado por la paciente con Savia para control ginecológico.",
     reportYears: "años",
     privacyNote: "Tu cuaderno no se vende a Facebook ni a Google. No hay anuncios. Savia no es Flo.",
+    navPrivacy: "Privacidad",
+    navTerms: "Términos",
     calNote:
       "Es una estimación a partir de tu última regla. No es anticonceptivo ni test de ovulación. Si el ciclo es irregular, la ventana se mueve.",
     calEmpty: "Pon la última regla para pintar el mes.",
@@ -236,7 +238,8 @@ const copy = {
     methodPaypal: "PayPal",
     cardBody:
       "Abre el enlace. Paga con Visa, Mastercard o PayPal. Whop cobra la comisión. Luego vuelve y pulsa Ya pagué.",
-    paypalBody: "Te envía $4.99 o $39 a tu PayPal.me. Luego vuelve y pulsa Ya pagué.",
+    paypalBody:
+      "Whop acepta PayPal y tarjeta. Abre el enlace, paga $4.99 o $39, vuelve y pulsa Ya pagué.",
     cardUrl: "Enlace de tarjeta (Whop)",
     cardUrlHint: "El checkout de Whop (whop.com/savia). Ahí entra Visa, Mastercard y PayPal.",
     paypalUrl: "PayPal.me",
@@ -530,6 +533,8 @@ const copy = {
     reportNotDx: "Not a diagnosis or a prescription. Logged by the patient with Savia for gynecological follow-up.",
     reportYears: "years",
     privacyNote: "Your notebook is not sold to Facebook or Google. No ads. Savia is not Flo.",
+    navPrivacy: "Privacy",
+    navTerms: "Terms",
     calNote:
       "An estimate from your last period. Not birth control and not an ovulation test. If the cycle is irregular, the window moves.",
     calEmpty: "Add the last period to paint the month.",
@@ -544,7 +549,7 @@ const copy = {
     payStep2: "Card / PayPal — paste a Whop checkout (Visa + PayPal) or paypal.me. She pays, then taps I paid.",
     payStep3: "Pago Móvil or USDT — if she has no international card.",
     methodPaypal: "PayPal",
-    paypalBody: "She sends $4.99 or $39 to your PayPal.me, then taps I paid.",
+    paypalBody: "Whop takes PayPal and cards. Open the link, pay $4.99 or $39, then tap I paid.",
     paypalUrl: "PayPal.me",
     paypalHint: "https://paypal.me/youruser — if you have a PayPal that can receive dollars.",
     paypalOpen: "Open PayPal",

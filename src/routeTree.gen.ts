@@ -16,6 +16,8 @@ import { Route as GuiaRouteImport } from './routes/guia'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as PagarRouteImport } from './routes/pagar'
 import { Route as PricingRouteImport } from './routes/pricing'
+import { Route as PrivacidadRouteImport } from './routes/privacidad'
+import { Route as TerminosRouteImport } from './routes/terminos'
 import { Route as AppIndexRouteImport } from './routes/app/index'
 import { Route as AppCicloRouteImport } from './routes/app/ciclo'
 import { Route as AppCuadernoRouteImport } from './routes/app/cuaderno'
@@ -61,6 +63,16 @@ const PagarRoute = PagarRouteImport.update({
 const PricingRoute = PricingRouteImport.update({
   id: '/pricing',
   path: '/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacidadRoute = PrivacidadRouteImport.update({
+  id: '/privacidad',
+  path: '/privacidad',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TerminosRoute = TerminosRouteImport.update({
+  id: '/terminos',
+  path: '/terminos',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppIndexRoute = AppIndexRouteImport.update({
@@ -127,6 +139,8 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/pagar': typeof PagarRoute
   '/pricing': typeof PricingRoute
+  '/privacidad': typeof PrivacidadRoute
+  '/terminos': typeof TerminosRoute
   '/app/ciclo': typeof AppCicloRoute
   '/app/cuaderno': typeof AppCuadernoRoute
   '/app/guia': typeof AppGuiaRoute
@@ -146,6 +160,8 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/pagar': typeof PagarRoute
   '/pricing': typeof PricingRoute
+  '/privacidad': typeof PrivacidadRoute
+  '/terminos': typeof TerminosRoute
   '/app/ciclo': typeof AppCicloRoute
   '/app/cuaderno': typeof AppCuadernoRoute
   '/app/guia': typeof AppGuiaRoute
@@ -167,6 +183,8 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/pagar': typeof PagarRoute
   '/pricing': typeof PricingRoute
+  '/privacidad': typeof PrivacidadRoute
+  '/terminos': typeof TerminosRoute
   '/app/ciclo': typeof AppCicloRoute
   '/app/cuaderno': typeof AppCuadernoRoute
   '/app/guia': typeof AppGuiaRoute
@@ -189,6 +207,8 @@ export interface FileRouteTypes {
     | '/login'
     | '/pagar'
     | '/pricing'
+    | '/privacidad'
+    | '/terminos'
     | '/app/ciclo'
     | '/app/cuaderno'
     | '/app/guia'
@@ -208,6 +228,8 @@ export interface FileRouteTypes {
     | '/login'
     | '/pagar'
     | '/pricing'
+    | '/privacidad'
+    | '/terminos'
     | '/app/ciclo'
     | '/app/cuaderno'
     | '/app/guia'
@@ -228,6 +250,8 @@ export interface FileRouteTypes {
     | '/login'
     | '/pagar'
     | '/pricing'
+    | '/privacidad'
+    | '/terminos'
     | '/app/ciclo'
     | '/app/cuaderno'
     | '/app/guia'
@@ -249,6 +273,8 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   PagarRoute: typeof PagarRoute
   PricingRoute: typeof PricingRoute
+  PrivacidadRoute: typeof PrivacidadRoute
+  TerminosRoute: typeof TerminosRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
 
@@ -301,6 +327,20 @@ declare module '@tanstack/react-router' {
       path: '/pricing'
       fullPath: '/pricing'
       preLoaderRoute: typeof PricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacidad': {
+      id: '/privacidad'
+      path: '/privacidad'
+      fullPath: '/privacidad'
+      preLoaderRoute: typeof PrivacidadRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terminos': {
+      id: '/terminos'
+      path: '/terminos'
+      fullPath: '/terminos'
+      preLoaderRoute: typeof TerminosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/app/': {
@@ -419,6 +459,8 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   PagarRoute: PagarRoute,
   PricingRoute: PricingRoute,
+  PrivacidadRoute: PrivacidadRoute,
+  TerminosRoute: TerminosRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
 }
 export const routeTree = rootRouteImport

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { loadToday, writeProfile } from "@/lib/savia-api";
+import { requestNotify } from "@/lib/notify";
 import { useI18n } from "@/lib/i18n";
 import { pick, stageName } from "@/lib/savia-content";
 import { STAGES, INTENTIONS, type Intention, type Stage } from "@/lib/types";
@@ -71,6 +72,7 @@ function Onboarding() {
         return;
       }
       toast.success(t.notebookNote);
+      void requestNotify();
       void navigate({ to: "/app/hoy" });
     } catch {
       toast.error(t.errorGeneric);
