@@ -13,6 +13,7 @@ import { pick, stageName } from "@/lib/savia-content";
 import { STAGES, INTENTIONS, type Intention, type Stage } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { CYCLE_CHOICES, formatLong, nextPeriodDate } from "@/lib/cycle";
+import { LATAM } from "@/lib/latam";
 
 export const Route = createFileRoute("/app/onboarding")({ component: Onboarding });
 
@@ -28,6 +29,7 @@ function Onboarding() {
   const [dueDate, setDueDate] = useState("");
   const [lastPeriodYear, setLastPeriodYear] = useState(new Date().getFullYear() - 2);
   const [intention, setIntention] = useState<Intention>("track");
+  const [country, setCountry] = useState("VE");
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -41,6 +43,7 @@ function Onboarding() {
       if (p.lastPeriodStart) setLastPeriodStart(p.lastPeriodStart);
       if (p.dueDate) setDueDate(p.dueDate);
       if (p.intention) setIntention(p.intention);
+      if (p.country) setCountry(p.country);
     });
   }, []);
 
@@ -66,6 +69,7 @@ function Onboarding() {
         onboardingDone: true,
         locale: lang,
         intention,
+        country,
       });
       if (!res.ok) {
         toast.error(t.errorGeneric);
@@ -99,6 +103,24 @@ function Onboarding() {
             value={age}
             onChange={(e) => setAge(e.target.value.replace(/\D/g, "").slice(0, 2))}
           />
+        </div>
+        <div>
+          <p className="text-sm font-semibold">{t.yourCountry}</p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {LATAM.map((c) => (
+              <button
+                key={c.code}
+                type="button"
+                onClick={() => setCountry(c.code)}
+                className={cn(
+                  "h-11 rounded-full px-3 text-sm font-semibold",
+                  country === c.code ? "bg-primary text-primary-fg" : "bg-bg text-fg",
+                )}
+              >
+                {c.name}
+              </button>
+            ))}
+          </div>
         </div>
         <div className="flex flex-wrap gap-2">
           {STAGES.map((s) => (

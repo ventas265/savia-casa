@@ -9,6 +9,7 @@ import { claimSerena, getAskStatus, getPay, type PaySettings } from "@/lib/savia
 import { Disclaimer } from "@/components/disclaimer";
 import { whopFor } from "@/lib/pay-links";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
+import { loadToday } from "@/lib/savia-api";
 
 export const Route = createFileRoute("/pagar")({ component: Pagar });
 
@@ -20,7 +21,8 @@ function Pagar() {
   const { user, isPending } = useCurrentUserState();
   const [email, setEmail] = useState("");
   const [plan, setPlan] = useState<"serena" | "year">("serena");
-  const [method, setMethod] = useState<Method>("zinli");
+  const [method, setMethod] = useState<Method>("card");
+  const [country, setCountry] = useState("VE");
   const [pay, setPay] = useState<PaySettings | null>(null);
   const [busy, setBusy] = useState(false);
   const [active, setActive] = useState(false);
@@ -30,6 +32,13 @@ function Pagar() {
     getPay()
       .then(setPay)
       .catch(() => setPay(null));
+    loadToday()
+      .then((s) => {
+        if (s.profile.country) setCountry(s.profile.country);
+        if (s.profile.country && s.profile.country !== "VE") setMethod("card");
+        else setMethod("zinli");
+      })
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -134,13 +143,20 @@ function Pagar() {
 
         <div className="mt-4 grid grid-cols-2 gap-2">
           {(
-            [
-              ["zinli", t.methodZinli],
-              ["card", t.methodCard],
-              ["paypal", t.methodPaypal],
-              ["pm", t.methodPm],
-              ["usdt", t.methodUsdt],
-            ] as const
+            country === "VE"
+              ? ([
+                  ["zinli", t.methodZinli],
+                  ["card", t.methodCard],
+                  ["paypal", t.methodPaypal],
+                  ["pm", t.methodPm],
+                  ["usdt", t.methodUsdt],
+                ] as const)
+              : ([
+                  ["card", t.methodCard],
+                  ["paypal", t.methodPaypal],
+                  ["usdt", t.methodUsdt],
+                  ["zinli", t.methodZinli],
+                ] as const)
           ).map(([key, label]) => (
             <button
               key={key}

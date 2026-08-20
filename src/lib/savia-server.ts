@@ -5,6 +5,7 @@ import { cyclePattern, fertileWindow, nextPeriodDate, averageCycle, snapshotMeta
 import type { DailyLog, Flow, Intention, Mucus, SaviaProfile, SexKind, Stage, TodaySnapshot } from "@/lib/types";
 import { moneyToNumber } from "@/lib/utils";
 import { WHOP_MONTH } from "@/lib/pay-links";
+import { emergencyLine } from "@/lib/latam";
 
 type ProfileRow = {
   user_id: string;
@@ -67,6 +68,7 @@ function mapProfile(row: ProfileRow): SaviaProfile {
     locale: row.locale || "es",
     plan: row.plan || "free",
     intention: (row.intention as Intention) || "track",
+    country: "VE",
     askCount: Number(row.ask_count || 0),
   };
 }
@@ -156,6 +158,7 @@ export const saveProfile = createServerFn({ method: "POST" })
       onboardingDone: boolean;
       locale: string;
       intention?: Intention;
+      country?: string;
     }) => input,
   )
   .handler(async ({ context, data }) => {
@@ -512,7 +515,7 @@ export const askSavia = createServerFn({ method: "POST" })
             content: `You are Savia, the in-app specialist for this women's health companion.
 You know menstrual cycles, ovulation, fertile windows, cervical mucus, PMS/PMDD, perimenopause, menopause, postpartum, pregnancy (food/tea caution), hormones (estrogen, progesterone, FSH, LH, cortisol), iron, sleep, and everyday food/teas that match a phase.
 You teach. You do not diagnose, prescribe, or replace a clinician.
-If red flags (soaking a pad/hour, fainting, pregnancy bleeding, severe one-sided pain, suicidal thoughts, fever after birth), say go to emergency care now. In Venezuela: urgencias / 911.
+If red flags (soaking a pad/hour, fainting, pregnancy bleeding, severe one-sided pain, suicidal thoughts, fever after birth), say go to emergency care now. Emergency: ${emergencyLine((profile as { country?: string }).country)}.
 Be warm, concrete, short paragraphs. Prefer what to eat, rest, track, and when to see a doctor.
 No scare tactics. No miracle cures. No medical doses of herbs in pregnancy.
 Answer in ${lang}.
@@ -566,6 +569,7 @@ export type AskFile = {
   phase?: string;
   pregnancyWeek?: number | null;
   nextPeriod?: string | null;
+  country?: string;
   flow?: string;
   mucus?: string;
   symptoms?: string[];
@@ -599,11 +603,12 @@ export const askSaviaOpen = createServerFn({ method: "POST" })
             content: `You are Savia, the in-app specialist for this women's health companion (open beta).
 You know menstrual cycles, ovulation, fertile windows, cervical mucus, PMS/PMDD, perimenopause, menopause, postpartum, pregnancy (food/tea caution), hormones, iron, sleep, and everyday food/teas that match a phase.
 You teach. You do not diagnose, prescribe, or replace a clinician.
-If red flags (soaking a pad/hour, fainting, pregnancy bleeding, severe one-sided pain, suicidal thoughts, fever after birth), say go to emergency care now. In Venezuela: urgencias / 911.
+If red flags (soaking a pad/hour, fainting, pregnancy bleeding, severe one-sided pain, suicidal thoughts, fever after birth), say go to emergency care now. Emergency: ${emergencyLine(f.country)}.
 Be warm, concrete, short paragraphs. Answer in ${lang}.
 
 Her file:
 - Name: ${f.displayName || "not set"}
+- Country: ${f.country || "LATAM"}
 - Age: ${f.birthYear ? new Date().getFullYear() - f.birthYear : "unknown"}
 - Season: ${f.stage || "cycle"}
 - Intention: ${f.intention || "track"}

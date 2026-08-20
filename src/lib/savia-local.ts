@@ -24,6 +24,7 @@ function emptyProfile(): SaviaProfile {
     locale: "es",
     plan: "serena",
     intention: "track",
+    country: "VE",
     askCount: 0,
   };
 }
@@ -81,6 +82,7 @@ export function localSaveProfile(data: {
   onboardingDone: boolean;
   locale: string;
   intention?: Intention;
+  country?: string;
 }) {
   const store = read();
   const last = data.lastPeriodStart;
@@ -175,6 +177,7 @@ export function localAskFile() {
     birthYear: p.birthYear,
     stage: p.stage,
     intention: p.intention,
+    country: p.country,
     cycleLength: p.cycleLength,
     periodLength: p.periodLength,
     lastPeriodStart: p.lastPeriodStart,

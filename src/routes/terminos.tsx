@@ -16,7 +16,7 @@ function Terminos() {
         {es ? (
           <>
             <p>Savia es una app de acompañamiento del ciclo, embarazo, perimenopausia y menopausia. No diagnostica, no receta, no es anticonceptivo.</p>
-            <p>Las fechas de regla y ovulación son estimados. Si sangras mucho, te desmayas, hay dolor fuerte de un lado, sangrado en embarazo o ideas de hacerte daño, ve a urgencias (Venezuela: 911).</p>
+            <p>Las fechas de regla y ovulación son estimados. Si sangras mucho, te desmayas, hay dolor fuerte de un lado, sangrado en embarazo o ideas de hacerte daño, ve a urgencias (911 en la mayoría de LATAM; Colombia 123, Argentina 107, Chile 131, Perú 106).</p>
             <p>Serena ($4.99/mes o $39/año) desbloquea chat ilimitado, marcar relaciones e informe. En beta el chat está abierto. Los cobros con tarjeta los hace Whop; Zinli y Pago Móvil son envíos manuales.</p>
             <p>El contenido de tés y comida es educativo. En embarazo no tomes hierbas sin tu médica.</p>
             <p>Al usar Savia aceptas estos términos y la privacidad.</p>

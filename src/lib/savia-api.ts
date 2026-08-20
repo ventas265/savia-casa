@@ -30,6 +30,7 @@ export async function writeProfile(data: {
   onboardingDone: boolean;
   locale: string;
   intention?: Intention;
+  country?: string;
 }) {
   if (SAVIA_BETA) return localSaveProfile(data);
   return saveProfile({ data });

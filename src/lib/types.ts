@@ -19,6 +19,7 @@ export type SaviaProfile = {
   locale: string;
   plan: string;
   intention: Intention;
+  country: string;
   askCount: number;
 };
 
