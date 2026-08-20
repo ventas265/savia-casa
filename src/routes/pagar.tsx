@@ -9,11 +9,10 @@ import { claimSerena, getAskStatus, getPay, type PaySettings } from "@/lib/savia
 import { Disclaimer } from "@/components/disclaimer";
 import { whopFor } from "@/lib/pay-links";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
-import { loadToday } from "@/lib/savia-api";
 
 export const Route = createFileRoute("/pagar")({ component: Pagar });
 
-type Method = "zinli" | "pm" | "usdt" | "card" | "paypal";
+type Method = "zinli" | "pm" | "usdt" | "card" | "paypal" | "bank";
 
 function Pagar() {
   const { t } = useI18n();
@@ -22,7 +21,6 @@ function Pagar() {
   const [email, setEmail] = useState("");
   const [plan, setPlan] = useState<"serena" | "year">("serena");
   const [method, setMethod] = useState<Method>("card");
-  const [country, setCountry] = useState("VE");
   const [pay, setPay] = useState<PaySettings | null>(null);
   const [busy, setBusy] = useState(false);
   const [active, setActive] = useState(false);
@@ -32,13 +30,6 @@ function Pagar() {
     getPay()
       .then(setPay)
       .catch(() => setPay(null));
-    loadToday()
-      .then((s) => {
-        if (s.profile.country) setCountry(s.profile.country);
-        if (s.profile.country && s.profile.country !== "VE") setMethod("card");
-        else setMethod("zinli");
-      })
-      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -61,6 +52,8 @@ function Pagar() {
         ? Boolean(pay?.pmPhone)
         : method === "usdt"
           ? Boolean(pay?.usdt)
+          : method === "bank"
+            ? Boolean(pay?.bankAccount)
           : true;
 
   async function copy(text: string) {
@@ -91,6 +84,8 @@ function Pagar() {
               ? pay?.usdt
               : method === "paypal"
                 ? paypalLink
+                : method === "bank"
+                  ? `${pay?.bankName || "Banplus"} ${pay?.bankAccount || ""}`
                 : cardLink;
       const note = `${method} ${dest || ""}`;
       const res = await claimSerena({ data: { email, plan, note } });
@@ -111,14 +106,9 @@ function Pagar() {
     <div className="min-h-dvh bg-bg">
       <SiteHeader />
       <main className="mx-auto max-w-lg px-4 py-8">
-        <h1 className="text-2xl font-semibold">{t.payTitle}</h1>
-        <p className="mt-2 text-sm leading-relaxed text-muted">{t.payAuto}</p>
+        <h1 className="text-2xl font-extrabold">{t.payTitle}</h1>
+        <p className="mt-2 text-sm leading-relaxed text-muted">{t.payBody}</p>
         {active ? <p className="mt-3 text-sm font-medium">{t.serenaActive}</p> : null}
-        {!isPending && !user ? (
-          <Button className="mt-4" asChild>
-            <Link to="/login">{t.payNeedLogin}</Link>
-          </Button>
-        ) : null}
 
         <div className="mt-6 flex gap-3">
           <button
@@ -141,22 +131,28 @@ function Pagar() {
           </button>
         </div>
 
+        <div className="mt-6 rounded-[1.6rem] bg-ink p-6 text-primary-fg shadow-card">
+          <p className="text-sm opacity-70">{plan === "year" ? t.yearName : t.proName}</p>
+          <p className="mt-1 text-5xl font-extrabold tracking-tight">{amount}</p>
+          <p className="mt-2 text-sm opacity-80">{t.cardOk}</p>
+          <Button className="mt-5 w-full bg-primary text-primary-fg" asChild>
+            <a href={cardLink} target="_blank" rel="noreferrer">
+              {t.cardOpen}
+            </a>
+          </Button>
+          <p className="mt-3 text-xs opacity-70">{t.cardBody}</p>
+        </div>
+
         <div className="mt-4 grid grid-cols-2 gap-2">
           {(
-            country === "VE"
-              ? ([
-                  ["zinli", t.methodZinli],
-                  ["card", t.methodCard],
-                  ["paypal", t.methodPaypal],
-                  ["pm", t.methodPm],
-                  ["usdt", t.methodUsdt],
-                ] as const)
-              : ([
-                  ["card", t.methodCard],
-                  ["paypal", t.methodPaypal],
-                  ["usdt", t.methodUsdt],
-                  ["zinli", t.methodZinli],
-                ] as const)
+            [
+              ["card", t.methodCard],
+              ["paypal", t.methodPaypal],
+              ["bank", t.methodBank],
+              ["zinli", t.methodZinli],
+              ["pm", t.methodPm],
+              ["usdt", t.methodUsdt],
+            ] as const
           ).map(([key, label]) => (
             <button
               key={key}
@@ -211,6 +207,18 @@ function Pagar() {
               <p className="break-all text-sm font-medium">{paypalLink}</p>
             </div>
           ) : null}
+          {method === "bank" ? (
+            pay?.bankAccount ? (
+              <div className="mt-3 space-y-1 text-sm">
+                <p>{t.bankName}: {pay.bankName || "Banplus"}</p>
+                <p>{t.bankHolder}: {pay.bankHolder}</p>
+                <p className="font-semibold">{t.bankAccount}: {pay.bankAccount}</p>
+                <p className="text-xs text-muted">{t.bankHint}</p>
+              </div>
+            ) : (
+              <p className="mt-3 text-sm text-muted">{t.zinliNeed}</p>
+            )
+          ) : null}
           <div className="mt-4 flex flex-wrap gap-2">
             <Button
               type="button"
@@ -226,6 +234,8 @@ function Pagar() {
                         ? cardLink
                         : method === "paypal"
                           ? paypalLink
+                          : method === "bank"
+                            ? pay?.bankAccount || ""
                           : pay?.usdt || "",
                 )
               }

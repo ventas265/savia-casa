@@ -19,6 +19,9 @@ const empty: PaySettings = {
   usdt: "",
   cardUrl: "",
   paypalUrl: "",
+  bankName: "Banplus",
+  bankAccount: "",
+  bankHolder: "",
 };
 
 function Cuaderno() {
@@ -28,7 +31,7 @@ function Cuaderno() {
 
   useEffect(() => {
     getPay()
-      .then(setPay)
+      .then((p) => setPay({ ...empty, ...p }))
       .catch(() => setPay(empty));
   }, []);
 
@@ -37,8 +40,30 @@ function Cuaderno() {
     try {
       const res = await savePay({ data: pay });
       if (res.ok) {
-        const { zinli, pmPhone, pmBank, pmId, usdt, cardUrl, paypalUrl } = res;
-        setPay({ zinli, pmPhone, pmBank, pmId, usdt, cardUrl, paypalUrl: paypalUrl || "" });
+        const {
+          zinli,
+          pmPhone,
+          pmBank,
+          pmId,
+          usdt,
+          cardUrl,
+          paypalUrl,
+          bankName,
+          bankAccount,
+          bankHolder,
+        } = res;
+        setPay({
+          zinli,
+          pmPhone,
+          pmBank,
+          pmId,
+          usdt,
+          cardUrl,
+          paypalUrl: paypalUrl || "",
+          bankName: bankName || "Banplus",
+          bankAccount: bankAccount || "",
+          bankHolder: bankHolder || "",
+        });
         toast.success(t.saved);
       } else toast.error(t.errorGeneric);
     } catch {
@@ -52,11 +77,41 @@ function Cuaderno() {
     <AppShell current="mas">
       <h1 className="text-2xl font-semibold">{t.settings}</h1>
       <p className="mt-2 text-muted">{t.payNow}</p>
+      <p className="mt-2 text-sm leading-relaxed text-muted">{t.posHint}</p>
       <Button className="mt-6" variant="secondary" asChild>
         <Link to="/app/onboarding">{t.onboardingTitle}</Link>
       </Button>
 
       <div className="mt-8 space-y-4 rounded-3xl bg-surface p-5">
+        <div>
+          <Label htmlFor="bankName">{t.bankName}</Label>
+          <Input
+            id="bankName"
+            className="mt-2"
+            value={pay.bankName}
+            onChange={(e) => setPay({ ...pay, bankName: e.target.value })}
+            placeholder="Banplus"
+          />
+        </div>
+        <div>
+          <Label htmlFor="bankHolder">{t.bankHolder}</Label>
+          <Input
+            id="bankHolder"
+            className="mt-2"
+            value={pay.bankHolder}
+            onChange={(e) => setPay({ ...pay, bankHolder: e.target.value })}
+          />
+        </div>
+        <div>
+          <Label htmlFor="bankAccount">{t.bankAccount}</Label>
+          <Input
+            id="bankAccount"
+            className="mt-2"
+            value={pay.bankAccount}
+            onChange={(e) => setPay({ ...pay, bankAccount: e.target.value })}
+          />
+          <p className="mt-1 text-xs text-muted">{t.bankHint}</p>
+        </div>
         <div>
           <Label htmlFor="zinli">{t.zinliUser}</Label>
           <Input
@@ -84,7 +139,7 @@ function Cuaderno() {
             className="mt-2"
             value={pay.pmBank}
             onChange={(e) => setPay({ ...pay, pmBank: e.target.value })}
-            placeholder="Banesco, Venezuela, Provincial…"
+            placeholder="Banplus, Banesco…"
           />
         </div>
         <div>

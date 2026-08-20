@@ -18,7 +18,7 @@ function Privacidad() {
             <p>Savia guarda tu ciclo, síntomas y lo que escribes en el chat para mostrártelo a ti. No se vende a Facebook, Google ni anunciantes.</p>
             <p>En la beta, los datos quedan en este teléfono (almacenamiento local). Si más adelante hay cuenta con correo, se guardan en un servidor (Postgres) atados a esa cuenta.</p>
             <p>El chat se envía a un modelo de IA (xAI) con un resumen de tu perfil para responder. No uses el chat para emergencias.</p>
-            <p>Los pagos por tarjeta/PayPal los procesa Whop. Zinli, Pago Móvil y USDT son transferencias que tú envías; Savia no guarda números de tarjeta.</p>
+            <p>Los pagos con tarjeta y PayPal los procesa Whop (caja de Savia). Transferencia bancaria, Zinli y USDT son envíos que tú haces; Savia no guarda números de tarjeta.</p>
             <p>Puedes borrar el cuaderno de este teléfono limpiando los datos del sitio. Para borrar una cuenta de servidor, escribe a quien te dio el acceso.</p>
             <p>Savia no es un dispositivo médico ni un diagnóstico.</p>
           </>
