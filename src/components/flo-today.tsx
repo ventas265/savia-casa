@@ -174,7 +174,7 @@ export function FloToday({
           <Plus className="size-7" />
         </ActionCircle>
         <ActionCircle label={t.askMark} onClick={onAsk} tone="gold">
-          <AskGlyph className="text-3xl" />
+          <AskGlyph className="size-8" />
         </ActionCircle>
       </div>
 
