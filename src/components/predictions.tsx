@@ -22,20 +22,20 @@ export function Predictions({
   if (!lastStart) return null;
   return (
     <div className="mb-4">
-      <div className="grid grid-cols-3 divide-x divide-border text-center">
-        <div className="px-1">
-          <p className="text-xs text-muted">{t.predNext}</p>
-          <p className="mt-1 text-sm font-semibold">{next ? formatDay(next, lang) : "—"}</p>
+      <div className="grid grid-cols-3 gap-2">
+        <div className="rounded-2xl bg-[#ff6b9d] px-2 py-3 text-center text-white shadow-card">
+          <p className="text-[10px] font-semibold uppercase tracking-wide opacity-80">{t.predNext}</p>
+          <p className="mt-1 text-sm font-bold">{next ? formatDay(next, lang) : "—"}</p>
         </div>
-        <div className="px-1">
-          <p className="text-xs text-muted">{t.predFertile}</p>
-          <p className="mt-1 text-sm font-semibold">
+        <div className="rounded-2xl bg-[#5ee4d6] px-2 py-3 text-center text-ink shadow-card">
+          <p className="text-[10px] font-semibold uppercase tracking-wide opacity-70">{t.predFertile}</p>
+          <p className="mt-1 text-sm font-bold">
             {win ? `${formatDay(win.start, lang)}–${formatDay(win.end, lang)}` : "—"}
           </p>
         </div>
-        <div className="px-1">
-          <p className="text-xs text-muted">{t.predAvg}</p>
-          <p className="mt-1 text-sm font-semibold">
+        <div className="rounded-2xl bg-[#ffd56a] px-2 py-3 text-center text-ink shadow-card">
+          <p className="text-[10px] font-semibold uppercase tracking-wide opacity-70">{t.predAvg}</p>
+          <p className="mt-1 text-sm font-bold">
             {avg} {t.daysWord}
           </p>
         </div>

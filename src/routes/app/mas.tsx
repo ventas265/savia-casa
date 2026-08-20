@@ -3,6 +3,7 @@ import { useState } from "react";
 import { ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
+import { PageTitle, CHIP_TONES } from "@/components/color-blobs";
 import { useI18n } from "@/lib/i18n";
 import { Disclaimer } from "@/components/disclaimer";
 import { notifyPermission, requestNotify } from "@/lib/notify";
@@ -22,20 +23,23 @@ function MasTab() {
   ];
   return (
     <AppShell current="mas">
-      <h1 className="text-2xl font-semibold">{t.more}</h1>
-      <ul className="mt-6 divide-y divide-border overflow-hidden rounded-3xl bg-surface">
-        {links.map((l) => (
+      <PageTitle title={t.more} />
+      <ul className="mt-6 space-y-2">
+        {links.map((l, i) => (
           <li key={l.to}>
-            <Link to={l.to} className="flex min-h-14 items-center justify-between px-4 text-sm">
+            <Link
+              to={l.to}
+              className={`flex min-h-14 items-center justify-between rounded-[1.25rem] px-4 text-sm font-semibold shadow-card ${CHIP_TONES[i % CHIP_TONES.length]}`}
+            >
               {l.label}
-              <ChevronRight className="size-4 text-muted" />
+              <ChevronRight className="size-4 opacity-70" />
             </Link>
           </li>
         ))}
         <li>
           <button
             type="button"
-            className="flex min-h-14 w-full items-center justify-between px-4 text-left text-sm"
+            className="flex min-h-14 w-full items-center justify-between rounded-[1.25rem] bg-surface px-4 text-left text-sm font-semibold shadow-card"
             onClick={() => {
               void requestNotify().then((p) => {
                 setPerm(p);
@@ -48,9 +52,12 @@ function MasTab() {
           </button>
         </li>
         <li>
-          <a href="/?install=1" className="flex min-h-14 items-center justify-between px-4 text-sm">
+          <a
+            href="/?install=1"
+            className="flex min-h-14 items-center justify-between rounded-[1.25rem] bg-[#ffd56a] px-4 text-sm font-semibold text-ink shadow-card"
+          >
             {t.installCta}
-            <ChevronRight className="size-4 text-muted" />
+            <ChevronRight className="size-4 opacity-70" />
           </a>
         </li>
       </ul>

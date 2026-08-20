@@ -73,8 +73,9 @@ export function LogForm({
 
   return (
     <div className="space-y-4">
-      <div className="rounded-3xl bg-surface p-5">
-        <p className="text-sm font-semibold">{t.flow}</p>
+      <div className="relative overflow-hidden rounded-[1.6rem] bg-[#ffd6e0] p-5 shadow-card">
+        <span className="absolute -right-6 -top-6 size-24 rounded-full bg-white/30" />
+        <p className="relative text-sm font-bold">{t.flow}</p>
         <div className="mt-3 grid grid-cols-4 gap-2">
           {FLOWS.filter((f) => f !== "none").map((f) => (
             <button
@@ -122,8 +123,9 @@ export function LogForm({
         {paid ? null : <p className="mt-2 text-xs text-muted">{t.sexPay}</p>}
       </div>
 
-      <div className="rounded-3xl bg-surface p-5">
-        <p className="text-sm font-semibold">{t.mucus}</p>
+      <div className="relative overflow-hidden rounded-[1.6rem] bg-[#d4f7f1] p-5 shadow-card">
+        <span className="absolute -right-8 -bottom-8 size-24 rounded-full bg-white/40" />
+        <p className="relative text-sm font-bold">{t.mucus}</p>
         <div className="mt-3 flex flex-wrap gap-2">
           {MUCUS.map((m) => (
             <button
@@ -141,8 +143,8 @@ export function LogForm({
         </div>
       </div>
 
-      <div className="rounded-3xl bg-surface p-5">
-        <p className="text-sm font-semibold">{t.symptoms}</p>
+      <div className="relative overflow-hidden rounded-[1.6rem] bg-[#e8dcff] p-5 shadow-card">
+        <p className="text-sm font-bold">{t.symptoms}</p>
         <div className="mt-3 flex flex-wrap gap-2">
           {SYMPTOMS.map((id) => (
             <button
@@ -160,8 +162,8 @@ export function LogForm({
         </div>
       </div>
 
-      <div className="rounded-3xl bg-surface p-5">
-        <p className="text-sm font-semibold">{t.moodAsk}</p>
+      <div className="relative overflow-hidden rounded-[1.6rem] bg-[#ffe9b8] p-5 shadow-card">
+        <p className="text-sm font-bold">{t.moodAsk}</p>
         <p className="mt-1 text-xs text-muted">{t.moodHint}</p>
         <div className="mt-3 grid grid-cols-5 gap-1.5">
           {(
@@ -233,7 +235,7 @@ export function LogForm({
         </div>
       </div>
 
-      <div className="rounded-3xl bg-surface p-5">
+      <div className="relative overflow-hidden rounded-[1.6rem] bg-surface p-5 shadow-card">
         <Label htmlFor="notes">{t.notes}</Label>
         <Textarea id="notes" className="mt-2" value={notes} onChange={(e) => setNotes(e.target.value)} />
       </div>

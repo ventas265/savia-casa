@@ -22,7 +22,7 @@ export function AppShell({
           {immersive ? (
             <span className="w-16" />
           ) : (
-            <Link to="/app/hoy" className="text-lg font-semibold tracking-tight">
+            <Link to="/app/hoy" className="text-lg font-extrabold tracking-tight text-primary">
               {t.brand}
             </Link>
           )}

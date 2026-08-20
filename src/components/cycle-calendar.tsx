@@ -116,7 +116,7 @@ export function CycleCalendar({
         >
           <ChevronLeft className="size-5" />
         </button>
-        <p className="text-base font-medium">{months[cursor.m]} {cursor.y}</p>
+        <p className="text-lg font-extrabold">{months[cursor.m]} {cursor.y}</p>
         <button
           type="button"
           className="inline-flex size-11 items-center justify-center rounded-full hover:bg-surface-2"

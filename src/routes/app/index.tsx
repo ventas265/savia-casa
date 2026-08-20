@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PageTitle } from "@/components/color-blobs";
 import { CycleCalendar } from "@/components/cycle-calendar";
 import { Predictions } from "@/components/predictions";
 import { loadToday, writeSex, betaPaid } from "@/lib/savia-api";
@@ -82,25 +83,28 @@ function CalendarTab() {
   return (
     <AppShell current="cal">
       {isCycling(data.profile.stage) ? (
-        <div className="rounded-3xl bg-surface p-4">
-          <Predictions
-            lastStart={data.profile.lastPeriodStart}
-            cycleLength={data.profile.cycleLength}
-            periodLength={data.profile.periodLength}
-            starts={data.periodStarts}
-            intention={data.profile.intention}
-          />
-          <CycleCalendar
-            lastStart={data.profile.lastPeriodStart}
-            cycleLength={data.profile.cycleLength}
-            periodLength={data.profile.periodLength}
-            periodStarts={data.periodStarts}
-            periodDays={periodDaysFromLogs(data.recentLogs)}
-            sexDays={sexMarks.map((s) => s.day)}
-            sexMarks={sexMarks}
-            paid={paid}
-            onSetSex={(iso, kind) => void onHeart(iso, kind)}
-          />
+        <div>
+          <PageTitle title={t.navCal} />
+          <div className="mt-4 rounded-[1.6rem] bg-surface p-4 shadow-card">
+            <Predictions
+              lastStart={data.profile.lastPeriodStart}
+              cycleLength={data.profile.cycleLength}
+              periodLength={data.profile.periodLength}
+              starts={data.periodStarts}
+              intention={data.profile.intention}
+            />
+            <CycleCalendar
+              lastStart={data.profile.lastPeriodStart}
+              cycleLength={data.profile.cycleLength}
+              periodLength={data.profile.periodLength}
+              periodStarts={data.periodStarts}
+              periodDays={periodDaysFromLogs(data.recentLogs)}
+              sexDays={sexMarks.map((s) => s.day)}
+              sexMarks={sexMarks}
+              paid={paid}
+              onSetSex={(iso, kind) => void onHeart(iso, kind)}
+            />
+          </div>
         </div>
       ) : (
         <p className="text-muted">{t.calNote}</p>

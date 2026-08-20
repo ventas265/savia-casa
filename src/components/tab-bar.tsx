@@ -25,7 +25,7 @@ export function TabBar({
   const { t } = useI18n();
   const items = tabItems(t);
   return (
-    <nav className="border-t border-border bg-surface pb-[env(safe-area-inset-bottom)]">
+    <nav className="border-t border-border/60 bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur">
       <div className="grid grid-cols-5">
         {items.map((item) => {
           const Icon = item.icon;

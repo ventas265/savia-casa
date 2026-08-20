@@ -97,11 +97,6 @@ export function FloToday({
 
   return (
     <div className="relative -mx-4 overflow-hidden px-4 pb-4">
-      <div className="blob -top-16 right-[-20%] h-64 w-64 bg-[#ff6b9d]/80" />
-      <div className="blob top-36 left-[-28%] h-72 w-72 bg-[#7ee8d8]/70" style={{ animationDelay: "-4s" }} />
-      <div className="blob top-80 right-[-10%] h-52 w-52 bg-[#ffd56a]/75" style={{ animationDelay: "-7s" }} />
-      <div className="blob top-24 right-12 h-24 w-24 bg-[#c9b6ff]/90" style={{ animationDelay: "-2s" }} />
-
       <p className="relative text-center text-sm font-semibold">{formatLong(today, lang)}</p>
 
       <div className="relative mt-4 grid grid-cols-7 text-center">

@@ -1,4 +1,5 @@
 import { AskGlyph } from "@/components/ask-fab";
+import { CHIP_TONES, PageTitle } from "@/components/color-blobs";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -48,13 +49,10 @@ function Preguntar() {
   return (
     <AppShell current="mas">
       <div className="flex items-center gap-3">
-        <span className="flex size-12 items-center justify-center rounded-full bg-primary text-primary-fg">
+        <span className="flex size-14 items-center justify-center rounded-full bg-[#ffd56a] text-ink shadow-card">
           <AskGlyph className="size-7" />
         </span>
-        <div>
-          <h1 className="text-2xl font-semibold">{t.askTitle}</h1>
-          <p className="text-sm text-muted">{t.askSub}</p>
-        </div>
+        <PageTitle kicker={t.askSub} title={t.askTitle} />
       </div>
       <div className="mt-3">
         <Disclaimer compact />
@@ -62,11 +60,11 @@ function Preguntar() {
 
       {turns.length === 0 ? (
         <div className="mt-6 flex flex-wrap gap-2">
-          {t.askChips.map((chip) => (
+          {t.askChips.map((chip, i) => (
             <button
               key={chip}
               type="button"
-              className="rounded-full bg-surface px-4 py-2.5 text-left text-sm"
+              className={`rounded-full px-4 py-2.5 text-left text-sm font-semibold shadow-card ${CHIP_TONES[i % CHIP_TONES.length]}`}
               onClick={() => void ask(chip)}
             >
               {chip}
@@ -80,7 +78,7 @@ function Preguntar() {
               key={`${m.role}-${i}`}
               className={cn(
                 "max-w-[92%] whitespace-pre-wrap rounded-3xl px-4 py-3 text-sm leading-relaxed",
-                m.role === "user" ? "ml-auto bg-primary text-primary-fg" : "bg-surface",
+                m.role === "user" ? "ml-auto bg-primary text-primary-fg" : "bg-[#5ee4d6] text-ink",
               )}
             >
               {m.content}
