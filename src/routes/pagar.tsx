@@ -43,7 +43,21 @@ function Pagar() {
       .catch(() => setActive(false));
   }, [user]);
 
-  const cardLink = pay?.cardUrl || whopFor(plan);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (new URLSearchParams(window.location.search).get("paid") !== "1") return;
+    if (!user) return;
+    void claimSerena({ data: { email: user.primaryEmail || email, plan, note: "whop" } })
+      .then((res) => {
+        if (res.ok) {
+          setActive(true);
+          toast.success(t.zinliPaidOk);
+        }
+      })
+      .catch(() => {});
+  }, [user, email, t.zinliPaidOk]);
+
+  const cardLink = whopFor(plan);
   const paypalLink = pay?.paypalUrl || whopFor(plan);
   const ready =
     method === "zinli"
