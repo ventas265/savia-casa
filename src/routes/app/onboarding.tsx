@@ -16,7 +16,7 @@ const STAGES: { id: Stage; es: string; feel: string; tone: string }[] = [
   { id: "cycle", es: "Tengo el ciclo", feel: "Quiero entender mi periodo", tone: "bg-primary text-primary-fg" },
   { id: "pregnancy", es: "Estoy esperando", feel: "Un bebé en camino", tone: "bg-sand text-ink" },
   { id: "postpartum", es: "Estoy en posparto", feel: "Después del nacimiento", tone: "bg-accent text-ink" },
-  { id: "peri", es: "Ya no es el ciclo de antes", feel: "Perimenopausia", tone: "bg-plum text-primary-fg" },
+  { id: "peri", es: "Ya no es el ciclo de antes", feel: "39–45. Sofoco, niebla, el mes que no cuadra", tone: "bg-plum text-primary-fg" },
   { id: "meno", es: "Ya no me viene", feel: "Menopausia", tone: "bg-ink text-primary-fg" },
 ];
 

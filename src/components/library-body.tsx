@@ -16,9 +16,9 @@ import { cn } from "@/lib/utils";
 
 type Tab = "hormonas" | "tes" | "comida" | "embarazo" | "posparto" | "peri" | "meno";
 
-export function LibraryBody() {
+export function LibraryBody({ start = "hormonas" }: { start?: Tab }) {
   const { t, lang } = useI18n();
-  const [tab, setTab] = useState<Tab>("hormonas");
+  const [tab, setTab] = useState<Tab>(start);
   const jumps: { id: Tab; label: string }[] = [
     { id: "hormonas", label: t.hormones },
     { id: "tes", label: t.teas },

@@ -77,7 +77,12 @@ export function TodayHero({
               ? { kicker: t.periodLate, title: `${Math.abs(left ?? 0)} ${t.daysLeft}` }
               : { kicker: t.periodIn, title: left == null ? "—" : `${left} ${left === 1 ? t.dayLeft : t.daysLeft}` };
 
-  const chance = onPeriod ? t.chanceLow : fertile ? t.ovToday : t.chanceLow;
+  const chance = stage === "peri" ? t.periSub : onPeriod ? t.chanceLow : fertile ? t.ovToday : t.chanceLow;
+
+  const periHero =
+    stage === "peri"
+      ? { kicker: t.periKicker, title: hero.title }
+      : hero;
 
   const notifyTitle =
     kind === "period"
@@ -160,8 +165,8 @@ export function TodayHero({
 
       <CycleRing
         progress={cycleDay && cycleLength ? cycleDay / cycleLength : 0.08}
-        kicker={hero.kicker}
-        title={hero.title}
+        kicker={periHero.kicker}
+        title={periHero.title}
         sub={chance}
         onClick={onCal}
       />
