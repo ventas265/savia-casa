@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { Droplets, Plus } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { CYCLE_CHOICES, daysUntil, formatLong, todayISO, weekStrip } from "@/lib/cycle";
-import { foodsFor, phaseName, pick, teaFor } from "@/lib/savia-content";
 import type { Phase, Stage } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { AskGlyph } from "@/components/ask-fab";
@@ -46,8 +45,6 @@ export function TodayHero({
   const left = daysUntil(nextPeriod ?? null);
   const onPeriod = phase === "menstrual";
   const fertile = phase === "ovulatory";
-  const food = foodsFor(stage, phase)[0];
-  const tea = teaFor(stage, phase);
   const dow = lang === "es" ? DOW_ES : DOW_EN;
   const kind = periodAlert(left, onPeriod);
 
@@ -176,26 +173,27 @@ export function TodayHero({
         <ActionCircle label={t.logPeriod} onClick={onLog} tone="pink">
           <Droplets className="size-7" />
         </ActionCircle>
-        <ActionCircle label={t.symptoms} onClick={onLog} tone="mint">
+        <ActionCircle label={t.symptoms} onClick={onLog} tone="white">
           <Plus className="size-7" />
         </ActionCircle>
-        <ActionCircle label={t.askMark} onClick={onAsk} tone="ink">
-          <AskGlyph className="size-8" />
+        <ActionCircle label={t.askMark} onClick={onAsk} tone="white">
+          <AskGlyph className="size-8 text-primary" />
         </ActionCircle>
       </div>
 
       <div className="relative mt-10">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold">{t.dailyTips}</h2>
-          <button type="button" onClick={onCal} className="text-sm font-semibold text-primary">
-            {t.navCal}
-          </button>
-        </div>
+        <h2 className="text-lg font-bold">{t.dailyTips}</h2>
         <div className="-mx-4 mt-4 flex gap-3 overflow-x-auto px-4 pb-2">
-          <TipCard tone="mint" title={pick(phaseName[phase], lang)} onClick={onGuia} />
-          {food ? <TipCard tone="ink" title={pick(food.title, lang)} onClick={onGuia} /> : null}
-          <TipCard tone="surface" title={pick(tea.name, lang)} onClick={onGuia} />
-          <TipCard tone="primary" title={t.askMark} onClick={onAsk} />
+          {cardsFor(stage, phase, lang).map((c) => (
+            <TipCard
+              key={c.title}
+              title={c.title}
+              tone={c.tone}
+              onClick={c.go === "log" ? onLog : c.go === "ask" ? onAsk : onGuia}
+            >
+              {c.art}
+            </TipCard>
+          ))}
         </div>
       </div>
     </div>
@@ -210,17 +208,16 @@ function ActionCircle({
 }: {
   label: string;
   onClick: () => void;
-  tone: "pink" | "mint" | "ink";
+  tone: "pink" | "white";
   children: ReactNode;
 }) {
   return (
     <button type="button" onClick={onClick} className="flex flex-col items-center gap-2">
       <span
         className={cn(
-          "float-slow flex size-[4.4rem] items-center justify-center rounded-full shadow-card",
+          "flex size-[4.4rem] items-center justify-center rounded-full shadow-card",
           tone === "pink" && "bg-primary text-primary-fg",
-          tone === "mint" && "bg-accent text-ink",
-          tone === "ink" && "bg-ink text-primary-fg",
+          tone === "white" && "bg-surface text-fg",
         )}
       >
         {children}
@@ -234,26 +231,220 @@ function TipCard({
   title,
   tone,
   onClick,
+  children,
 }: {
   title: string;
-  tone: "mint" | "ink" | "surface" | "primary";
+  tone: "sky" | "blush" | "night" | "peach";
   onClick: () => void;
+  children: ReactNode;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
       className={cn(
-        "relative h-48 w-40 shrink-0 overflow-hidden rounded-[1.6rem] p-4 text-left shadow-card",
-        tone === "mint" && "bg-accent text-ink",
-        tone === "ink" && "bg-ink text-primary-fg",
-        tone === "surface" && "bg-surface text-ink",
-        tone === "primary" && "bg-primary text-primary-fg",
+        "relative h-52 w-36 shrink-0 overflow-hidden rounded-[1.5rem] p-3.5 text-left shadow-card",
+        tone === "sky" && "bg-[#e7eef4] text-ink",
+        tone === "blush" && "bg-[#f3c9d6] text-ink",
+        tone === "night" && "bg-[#2b2438] text-white",
+        tone === "peach" && "bg-[#f6ddd4] text-ink",
       )}
     >
-      <span className="absolute -right-6 -top-6 size-24 rounded-full bg-white/25" />
-      <span className="absolute -bottom-8 left-8 size-20 rounded-full bg-primary/20" />
-      <p className="relative text-[17px] font-bold leading-snug">{title}</p>
+      <p className="relative z-10 text-[15px] font-bold leading-snug">{title}</p>
+      <div className="absolute inset-x-0 bottom-0 h-[7.2rem]">{children}</div>
     </button>
   );
 }
+
+function cardsFor(stage: Stage, phase: Phase, lang: "es" | "en") {
+  const es = lang === "es";
+  const symptoms = { title: es ? "Síntomas" : "Symptoms", tone: "sky" as const, go: "log" as const, art: <ArtHeart /> };
+  if (stage === "peri") {
+    return [
+      symptoms,
+      {
+        title: es ? "SOP y peri: lo que debes saber" : "PCOS and peri: what to know",
+        tone: "blush" as const,
+        go: "guia" as const,
+        art: <ArtLook />,
+      },
+      {
+        title: es ? "Síntomas de la perimenopausia" : "Perimenopause symptoms",
+        tone: "night" as const,
+        go: "guia" as const,
+        art: <ArtMoon />,
+      },
+      {
+        title: es ? "Pregúntale a Savia" : "Ask Savia",
+        tone: "peach" as const,
+        go: "ask" as const,
+        art: <ArtChat />,
+      },
+    ];
+  }
+  if (stage === "meno") {
+    return [
+      symptoms,
+      {
+        title: es ? "Sofocos, sueño y huesos" : "Flashes, sleep and bone",
+        tone: "blush" as const,
+        go: "guia" as const,
+        art: <ArtMoon />,
+      },
+      {
+        title: es ? "Qué sí ayuda en meno" : "What actually helps in meno",
+        tone: "night" as const,
+        go: "guia" as const,
+        art: <ArtLook />,
+      },
+      {
+        title: es ? "Pregúntale a Savia" : "Ask Savia",
+        tone: "peach" as const,
+        go: "ask" as const,
+        art: <ArtChat />,
+      },
+    ];
+  }
+  if (stage === "pregnancy") {
+    return [
+      symptoms,
+      {
+        title: es ? "Comida y tés en el embarazo" : "Food and teas in pregnancy",
+        tone: "blush" as const,
+        go: "guia" as const,
+        art: <ArtBowl />,
+      },
+      {
+        title: es ? "Señales para ir a urgencias" : "When to go in",
+        tone: "night" as const,
+        go: "guia" as const,
+        art: <ArtLook />,
+      },
+      {
+        title: es ? "Pregúntale a Savia" : "Ask Savia",
+        tone: "peach" as const,
+        go: "ask" as const,
+        art: <ArtChat />,
+      },
+    ];
+  }
+  if (stage === "postpartum") {
+    return [
+      symptoms,
+      {
+        title: es ? "Posparto: cuerpo y ánimo" : "Postpartum: body and mood",
+        tone: "blush" as const,
+        go: "guia" as const,
+        art: <ArtHeart />,
+      },
+      {
+        title: es ? "Cuándo vuelve la regla" : "When the period returns",
+        tone: "night" as const,
+        go: "guia" as const,
+        art: <ArtMoon />,
+      },
+      {
+        title: es ? "Pregúntale a Savia" : "Ask Savia",
+        tone: "peach" as const,
+        go: "ask" as const,
+        art: <ArtChat />,
+      },
+    ];
+  }
+  const byPhase: Record<Exclude<Phase, "none">, { title: string; tone: "blush" | "night" }> = {
+    menstrual: {
+      title: es ? "Cólicos, hierro y calor" : "Cramps, iron and warmth",
+      tone: "blush",
+    },
+    follicular: {
+      title: es ? "Energía que vuelve" : "Energy coming back",
+      tone: "blush",
+    },
+    ovulatory: {
+      title: es ? "Ventana fértil, en claro" : "The fertile window, plainly",
+      tone: "blush",
+    },
+    luteal: {
+      title: es ? "Los días previos al periodo" : "The days before your period",
+      tone: "blush",
+    },
+  };
+  const extra = phase === "none" ? byPhase.luteal : byPhase[phase];
+  return [
+    symptoms,
+    { ...extra, go: "guia" as const, art: <ArtLook /> },
+    {
+      title: es ? "Qué comer hoy" : "What to eat today",
+      tone: "night" as const,
+      go: "guia" as const,
+      art: <ArtBowl />,
+    },
+    {
+      title: es ? "Pregúntale a Savia" : "Ask Savia",
+      tone: "peach" as const,
+      go: "ask" as const,
+      art: <ArtChat />,
+    },
+  ];
+}
+
+function ArtHeart() {
+  return (
+    <svg viewBox="0 0 144 120" className="h-full w-full" aria-hidden>
+      <ellipse cx="72" cy="118" rx="70" ry="28" fill="#fff" opacity="0.9" />
+      <circle cx="72" cy="64" r="32" fill="#f4c9c8" />
+      <path
+        d="M72 80c-10-9-22-4-22 6 0 12 22 22 22 22s22-10 22-22c0-10-12-15-22-6Z"
+        fill="#c94b6a"
+      />
+    </svg>
+  );
+}
+
+function ArtLook() {
+  return (
+    <svg viewBox="0 0 144 120" className="h-full w-full" aria-hidden>
+      <ellipse cx="58" cy="70" rx="28" ry="36" fill="#fff" opacity="0.55" />
+      <ellipse cx="58" cy="62" rx="18" ry="24" fill="#c94b6a" opacity="0.85" />
+      <circle cx="96" cy="48" r="22" fill="none" stroke="#3a2428" strokeWidth="6" />
+      <path d="M112 64 132 92" stroke="#3a2428" strokeWidth="8" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function ArtMoon() {
+  return (
+    <svg viewBox="0 0 144 120" className="h-full w-full" aria-hidden>
+      <circle cx="74" cy="62" r="34" fill="#f4e4c4" />
+      <circle cx="88" cy="52" r="28" fill="#2b2438" />
+      <circle cx="62" cy="58" r="3" fill="#2b2438" />
+      <path d="M56 74c6 6 16 6 22 0" stroke="#2b2438" strokeWidth="3" fill="none" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function ArtBowl() {
+  return (
+    <svg viewBox="0 0 144 120" className="h-full w-full" aria-hidden>
+      <path d="M32 58h80c-4 28-20 42-40 42S36 86 32 58Z" fill="#c94b6a" />
+      <ellipse cx="72" cy="58" rx="40" ry="10" fill="#f6ddd4" />
+      <path d="M60 40c0-10 8-16 8-16" stroke="#fff" strokeWidth="3" fill="none" strokeLinecap="round" />
+      <path d="M78 36c0-8 6-14 6-14" stroke="#fff" strokeWidth="3" fill="none" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function ArtChat() {
+  return (
+    <svg viewBox="0 0 144 120" className="h-full w-full" aria-hidden>
+      <path
+        d="M28 38h70c10 0 18 8 18 18v22c0 10-8 18-18 18H58l-18 16v-16H28c-10 0-18-8-18-18V56c0-10 8-18 18-18Z"
+        fill="#c94b6a"
+      />
+      <circle cx="48" cy="68" r="5" fill="#fff" />
+      <circle cx="64" cy="68" r="5" fill="#fff" />
+      <circle cx="80" cy="68" r="5" fill="#fff" />
+    </svg>
+  );
+}
+
