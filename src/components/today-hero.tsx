@@ -126,7 +126,7 @@ export function TodayHero({
         {hero.kicker ? <p className="text-lg font-semibold text-fg/80">{hero.kicker}</p> : null}
         <h1
           className={cn(
-            "bg-gradient-to-br from-primary to-ink bg-clip-text font-extrabold tracking-tight text-transparent",
+            "bg-gradient-to-br from-primary to-ink bg-clip-text font-display font-semibold tracking-tight text-transparent",
             hero.kicker ? "mt-1 text-6xl" : "text-5xl leading-[1.05]",
           )}
         >

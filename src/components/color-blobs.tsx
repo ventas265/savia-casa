@@ -2,7 +2,7 @@ export function PageTitle({ kicker, title }: { kicker?: string; title: string })
   return (
     <div>
       {kicker ? <p className="text-sm font-medium text-muted">{kicker}</p> : null}
-      <h1 className="text-3xl font-extrabold tracking-tight text-ink">{title}</h1>
+      <h1 className="font-display text-3xl font-semibold tracking-[-0.03em] text-ink">{title}</h1>
     </div>
   );
 }

@@ -17,7 +17,7 @@ export function AppShell({
   return (
     <Shell
       header={
-        <div className="flex h-12 items-center justify-between gap-3 px-4">
+        <div className="flex h-14 items-center justify-between gap-3 px-4">
           {immersive ? (
             <span className="w-16" />
           ) : (

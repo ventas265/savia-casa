@@ -12,12 +12,12 @@ export function WelcomeStart() {
   ];
   return (
     <div>
-      <div className="flex items-center gap-2 text-primary">
-        <BrandMark className="size-10" />
-        <span className="text-2xl font-extrabold tracking-tight">Savia</span>
+      <div className="flex items-center gap-3 text-primary">
+        <BrandMark className="size-14 rounded-2xl" />
+        <span className="font-display text-4xl font-semibold tracking-[-0.04em]">Savia</span>
       </div>
-      <p className="mt-4 text-sm font-semibold tracking-wide text-muted">{t.tagline}</p>
-      <h1 className="mt-2 text-3xl font-extrabold tracking-tight">{t.welcomeTitle}</h1>
+      <p className="mt-5 text-sm font-semibold tracking-wide text-muted">{t.tagline}</p>
+      <h1 className="mt-2 font-display text-3xl font-semibold tracking-[-0.03em]">{t.welcomeTitle}</h1>
       <p className="mt-3 text-base leading-relaxed text-fg">{t.welcomeBody}</p>
       <ol className="mt-6 space-y-3">
         {steps.map((s, i) => (

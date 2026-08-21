@@ -1,26 +1,26 @@
-@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Outfit:wght@400;500;600;700;800&display=swap");
 @import "tailwindcss";
 @import "tw-animate-css";
 
 @theme {
-  --color-bg: #f6ebe6;
-  --color-surface: #fffdfb;
-  --color-surface-2: #f3ddd8;
-  --color-ink: #3a2428;
-  --color-fg: #3a2428;
-  --color-muted: #8d6b72;
-  --color-primary: #c94b6a;
-  --color-primary-fg: #ffffff;
-  --color-accent: #e8c9c4;
-  --color-border: #edd8d3;
-  --color-danger: #c94b6a;
-  --color-ring: #c94b6a;
-  --color-cal-period: #c94b6a;
+  --color-bg: #f3e6df;
+  --color-surface: #fffdfa;
+  --color-surface-2: #ead7d1;
+  --color-ink: #2c181c;
+  --color-fg: #2c181c;
+  --color-muted: #8a656c;
+  --color-primary: #b03a58;
+  --color-primary-fg: #fffdfa;
+  --color-accent: #e8b7b4;
+  --color-border: #e5d0c9;
+  --color-danger: #b03a58;
+  --color-ring: #b03a58;
+  --color-cal-period: #b03a58;
   --color-cal-peak: #6b2d3c;
-  --color-cal-fertile: #f3d5dc;
-  --color-cal-quiet: #fffdfb;
+  --color-cal-fertile: #f0d4d6;
+  --color-cal-quiet: #fffdfa;
   --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Fraunces", "Times New Roman", serif;
   --radius-sm: 10px;
   --radius-md: 16px;
   --radius-lg: 22px;
@@ -39,7 +39,7 @@
 
   body {
     background:
-      radial-gradient(ellipse 80% 50% at 100% -10%, rgb(201 75 106 / 0.10), transparent 55%),
+      radial-gradient(ellipse 80% 50% at 100% -10%, rgb(176 58 88 / 0.10), transparent 55%),
       var(--color-bg);
     color: var(--color-fg);
     font-family: var(--font-sans);
