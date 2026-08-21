@@ -55,103 +55,27 @@ function Cuaderno() {
   return (
     <AppShell current="mas">
       <h1 className="text-2xl font-semibold">{t.settings}</h1>
-      <p className="mt-2 text-muted">{t.payNow}</p>
-      <p className="mt-2 text-sm leading-relaxed text-muted">{t.posHint}</p>
+      <p className="mt-2 text-sm leading-relaxed text-muted">{t.morePayHint}</p>
       <Button className="mt-6" variant="secondary" asChild>
-        <Link to="/app/onboarding">{t.onboardingTitle}</Link>
+        <Link to="/app/onboarding">{t.profile}</Link>
       </Button>
 
       <div className="mt-8 space-y-4 rounded-3xl bg-surface p-5">
+        <h2 className="text-lg font-bold">{t.payIdPm}</h2>
         <div>
-          <Label htmlFor="bankName">{t.bankName}</Label>
-          <Input
-            id="bankName"
-            className="mt-2"
-            value={pay.bankName}
-            onChange={(e) => setPay({ ...pay, bankName: e.target.value })}
-            placeholder="Banplus"
-          />
-        </div>
-        <div>
-          <Label htmlFor="bankHolder">{t.bankHolder}</Label>
-          <Input
-            id="bankHolder"
-            className="mt-2"
-            value={pay.bankHolder}
-            onChange={(e) => setPay({ ...pay, bankHolder: e.target.value })}
-          />
-        </div>
-        <div>
-          <Label htmlFor="bankAccount">{t.bankAccount}</Label>
-          <Input
-            id="bankAccount"
-            className="mt-2"
-            value={pay.bankAccount}
-            onChange={(e) => setPay({ ...pay, bankAccount: e.target.value })}
-          />
-          <p className="mt-1 text-xs text-muted">{t.bankHint}</p>
-        </div>
-        <div>
-          <Label htmlFor="zinli">{t.zinliUser}</Label>
-          <Input
-            id="zinli"
-            className="mt-2"
-            value={pay.zinli}
-            onChange={(e) => setPay({ ...pay, zinli: e.target.value })}
-            placeholder={t.zinliPlaceholder}
-          />
+          <Label htmlFor="pmBank">{t.pmBank}</Label>
+          <Input id="pmBank" className="mt-2" value={pay.pmBank} onChange={(e) => setPay({ ...pay, pmBank: e.target.value })} />
         </div>
         <div>
           <Label htmlFor="pmPhone">{t.pmPhone}</Label>
-          <Input
-            id="pmPhone"
-            className="mt-2"
-            value={pay.pmPhone}
-            onChange={(e) => setPay({ ...pay, pmPhone: e.target.value })}
-            placeholder="0412…"
-          />
-        </div>
-        <div>
-          <Label htmlFor="pmBank">{t.pmBank}</Label>
-          <Input
-            id="pmBank"
-            className="mt-2"
-            value={pay.pmBank}
-            onChange={(e) => setPay({ ...pay, pmBank: e.target.value })}
-            placeholder="Banplus, Banesco…"
-          />
+          <Input id="pmPhone" className="mt-2" value={pay.pmPhone} onChange={(e) => setPay({ ...pay, pmPhone: e.target.value })} />
         </div>
         <div>
           <Label htmlFor="pmId">{t.pmId}</Label>
-          <Input
-            id="pmId"
-            className="mt-2"
-            value={pay.pmId}
-            onChange={(e) => setPay({ ...pay, pmId: e.target.value })}
-            placeholder="V-…"
-          />
+          <Input id="pmId" className="mt-2" value={pay.pmId} onChange={(e) => setPay({ ...pay, pmId: e.target.value })} />
         </div>
-        <div>
-          <Label htmlFor="usdt">{t.usdtAddr}</Label>
-          <Input
-            id="usdt"
-            className="mt-2"
-            value={pay.usdt}
-            onChange={(e) => setPay({ ...pay, usdt: e.target.value })}
-            placeholder="T…"
-          />
-        </div>
-        <div>
-          <Label htmlFor="cardUrl">{t.cardUrl}</Label>
-          <Input
-            id="cardUrl"
-            className="mt-2"
-            value={pay.cardUrl}
-            onChange={(e) => setPay({ ...pay, cardUrl: e.target.value })}
-            placeholder="https://"
-          />
-          <p className="mt-1 text-xs text-muted">{t.cardUrlHint}</p>
-        </div>
+
+        <h2 className="pt-2 text-lg font-bold">{t.payIdPaypal}</h2>
         <div>
           <Label htmlFor="paypalEmail">{t.paypalEmail}</Label>
           <Input
@@ -160,9 +84,10 @@ function Cuaderno() {
             type="email"
             value={pay.paypalEmail}
             onChange={(e) => setPay({ ...pay, paypalEmail: e.target.value })}
-            placeholder="correo@paypal.com"
           />
         </div>
+
+        <h2 className="pt-2 text-lg font-bold">{t.payIdBinance}</h2>
         <div>
           <Label htmlFor="binance">{t.binanceLabel}</Label>
           <Input
@@ -171,19 +96,29 @@ function Cuaderno() {
             type="email"
             value={pay.binance}
             onChange={(e) => setPay({ ...pay, binance: e.target.value })}
-            placeholder="correo@binance"
           />
         </div>
+
+        <h2 className="pt-2 text-lg font-bold">{t.methodBank}</h2>
         <div>
-          <Label htmlFor="paypalUrl">{t.paypalUrl}</Label>
-          <Input
-            id="paypalUrl"
-            className="mt-2"
-            value={pay.paypalUrl}
-            onChange={(e) => setPay({ ...pay, paypalUrl: e.target.value })}
-            placeholder="https://paypal.me/tuusuario/4.99"
-          />
-          <p className="mt-1 text-xs text-muted">{t.paypalHint}</p>
+          <Label htmlFor="bankName">{t.bankName}</Label>
+          <Input id="bankName" className="mt-2" value={pay.bankName} onChange={(e) => setPay({ ...pay, bankName: e.target.value })} />
+        </div>
+        <div>
+          <Label htmlFor="bankHolder">{t.bankHolder}</Label>
+          <Input id="bankHolder" className="mt-2" value={pay.bankHolder} onChange={(e) => setPay({ ...pay, bankHolder: e.target.value })} />
+        </div>
+        <div>
+          <Label htmlFor="bankAccount">{t.bankAccount}</Label>
+          <Input id="bankAccount" className="mt-2" value={pay.bankAccount} onChange={(e) => setPay({ ...pay, bankAccount: e.target.value })} />
+        </div>
+        <div>
+          <Label htmlFor="zinli">{t.zinliUser}</Label>
+          <Input id="zinli" className="mt-2" value={pay.zinli} onChange={(e) => setPay({ ...pay, zinli: e.target.value })} />
+        </div>
+        <div>
+          <Label htmlFor="usdt">{t.usdtAddr}</Label>
+          <Input id="usdt" className="mt-2" value={pay.usdt} onChange={(e) => setPay({ ...pay, usdt: e.target.value })} />
         </div>
         <Button type="button" disabled={busy} onClick={() => void save()}>
           {t.save}

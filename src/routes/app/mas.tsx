@@ -1,67 +1,146 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
-import { ChevronRight } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Bell, ChevronRight, Copy, FileText, MessageCircle, UserRound } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
-import { PageTitle, CHIP_TONES } from "@/components/color-blobs";
 import { useI18n } from "@/lib/i18n";
 import { Disclaimer } from "@/components/disclaimer";
 import { notifyPermission, requestNotify } from "@/lib/notify";
+import { getAskStatus, getPay, type PaySettings } from "@/lib/savia-server";
+import { loadToday } from "@/lib/savia-api";
+import { pick, stageName } from "@/lib/savia-content";
+import { latamOf } from "@/lib/latam";
+import type { SaviaProfile } from "@/lib/types";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/app/mas")({ component: MasTab });
 
 function MasTab() {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const [perm, setPerm] = useState(notifyPermission);
-  const links = [
-    { to: "/app/onboarding" as const, label: t.profile },
-    { to: "/app/preguntar" as const, label: t.askTalk },
-    { to: "/app/informe" as const, label: t.reportTitle },
-    { to: "/app/cuaderno" as const, label: t.settings },
-    { to: "/pagar" as const, label: t.payCta },
-    { to: "/pricing" as const, label: t.navPricing },
-  ];
+  const [profile, setProfile] = useState<SaviaProfile | null>(null);
+  const [pay, setPay] = useState<PaySettings | null>(null);
+  const [paid, setPaid] = useState(false);
+
+  useEffect(() => {
+    loadToday()
+      .then((s) => {
+        setProfile(s.profile);
+        if (s.profile.plan === "serena" || s.profile.plan === "year") setPaid(true);
+      })
+      .catch(() => setProfile(null));
+    getPay()
+      .then(setPay)
+      .catch(() => setPay(null));
+    getAskStatus()
+      .then((s) => setPaid(s.paid))
+      .catch(() => setPaid(false));
+  }, []);
+
+  async function copy(text: string) {
+    if (!text) return;
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.success(t.copied);
+    } catch {
+      toast.error(t.errorGeneric);
+    }
+  }
+
+  const country = latamOf(profile?.country).name;
+  const age = profile?.birthYear ? new Date().getFullYear() - profile.birthYear : null;
+  const pmLine = pay ? [pay.pmBank, pay.pmPhone, pay.pmId].filter(Boolean).join(" · ") : "";
+
   return (
     <AppShell current="mas">
-      <PageTitle title={t.more} />
-      <ul className="mt-6 space-y-2">
-        {links.map((l, i) => (
-          <li key={l.to}>
-            <Link
-              to={l.to}
-              className={`flex min-h-14 items-center justify-between rounded-[1.25rem] px-4 text-sm font-semibold shadow-card ${CHIP_TONES[i % CHIP_TONES.length]}`}
-            >
-              {l.label}
-              <ChevronRight className="size-4 opacity-70" />
-            </Link>
-          </li>
-        ))}
-        <li>
-          <button
-            type="button"
-            className="flex min-h-14 w-full items-center justify-between rounded-[1.25rem] bg-surface px-4 text-left text-sm font-semibold shadow-card"
-            onClick={() => {
-              void requestNotify().then((p) => {
-                setPerm(p);
-                if (p === "granted") toast.success(t.notifyOn);
-              });
-            }}
-          >
+      <h1 className="text-3xl font-extrabold tracking-tight">{t.more}</h1>
+
+      <section className="mt-6 rounded-[1.6rem] bg-surface p-5 shadow-card">
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted">{t.moreYou}</p>
+        {profile?.displayName ? (
+          <>
+            <p className="mt-2 text-2xl font-extrabold">{profile.displayName}</p>
+            <p className="mt-1 text-sm text-muted">
+              {pick(stageName[profile.stage], lang)}
+              {age ? ` · ${age}` : ""}
+              {profile.stage === "cycle" || profile.stage === "peri" ? ` · ${profile.cycleLength} ${t.days}` : ""}
+              {` · ${country}`}
+            </p>
+          </>
+        ) : (
+          <p className="mt-2 text-sm text-muted">{t.moreBlank}</p>
+        )}
+        <Link
+          to="/app/onboarding"
+          className="mt-4 flex min-h-12 items-center justify-between rounded-full bg-primary px-4 text-sm font-semibold text-primary-fg"
+        >
+          {t.profile}
+          <ChevronRight className="size-4" />
+        </Link>
+      </section>
+
+      <section className="mt-4 rounded-[1.6rem] bg-ink p-5 text-primary-fg shadow-card">
+        <p className="text-sm opacity-70">{t.proName}</p>
+        <p className="mt-1 text-xl font-extrabold">{paid ? t.serenaActive : t.proPrice}</p>
+        {!paid ? (
+          <Button className="mt-4 w-full bg-primary text-primary-fg" asChild>
+            <Link to="/pagar">{t.payCta}</Link>
+          </Button>
+        ) : (
+          <Link to="/app/preguntar" className="mt-4 inline-flex min-h-12 items-center font-semibold text-accent">
+            {t.askTalk}
+          </Link>
+        )}
+      </section>
+
+      <section className="mt-6">
+        <h2 className="text-lg font-bold">{t.morePay}</h2>
+        <p className="mt-1 text-sm text-muted">{t.morePayHint}</p>
+        <ul className="mt-3 space-y-2">
+          <PayRow label={t.payIdCard} value="$4.99 · $39" onCopy={() => void copy("$4.99")} to="/pagar" />
+          {pay?.paypalEmail ? (
+            <PayRow label={t.payIdPaypal} value={pay.paypalEmail} onCopy={() => void copy(pay.paypalEmail)} />
+          ) : null}
+          {pay?.binance ? (
+            <PayRow label={t.payIdBinance} value={pay.binance} onCopy={() => void copy(pay.binance)} />
+          ) : null}
+          {pmLine ? <PayRow label={t.payIdPm} value={pmLine} onCopy={() => void copy(pmLine)} /> : null}
+        </ul>
+      </section>
+
+      <section className="mt-8">
+        <h2 className="text-lg font-bold">{t.moreTools}</h2>
+        <ul className="mt-3 space-y-2">
+          <Tool to="/app/preguntar" label={t.askTalk} icon={MessageCircle} />
+          <Tool to="/app/informe" label={t.reportTitle} icon={FileText} />
+          <Tool to="/app/onboarding" label={t.profile} icon={UserRound} />
+        </ul>
+        <button
+          type="button"
+          className="mt-2 flex min-h-14 w-full items-center justify-between rounded-[1.25rem] bg-surface px-4 text-left text-sm font-semibold shadow-card"
+          onClick={() => {
+            void requestNotify().then((p) => {
+              setPerm(p);
+              if (p === "granted") toast.success(t.notifyOn);
+            });
+          }}
+        >
+          <span className="flex items-center gap-3">
+            <Bell className="size-5 text-primary" />
             {perm === "granted" ? t.notifyOn : t.notifyCta}
-            <ChevronRight className="size-4 text-muted" />
-          </button>
-        </li>
-        <li>
-          <a
-            href="/?install=1"
-            className="flex min-h-14 items-center justify-between rounded-[1.25rem] bg-accent px-4 text-sm font-semibold text-ink shadow-card"
-          >
-            {t.installCta}
-            <ChevronRight className="size-4 opacity-70" />
-          </a>
-        </li>
-      </ul>
-      <p className="mt-6 text-sm leading-relaxed text-muted">{t.privacyNote}</p>
+          </span>
+          <ChevronRight className="size-4 text-muted" />
+        </button>
+        <a
+          href="/?install=1"
+          className="mt-2 flex min-h-14 items-center justify-between rounded-[1.25rem] bg-accent px-4 text-sm font-semibold text-ink shadow-card"
+        >
+          {t.installCta}
+          <ChevronRight className="size-4 opacity-70" />
+        </a>
+      </section>
+
+      <p className="mt-8 text-sm leading-relaxed text-muted">{t.privacyNote}</p>
       <div className="mt-3 flex gap-4 text-sm font-semibold text-primary">
         <Link to="/privacidad">{t.navPrivacy}</Link>
         <Link to="/terminos">{t.navTerms}</Link>
@@ -70,5 +149,68 @@ function MasTab() {
         <Disclaimer compact />
       </div>
     </AppShell>
+  );
+}
+
+function PayRow({
+  label,
+  value,
+  onCopy,
+  to,
+}: {
+  label: string;
+  value: string;
+  onCopy: () => void;
+  to?: "/pagar";
+}) {
+  const inner = (
+    <>
+      <p className="text-xs font-semibold uppercase tracking-wide text-muted">{label}</p>
+      <p className="mt-1 break-all text-sm font-semibold">{value}</p>
+    </>
+  );
+  return (
+    <li className="flex items-center gap-2 rounded-[1.25rem] bg-surface p-4 shadow-card">
+      {to ? (
+        <Link to={to} className="min-w-0 flex-1">
+          {inner}
+        </Link>
+      ) : (
+        <div className="min-w-0 flex-1">{inner}</div>
+      )}
+      <button
+        type="button"
+        className="flex size-11 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary"
+        onClick={onCopy}
+        aria-label={label}
+      >
+        <Copy className="size-4" />
+      </button>
+    </li>
+  );
+}
+
+function Tool({
+  to,
+  label,
+  icon: Icon,
+}: {
+  to: "/app/preguntar" | "/app/informe" | "/app/onboarding";
+  label: string;
+  icon: typeof UserRound;
+}) {
+  return (
+    <li>
+      <Link
+        to={to}
+        className="flex min-h-14 items-center justify-between rounded-[1.25rem] bg-surface px-4 text-sm font-semibold shadow-card"
+      >
+        <span className="flex items-center gap-3">
+          <Icon className="size-5 text-primary" />
+          {label}
+        </span>
+        <ChevronRight className="size-4 text-muted" />
+      </Link>
+    </li>
   );
 }
