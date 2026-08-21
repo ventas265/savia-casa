@@ -49,7 +49,7 @@ function Preguntar() {
   return (
     <AppShell current="mas">
       <div className="flex items-center gap-3">
-        <span className="flex size-14 items-center justify-center rounded-full bg-[#ffd56a] text-ink shadow-card">
+        <span className="flex size-14 items-center justify-center rounded-full bg-accent text-ink shadow-card">
           <AskGlyph className="size-7" />
         </span>
         <PageTitle kicker={t.askSub} title={t.askTitle} />
@@ -78,7 +78,7 @@ function Preguntar() {
               key={`${m.role}-${i}`}
               className={cn(
                 "max-w-[92%] whitespace-pre-wrap rounded-3xl px-4 py-3 text-sm leading-relaxed",
-                m.role === "user" ? "ml-auto bg-primary text-primary-fg" : "bg-[#5ee4d6] text-ink",
+                m.role === "user" ? "ml-auto bg-primary text-primary-fg" : "bg-accent text-ink",
               )}
             >
               {m.content}

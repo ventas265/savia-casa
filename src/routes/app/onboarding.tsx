@@ -51,6 +51,8 @@ function Onboarding() {
     () => (lastPeriodStart ? nextPeriodDate(lastPeriodStart, cycleLength) : null),
     [lastPeriodStart, cycleLength],
   );
+  const cycling = stage === "cycle" || stage === "peri" || stage === "postpartum";
+  const canSave = Boolean(displayName.trim()) && (!cycling || Boolean(lastPeriodStart));
 
   async function save() {
     const years = age ? Number(age) : NaN;
@@ -235,7 +237,7 @@ function Onboarding() {
             ) : null}
           </>
         ) : null}
-        <Button type="button" className="w-full" onClick={() => void save()} disabled={busy || !displayName.trim()}>
+        <Button type="button" className="w-full" onClick={() => void save()} disabled={busy || !canSave}>
           {next ? t.dateFits : t.save}
         </Button>
       </div>

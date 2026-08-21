@@ -73,7 +73,7 @@ export function LogForm({
 
   return (
     <div className="space-y-4">
-      <div className="relative overflow-hidden rounded-[1.6rem] bg-[#ffd6e0] p-5 shadow-card">
+      <div className="relative overflow-hidden rounded-[1.6rem] bg-primary/15 p-5 shadow-card">
         <span className="absolute -right-6 -top-6 size-24 rounded-full bg-white/30" />
         <p className="relative text-sm font-bold">{t.flow}</p>
         <div className="mt-3 grid grid-cols-4 gap-2">
@@ -123,7 +123,7 @@ export function LogForm({
         {paid ? null : <p className="mt-2 text-xs text-muted">{t.sexPay}</p>}
       </div>
 
-      <div className="relative overflow-hidden rounded-[1.6rem] bg-[#d4f7f1] p-5 shadow-card">
+      <div className="relative overflow-hidden rounded-[1.6rem] bg-accent/20 p-5 shadow-card">
         <span className="absolute -right-8 -bottom-8 size-24 rounded-full bg-white/40" />
         <p className="relative text-sm font-bold">{t.mucus}</p>
         <div className="mt-3 flex flex-wrap gap-2">
@@ -143,7 +143,7 @@ export function LogForm({
         </div>
       </div>
 
-      <div className="relative overflow-hidden rounded-[1.6rem] bg-[#e8dcff] p-5 shadow-card">
+      <div className="relative overflow-hidden rounded-[1.6rem] bg-surface-2/40 p-5 shadow-card">
         <p className="text-sm font-bold">{t.symptoms}</p>
         <div className="mt-3 flex flex-wrap gap-2">
           {SYMPTOMS.map((id) => (
@@ -162,7 +162,7 @@ export function LogForm({
         </div>
       </div>
 
-      <div className="relative overflow-hidden rounded-[1.6rem] bg-[#ffe9b8] p-5 shadow-card">
+      <div className="relative overflow-hidden rounded-[1.6rem] bg-surface p-5 shadow-card">
         <p className="text-sm font-bold">{t.moodAsk}</p>
         <p className="mt-1 text-xs text-muted">{t.moodHint}</p>
         <div className="mt-3 grid grid-cols-5 gap-1.5">

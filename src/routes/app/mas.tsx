@@ -54,7 +54,7 @@ function MasTab() {
         <li>
           <a
             href="/?install=1"
-            className="flex min-h-14 items-center justify-between rounded-[1.25rem] bg-[#ffd56a] px-4 text-sm font-semibold text-ink shadow-card"
+            className="flex min-h-14 items-center justify-between rounded-[1.25rem] bg-accent px-4 text-sm font-semibold text-ink shadow-card"
           >
             {t.installCta}
             <ChevronRight className="size-4 opacity-70" />

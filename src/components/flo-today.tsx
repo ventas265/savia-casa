@@ -103,16 +103,15 @@ export function FloToday({
       <p className="relative text-center text-sm font-semibold">{formatLong(today, lang)}</p>
 
       <div className="relative mt-4 grid grid-cols-7 text-center">
-        {days.map((d, i) => {
+        {days.map((d) => {
           const isToday = d.iso === today;
-          const wash = ["bg-[#ffd56a]/40", "bg-[#7ee8d8]/40", "bg-[#ff9eb5]/50", "bg-primary text-primary-fg", "bg-[#c9b6ff]/50", "bg-[#7ee8d8]/40", "bg-[#ffd56a]/40"];
           return (
             <div key={d.iso} className="flex flex-col items-center gap-2">
               <span className="text-xs font-semibold text-muted">{dow[d.dow]}</span>
               <span
                 className={cn(
                   "flex size-10 items-center justify-center rounded-full text-base font-semibold",
-                  isToday ? "bg-primary text-primary-fg shadow-card" : wash[i],
+                  isToday ? "bg-primary text-primary-fg shadow-card" : "bg-surface text-fg",
                 )}
               >
                 {d.date}
@@ -127,7 +126,7 @@ export function FloToday({
         {hero.kicker ? <p className="text-lg font-semibold text-fg/80">{hero.kicker}</p> : null}
         <h1
           className={cn(
-            "bg-gradient-to-br from-primary to-[#ff7a3b] bg-clip-text font-extrabold tracking-tight text-transparent",
+            "bg-gradient-to-br from-primary to-ink bg-clip-text font-extrabold tracking-tight text-transparent",
             hero.kicker ? "mt-1 text-6xl" : "text-5xl leading-[1.05]",
           )}
         >
@@ -180,7 +179,7 @@ export function FloToday({
         <ActionCircle label={t.symptoms} onClick={onLog} tone="mint">
           <Plus className="size-7" />
         </ActionCircle>
-        <ActionCircle label={t.askMark} onClick={onAsk} tone="gold">
+        <ActionCircle label={t.askMark} onClick={onAsk} tone="ink">
           <AskGlyph className="size-8" />
         </ActionCircle>
       </div>
@@ -195,8 +194,8 @@ export function FloToday({
         <div className="-mx-4 mt-4 flex gap-3 overflow-x-auto px-4 pb-2">
           <TipCard tone="mint" title={pick(phaseName[phase], lang)} onClick={onGuia} />
           {food ? <TipCard tone="ink" title={pick(food.title, lang)} onClick={onGuia} /> : null}
-          <TipCard tone="gold" title={pick(tea.name, lang)} onClick={onGuia} />
-          <TipCard tone="lilac" title={t.askMark} onClick={onAsk} />
+          <TipCard tone="surface" title={pick(tea.name, lang)} onClick={onGuia} />
+          <TipCard tone="primary" title={t.askMark} onClick={onAsk} />
         </div>
       </div>
     </div>
@@ -211,7 +210,7 @@ function ActionCircle({
 }: {
   label: string;
   onClick: () => void;
-  tone: "pink" | "mint" | "gold";
+  tone: "pink" | "mint" | "ink";
   children: ReactNode;
 }) {
   return (
@@ -219,9 +218,9 @@ function ActionCircle({
       <span
         className={cn(
           "float-slow flex size-[4.4rem] items-center justify-center rounded-full shadow-card",
-          tone === "pink" && "bg-[#ff6b9d] text-white",
-          tone === "mint" && "bg-[#5ee4d6] text-ink",
-          tone === "gold" && "bg-[#ffd56a] text-ink",
+          tone === "pink" && "bg-primary text-primary-fg",
+          tone === "mint" && "bg-accent text-ink",
+          tone === "ink" && "bg-ink text-primary-fg",
         )}
       >
         {children}
@@ -237,7 +236,7 @@ function TipCard({
   onClick,
 }: {
   title: string;
-  tone: "mint" | "ink" | "gold" | "lilac";
+  tone: "mint" | "ink" | "surface" | "primary";
   onClick: () => void;
 }) {
   return (
@@ -246,10 +245,10 @@ function TipCard({
       onClick={onClick}
       className={cn(
         "relative h-48 w-40 shrink-0 overflow-hidden rounded-[1.6rem] p-4 text-left shadow-card",
-        tone === "mint" && "bg-[#5ee4d6] text-ink",
+        tone === "mint" && "bg-accent text-ink",
         tone === "ink" && "bg-ink text-primary-fg",
-        tone === "gold" && "bg-[#ffd56a] text-ink",
-        tone === "lilac" && "bg-[#c9b6ff] text-ink",
+        tone === "surface" && "bg-surface text-ink",
+        tone === "primary" && "bg-primary text-primary-fg",
       )}
     >
       <span className="absolute -right-6 -top-6 size-24 rounded-full bg-white/25" />

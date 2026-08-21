@@ -143,7 +143,9 @@ function Pagar() {
           <p className="mt-3 text-xs opacity-70">{t.cardBody}</p>
         </div>
 
-        <div className="mt-4 grid grid-cols-2 gap-2">
+        <details className="mt-6 rounded-[1.6rem] bg-surface p-4 shadow-card">
+          <summary className="min-h-11 cursor-pointer list-none text-sm font-semibold">{t.otherPay}</summary>
+        <div className="mt-3 grid grid-cols-2 gap-2">
           {(
             [
               ["card", t.methodCard],
@@ -265,6 +267,7 @@ function Pagar() {
             ) : null}
           </div>
         </div>
+        </details>
 
         <form className="mt-6 space-y-3" onSubmit={(e) => void paid(e)}>
           <label className="text-sm font-medium" htmlFor="pay-email">

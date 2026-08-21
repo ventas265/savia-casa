@@ -23,11 +23,11 @@ export function Predictions({
   return (
     <div className="mb-4">
       <div className="grid grid-cols-3 gap-2">
-        <div className="rounded-2xl bg-[#ff6b9d] px-2 py-3 text-center text-white shadow-card">
+        <div className="rounded-2xl bg-primary px-2 py-3 text-center text-primary-fg shadow-card">
           <p className="text-[10px] font-semibold uppercase tracking-wide opacity-80">{t.predNext}</p>
           <p className="mt-1 text-sm font-bold">{next ? formatDay(next, lang) : "—"}</p>
         </div>
-        <div className="rounded-2xl bg-[#5ee4d6] px-2 py-3 text-center text-ink shadow-card">
+        <div className="rounded-2xl bg-accent px-2 py-3 text-center text-ink shadow-card">
           <p className="text-[10px] font-semibold uppercase tracking-wide opacity-70">{t.predFertile}</p>
           <p className="mt-1 text-sm font-bold">
             {win ? `${formatDay(win.start, lang)}–${formatDay(win.end, lang)}` : "—"}
