@@ -12,7 +12,7 @@ import { maybeNotify, periodAlert } from "@/lib/notify";
 const DOW_ES = ["D", "L", "M", "X", "J", "V", "S"];
 const DOW_EN = ["S", "M", "T", "W", "T", "F", "S"];
 
-export function FloToday({
+export function TodayHero({
   stage,
   phase,
   nextPeriod,

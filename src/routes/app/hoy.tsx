@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { FloToday } from "@/components/flo-today";
+import { TodayHero } from "@/components/today-hero";
 import { WelcomeStart } from "@/components/welcome-start";
 import { loadToday, markCameToday, setCycleLength } from "@/lib/savia-api";
 import { SAVIA_BETA } from "@/lib/beta";
@@ -35,7 +35,7 @@ function HoyTab() {
   }
 
   return (
-    <FloToday
+    <TodayHero
       name={data.profile.displayName}
       stage={data.profile.stage}
       phase={data.phase}
