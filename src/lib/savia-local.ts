@@ -3,10 +3,13 @@ import type { DailyLog, Flow, Intention, Mucus, SaviaProfile, SexKind, Stage, To
 
 const KEY = "savia.beta.v1";
 
+type Feeling = "suave" | "bien" | "pesada" | "dolor";
+
 type Store = {
   profile: SaviaProfile;
   logs: DailyLog[];
   starts: string[];
+  checkins: Record<string, Feeling>;
 };
 
 function emptyProfile(): SaviaProfile {
@@ -31,19 +34,20 @@ function emptyProfile(): SaviaProfile {
 
 function read(): Store {
   if (typeof window === "undefined") {
-    return { profile: emptyProfile(), logs: [], starts: [] };
+    return { profile: emptyProfile(), logs: [], starts: [], checkins: {} };
   }
   try {
     const raw = localStorage.getItem(KEY);
-    if (!raw) return { profile: emptyProfile(), logs: [], starts: [] };
+    if (!raw) return { profile: emptyProfile(), logs: [], starts: [], checkins: {} };
     const parsed = JSON.parse(raw) as Store;
     return {
       profile: { ...emptyProfile(), ...parsed.profile, plan: "serena", userId: "beta" },
       logs: parsed.logs || [],
       starts: parsed.starts || [],
+      checkins: parsed.checkins || {},
     };
   } catch {
-    return { profile: emptyProfile(), logs: [], starts: [] };
+    return { profile: emptyProfile(), logs: [], starts: [], checkins: {} };
   }
 }
 
@@ -244,4 +248,30 @@ export function localReset() {
   if (typeof window === "undefined") return;
   localStorage.removeItem(KEY);
 }
+
+export function localFeelingToday(): Feeling | null {
+  return read().checkins[todayISO()] || null;
+}
+
+export function localSetFeeling(feeling: Feeling) {
+  const store = read();
+  store.checkins[todayISO()] = feeling;
+  write(store);
+  return feeling;
+}
+
+export function localStreak() {
+  const { checkins } = read();
+  let n = 0;
+  const d = new Date();
+  for (let i = 0; i < 60; i++) {
+    const iso = todayISO(d);
+    if (!checkins[iso]) break;
+    n += 1;
+    d.setDate(d.getDate() - 1);
+  }
+  return n;
+}
+
+export type { Feeling };
 

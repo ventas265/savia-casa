@@ -7,6 +7,7 @@ import { foodsFor, pick, teaFor, phaseName } from "@/lib/savia-content";
 import type { Phase, Stage } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { AskGlyph } from "@/components/ask-fab";
+import { CartaHoy } from "@/components/carta-hoy";
 import { maybeNotify, periodAlert } from "@/lib/notify";
 
 const DOW_ES = ["D", "L", "M", "X", "J", "V", "S"];
@@ -186,6 +187,8 @@ export function TodayHero({
           <AskGlyph className="size-8 text-primary" />
         </ActionCircle>
       </div>
+
+      <CartaHoy name={name} stage={stage} phase={phase} onAsk={onAsk} />
 
       <div className="relative mt-10">
         <h2 className="text-lg font-bold">{t.dailyTips}</h2>
