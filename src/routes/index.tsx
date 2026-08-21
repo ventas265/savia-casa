@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { ChevronRight } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
@@ -11,9 +11,15 @@ import { FloToday } from "@/components/flo-today";
 import { LibraryBody } from "@/components/library-body";
 import { Shell } from "@/components/shell";
 import { sampleLastStart, nextPeriodDate, addDaysISO } from "@/lib/cycle";
+import { SAVIA_BETA } from "@/lib/beta";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/")({ component: Home });
+export const Route = createFileRoute("/")({
+  beforeLoad: () => {
+    if (SAVIA_BETA) throw redirect({ to: "/app/hoy" });
+  },
+  component: Home,
+});
 
 function Home() {
   const { t } = useI18n();
