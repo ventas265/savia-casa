@@ -36,7 +36,7 @@ export function CartaHoy({
   }
 
   return (
-    <section className="relative mt-10 rounded-[1.75rem] bg-surface p-5 shadow-card">
+    <section className="relative mt-6 rounded-[1.75rem] bg-surface p-5 shadow-card">
       <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-primary">{t.cartaKicker}</p>
       {name ? (
         <p className="mt-2 font-display text-xl font-semibold tracking-[-0.02em]">
