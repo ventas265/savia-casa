@@ -9,7 +9,7 @@ import { loadToday, writeSex, betaPaid } from "@/lib/savia-api";
 import { SAVIA_BETA } from "@/lib/beta";
 import { localToday } from "@/lib/savia-local";
 import { useI18n } from "@/lib/i18n";
-import { isCycling, periodDaysFromLogs, formatDay } from "@/lib/cycle";
+import { isCycling, periodDaysFromLogs, formatDay, weightedCycle } from "@/lib/cycle";
 import type { SexKind, TodaySnapshot } from "@/lib/types";
 
 export const Route = createFileRoute("/app/calendario")({ component: CalendarTab });
@@ -57,6 +57,7 @@ function CalendarTab() {
   if (!data) return <p className="text-muted">{t.errorGeneric}</p>;
 
   const paid = betaPaid() || data.profile.plan === "serena" || data.profile.plan === "year";
+  const learned = weightedCycle(data.periodStarts, data.profile.cycleLength);
 
   return (
     <div>
@@ -66,7 +67,7 @@ function CalendarTab() {
           <>
             <Predictions
               lastStart={data.profile.lastPeriodStart}
-              cycleLength={data.profile.cycleLength}
+              cycleLength={learned}
               periodLength={data.profile.periodLength}
               starts={data.periodStarts}
               intention={data.profile.intention}
@@ -74,7 +75,7 @@ function CalendarTab() {
             />
             <CycleCalendar
               lastStart={data.profile.lastPeriodStart}
-              cycleLength={data.profile.cycleLength}
+              cycleLength={learned}
               periodLength={data.profile.periodLength}
               periodStarts={data.periodStarts}
               periodDays={periodDaysFromLogs(data.recentLogs)}
