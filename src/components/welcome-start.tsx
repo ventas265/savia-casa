@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
+import { BrandMark } from "@/components/brand-mark";
 
 export function WelcomeStart() {
   const { t } = useI18n();
@@ -11,7 +12,11 @@ export function WelcomeStart() {
   ];
   return (
     <div>
-      <p className="text-sm font-semibold tracking-wide text-primary">{t.tagline}</p>
+      <div className="flex items-center gap-2 text-primary">
+        <BrandMark className="size-10" />
+        <span className="text-2xl font-extrabold tracking-tight">Savia</span>
+      </div>
+      <p className="mt-4 text-sm font-semibold tracking-wide text-muted">{t.tagline}</p>
       <h1 className="mt-2 text-3xl font-extrabold tracking-tight">{t.welcomeTitle}</h1>
       <p className="mt-3 text-base leading-relaxed text-fg">{t.welcomeBody}</p>
       <ol className="mt-6 space-y-3">
@@ -31,6 +36,7 @@ export function WelcomeStart() {
         <Link to="/app/onboarding">{t.welcomeCta}</Link>
       </Button>
       <p className="mt-3 text-center text-xs leading-relaxed text-muted">{t.welcomeNote}</p>
+      <p className="mt-2 text-center text-xs leading-relaxed text-muted">{t.privacyNote}</p>
     </div>
   );
 }

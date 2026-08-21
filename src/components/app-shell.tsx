@@ -1,10 +1,9 @@
 import type { ReactNode } from "react";
-import { Link } from "@tanstack/react-router";
-import { useI18n } from "@/lib/i18n";
 import { AuthSlot } from "@/components/auth-slot";
 import { LangToggle } from "@/components/lang-toggle";
 import { TabBar, type TabKey } from "@/components/tab-bar";
 import { Shell } from "@/components/shell";
+import { BrandLockup } from "@/components/brand-mark";
 import { SAVIA_BETA } from "@/lib/beta";
 
 export function AppShell({
@@ -14,7 +13,6 @@ export function AppShell({
   children: ReactNode;
   current: TabKey | "other";
 }) {
-  const { t } = useI18n();
   const immersive = current === "hoy";
   return (
     <Shell
@@ -23,9 +21,7 @@ export function AppShell({
           {immersive ? (
             <span className="w-16" />
           ) : (
-            <Link to="/app/hoy" className="text-lg font-extrabold tracking-tight text-primary">
-              {t.brand}
-            </Link>
+            <BrandLockup />
           )}
           <div className="flex items-center gap-2">
             <LangToggle />

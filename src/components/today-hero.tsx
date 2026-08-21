@@ -133,6 +133,9 @@ export function TodayHero({
           {hero.title}
         </h1>
         <p className="mt-4 text-base font-medium">{chance}</p>
+        {left != null && !onPeriod ? (
+          <p className="mt-2 text-xs text-muted">{t.periodEstimate}</p>
+        ) : null}
         {!onPeriod && onCameToday ? (
           <button
             type="button"
