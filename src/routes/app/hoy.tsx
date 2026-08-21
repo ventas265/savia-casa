@@ -6,7 +6,7 @@ import { WelcomeStart } from "@/components/welcome-start";
 import { loadToday, markCameToday, setCycleLength } from "@/lib/savia-api";
 import { SAVIA_BETA } from "@/lib/beta";
 import { localToday } from "@/lib/savia-local";
-import { averageCycle, isCycling, nextPeriodDate } from "@/lib/cycle";
+import { isCycling, nextPeriodDate, weightedCycle } from "@/lib/cycle";
 import type { TodaySnapshot } from "@/lib/types";
 
 export const Route = createFileRoute("/app/hoy")({ component: HoyTab });
@@ -41,9 +41,12 @@ function HoyTab() {
       phase={data.phase}
       cycleLength={data.profile.cycleLength}
       cycleDay={data.cycleDay}
+      lastStart={data.profile.lastPeriodStart}
+      periodLength={data.profile.periodLength}
+      periodStarts={data.periodStarts}
       nextPeriod={nextPeriodDate(
         data.profile.lastPeriodStart,
-        averageCycle(data.periodStarts, data.profile.cycleLength),
+        weightedCycle(data.periodStarts, data.profile.cycleLength),
       )}
       onCal={() => void navigate({ to: "/app/calendario" })}
       onLog={() => void navigate({ to: "/app/registro" })}

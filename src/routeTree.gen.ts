@@ -27,6 +27,7 @@ import { Route as AppHoyRouteImport } from './routes/app/hoy'
 import { Route as AppInformeRouteImport } from './routes/app/informe'
 import { Route as AppMasRouteImport } from './routes/app/mas'
 import { Route as AppOnboardingRouteImport } from './routes/app/onboarding'
+import { Route as AppParejaRouteImport } from './routes/app/pareja'
 import { Route as AppPreguntarRouteImport } from './routes/app/preguntar'
 import { Route as AppRegistroRouteImport } from './routes/app/registro'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
@@ -121,6 +122,11 @@ const AppOnboardingRoute = AppOnboardingRouteImport.update({
   path: '/onboarding',
   getParentRoute: () => AppRoute,
 } as any)
+const AppParejaRoute = AppParejaRouteImport.update({
+  id: '/pareja',
+  path: '/pareja',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppPreguntarRoute = AppPreguntarRouteImport.update({
   id: '/preguntar',
   path: '/preguntar',
@@ -155,6 +161,7 @@ export interface FileRoutesByFullPath {
   '/app/informe': typeof AppInformeRoute
   '/app/mas': typeof AppMasRoute
   '/app/onboarding': typeof AppOnboardingRoute
+  '/app/pareja': typeof AppParejaRoute
   '/app/preguntar': typeof AppPreguntarRoute
   '/app/registro': typeof AppRegistroRoute
   '/app/': typeof AppIndexRoute
@@ -177,6 +184,7 @@ export interface FileRoutesByTo {
   '/app/informe': typeof AppInformeRoute
   '/app/mas': typeof AppMasRoute
   '/app/onboarding': typeof AppOnboardingRoute
+  '/app/pareja': typeof AppParejaRoute
   '/app/preguntar': typeof AppPreguntarRoute
   '/app/registro': typeof AppRegistroRoute
   '/app': typeof AppIndexRoute
@@ -201,6 +209,7 @@ export interface FileRoutesById {
   '/app/informe': typeof AppInformeRoute
   '/app/mas': typeof AppMasRoute
   '/app/onboarding': typeof AppOnboardingRoute
+  '/app/pareja': typeof AppParejaRoute
   '/app/preguntar': typeof AppPreguntarRoute
   '/app/registro': typeof AppRegistroRoute
   '/app/': typeof AppIndexRoute
@@ -226,6 +235,7 @@ export interface FileRouteTypes {
     | '/app/informe'
     | '/app/mas'
     | '/app/onboarding'
+    | '/app/pareja'
     | '/app/preguntar'
     | '/app/registro'
     | '/app/'
@@ -248,6 +258,7 @@ export interface FileRouteTypes {
     | '/app/informe'
     | '/app/mas'
     | '/app/onboarding'
+    | '/app/pareja'
     | '/app/preguntar'
     | '/app/registro'
     | '/app'
@@ -271,6 +282,7 @@ export interface FileRouteTypes {
     | '/app/informe'
     | '/app/mas'
     | '/app/onboarding'
+    | '/app/pareja'
     | '/app/preguntar'
     | '/app/registro'
     | '/app/'
@@ -418,6 +430,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppOnboardingRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/pareja': {
+      id: '/app/pareja'
+      path: '/pareja'
+      fullPath: '/app/pareja'
+      preLoaderRoute: typeof AppParejaRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/preguntar': {
       id: '/app/preguntar'
       path: '/preguntar'
@@ -451,6 +470,7 @@ interface AppRouteChildren {
   AppInformeRoute: typeof AppInformeRoute
   AppMasRoute: typeof AppMasRoute
   AppOnboardingRoute: typeof AppOnboardingRoute
+  AppParejaRoute: typeof AppParejaRoute
   AppPreguntarRoute: typeof AppPreguntarRoute
   AppRegistroRoute: typeof AppRegistroRoute
   AppIndexRoute: typeof AppIndexRoute
@@ -465,6 +485,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppInformeRoute: AppInformeRoute,
   AppMasRoute: AppMasRoute,
   AppOnboardingRoute: AppOnboardingRoute,
+  AppParejaRoute: AppParejaRoute,
   AppPreguntarRoute: AppPreguntarRoute,
   AppRegistroRoute: AppRegistroRoute,
   AppIndexRoute: AppIndexRoute,

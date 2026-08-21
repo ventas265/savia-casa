@@ -1,5 +1,3 @@
-import { AskGlyph } from "@/components/ask-fab";
-import { CHIP_TONES, PageTitle } from "@/components/color-blobs";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -13,6 +11,16 @@ import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/app/preguntar")({ component: Preguntar });
 
+function Face({ className }: { className?: string }) {
+  return (
+    <img
+      src="/photos/savia-ia.jpg"
+      alt=""
+      className={cn("rounded-full object-cover object-[center_20%] shadow-card", className)}
+    />
+  );
+}
+
 function Preguntar() {
   const { t, lang } = useI18n();
   const [q, setQ] = useState("");
@@ -24,9 +32,9 @@ function Preguntar() {
     end.current?.scrollIntoView({ behavior: "smooth" });
   }, [turns, busy]);
 
-  async function ask(text = q) {
-    const question = text.trim();
-    if (question.length < 4 || busy) return;
+  async function ask() {
+    const question = q.trim();
+    if (question.length < 1 || busy) return;
     const history = turns.slice(-8);
     setQ("");
     setTurns((prev) => [...prev, { role: "user", content: question }]);
@@ -46,72 +54,92 @@ function Preguntar() {
   }
 
   return (
-    <>
+    <div className="flex min-h-[70vh] flex-col">
       <div className="flex items-center gap-3">
-        <span className="flex size-14 items-center justify-center rounded-full bg-primary text-primary-fg shadow-card">
-          <AskGlyph className="size-7" />
-        </span>
-        <PageTitle kicker={t.askSub} title={t.askTitle} />
+        <Face className="size-14" />
+        <div>
+          <p className="font-display text-xl font-semibold leading-none">{t.askTitle}</p>
+          <p className="mt-1 text-sm text-muted">{t.askHere}</p>
+        </div>
       </div>
-      <div className="mt-3">
+      <div className="mt-2">
         <Disclaimer compact />
       </div>
 
-      {turns.length === 0 ? (
-        <div className="mt-6 flex flex-wrap gap-2">
-          {t.askChips.map((chip, i) => (
-            <button
-              key={chip}
-              type="button"
-              className={`rounded-full px-4 py-2.5 text-left text-sm font-semibold shadow-card ${CHIP_TONES[i % CHIP_TONES.length]}`}
-              onClick={() => void ask(chip)}
-            >
-              {chip}
-            </button>
-          ))}
-        </div>
-      ) : (
-        <div className="mt-6 space-y-3">
-          {turns.map((m, i) => (
-            <div
-              key={`${m.role}-${i}`}
-              className={cn(
-                "max-w-[92%] whitespace-pre-wrap rounded-3xl px-4 py-3 text-sm leading-relaxed",
-                m.role === "user" ? "ml-auto bg-primary text-primary-fg" : "bg-accent text-ink",
-              )}
-            >
-              {m.content}
-            </div>
-          ))}
-          {busy ? <p className="text-sm text-muted">{t.asking}</p> : null}
-          <div ref={end} />
-        </div>
-      )}
+      <div className="relative mt-4 flex-1">
+        {turns.length === 0 ? (
+          <div className="relative overflow-hidden rounded-[1.6rem]">
+            <img
+              src="/photos/savia-ia-hero.jpg"
+              alt=""
+              className="h-56 w-full object-cover object-[center_40%]"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-ink/70 to-transparent" />
+            <p className="absolute bottom-4 left-4 right-4 font-display text-2xl font-semibold text-primary-fg">
+              {t.askEmpty}
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {turns.map((m, i) => (
+              <div
+                key={`${m.role}-${i}`}
+                className={cn("flex items-end gap-2", m.role === "user" ? "justify-end" : "justify-start")}
+              >
+                {m.role === "assistant" ? <Face className="size-8 shrink-0" /> : null}
+                <div
+                  className={cn(
+                    "max-w-[78%] whitespace-pre-wrap px-4 py-3 text-sm leading-relaxed",
+                    m.role === "user"
+                      ? "rounded-[1.4rem] rounded-br-md bg-primary text-primary-fg"
+                      : "rounded-[1.4rem] rounded-bl-md bg-surface text-fg shadow-card",
+                  )}
+                >
+                  {m.content}
+                </div>
+              </div>
+            ))}
+            {busy ? (
+              <div className="flex items-end gap-2">
+                <Face className="size-8" />
+                <div className="flex gap-1 rounded-[1.4rem] rounded-bl-md bg-surface px-4 py-3 shadow-card">
+                  <span className="size-1.5 animate-bounce rounded-full bg-primary [animation-delay:0ms]" />
+                  <span className="size-1.5 animate-bounce rounded-full bg-primary [animation-delay:120ms]" />
+                  <span className="size-1.5 animate-bounce rounded-full bg-primary [animation-delay:240ms]" />
+                </div>
+              </div>
+            ) : null}
+            <div ref={end} />
+          </div>
+        )}
+      </div>
 
-      {SAVIA_BETA ? (
-        <p className="mt-2 text-xs text-muted">{t.serenaOn}</p>
-      ) : (
+      {SAVIA_BETA ? null : (
         <p className="mt-2 text-xs text-muted">
-          {t.asksLeft}: 3 · <Link to="/pagar" className="underline">{t.navPricing}</Link>
+          {t.asksLeft}: 3 ·{" "}
+          <Link to="/pagar" className="underline">
+            {t.navPricing}
+          </Link>
         </p>
       )}
       <form
-        className="mt-6 flex gap-2"
+        className="sticky bottom-0 mt-4 flex gap-2 bg-bg py-3"
         onSubmit={(e) => {
           e.preventDefault();
           void ask();
         }}
       >
         <input
-          className="min-h-12 flex-1 rounded-full border-0 bg-surface px-4 text-sm outline-none ring-primary focus:ring-2"
+          className="min-h-14 flex-1 rounded-full border-0 bg-surface px-5 text-base outline-none ring-primary focus:ring-2"
           placeholder={t.askHint}
           value={q}
+          autoFocus
           onChange={(e) => setQ(e.target.value)}
         />
-        <Button type="submit" className="rounded-full px-5" disabled={busy || q.trim().length < 4}>
-          {busy ? t.asking : t.askCta}
+        <Button type="submit" className="h-14 rounded-full px-6" disabled={busy || q.trim().length < 1}>
+          {busy ? "…" : t.askCta}
         </Button>
       </form>
-    </>
+    </div>
   );
 }

@@ -1,4 +1,5 @@
-import { averageCycle, cyclePattern, fertileWindow, learnedCycle, nextPeriodDate, periodDaysFromLogs, snapshotMeta, symptomByPhase, todayISO } from "@/lib/cycle";
+import { averageCycle, cyclePattern, daysUntil, fertileWindow, learnedCycle, nextPeriodDate, periodDaysFromLogs, snapshotMeta, symptomByPhase, todayISO, weightedCycle } from "@/lib/cycle";
+import { songToday } from "@/lib/songs";
 import { dailyLetters, pickDailyLetter, yesterdayISO } from "@/lib/carta";
 import { pick } from "@/lib/savia-content";
 import type { DailyLog, Flow, Intention, Mucus, Phase, SaviaProfile, SexKind, Stage, TodaySnapshot } from "@/lib/types";
@@ -177,6 +178,9 @@ export function localSetSex(day: string, kind: SexKind) {
 export function localAskFile() {
   const snap = localToday();
   const p = snap.profile;
+  const note = localNoteToday(p.stage, snap.phase, p.locale === "en" ? "en" : "es");
+  const song = songToday(p.stage, snap.phase);
+  const next = nextPeriodDate(p.lastPeriodStart, weightedCycle(snap.periodStarts, p.cycleLength));
   return {
     displayName: p.displayName,
     birthYear: p.birthYear,
@@ -190,11 +194,18 @@ export function localAskFile() {
     cycleDay: snap.cycleDay,
     phase: snap.phase,
     pregnancyWeek: snap.pregnancyWeek,
-    nextPeriod: nextPeriodDate(p.lastPeriodStart, averageCycle(snap.periodStarts, p.cycleLength)),
+    nextPeriod: next,
+    daysUntilPeriod: daysUntil(next),
     flow: snap.log?.flow ?? "none",
     mucus: snap.log?.mucus ?? "none",
     symptoms: snap.log?.symptoms ?? [],
     mood: snap.log?.mood ?? null,
+    energy: snap.log?.energy ?? null,
+    sleepHours: snap.log?.sleepHours ?? null,
+    feeling: localFeelingToday(),
+    userNote: note.userText,
+    letterTitle: note.title,
+    song: `${song.artist} — ${song.title}`,
   };
 }
 

@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
 import { useI18n } from "@/lib/i18n";
-import { CYCLE_CHOICES, daysUntil, formatLong, todayISO, weekStrip } from "@/lib/cycle";
+import { CYCLE_CHOICES, daysUntil, formatLong, markForDate, todayISO, weekStrip } from "@/lib/cycle";
 import type { DailyLog, Phase, Stage } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { AskComposer } from "@/components/ask-entry";
 import { CartaHoy } from "@/components/carta-hoy";
 import { CycleRing } from "@/components/cycle-ring";
+import { PatternStrip } from "@/components/pattern-strip";
+import { PhaseForYou } from "@/components/phase-for-you";
 import { QuickLog } from "@/components/quick-log";
 import { haptic } from "@/lib/haptic";
 import { maybeNotify, periodAlert } from "@/lib/notify";
@@ -18,6 +21,9 @@ export function TodayHero({
   nextPeriod,
   cycleLength = 28,
   cycleDay = null,
+  lastStart = null,
+  periodLength = 5,
+  periodStarts = [],
   name,
   onCal,
   onLog,
@@ -34,6 +40,9 @@ export function TodayHero({
   nextPeriod?: string | null;
   cycleLength?: number;
   cycleDay?: number | null;
+  lastStart?: string | null;
+  periodLength?: number;
+  periodStarts?: string[];
   name?: string;
   onCal: () => void;
   onLog: () => void;
@@ -116,6 +125,12 @@ export function TodayHero({
       <div className="relative mt-4 grid grid-cols-7 text-center">
         {days.map((d) => {
           const isToday = d.iso === today;
+          const mark = markForDate(d.iso, {
+            lastStart: lastStart ?? null,
+            cycleLength,
+            periodLength,
+            periodStarts,
+          });
           return (
             <button
               key={d.iso}
@@ -130,7 +145,10 @@ export function TodayHero({
               <span
                 className={cn(
                   "flex size-10 items-center justify-center rounded-full text-base font-semibold",
-                  isToday ? "pulse-today bg-primary text-primary-fg" : "bg-surface text-fg",
+                  mark === "period" && "bg-cal-period text-primary-fg",
+                  (mark === "fertile" || mark === "peak") && "bg-cal-fertile text-ink",
+                  !mark || mark === "quiet" ? "bg-surface text-fg" : "",
+                  isToday && "pulse-today ring-2 ring-ink/30",
                 )}
               >
                 {d.date}
@@ -148,7 +166,11 @@ export function TodayHero({
         onClick={onCal}
       />
 
+      <PatternStrip starts={periodStarts} fallback={cycleLength} />
+      <PhaseForYou stage={stage} phase={phase} onGuia={onGuia} />
+
       <CartaHoy name={name} stage={stage} phase={phase} onAsk={onAsk} />
+      <AskComposer />
 
       <QuickLog initial={log} onSaved={onLogSaved} />
 

@@ -4,6 +4,7 @@ import { LangToggle } from "@/components/lang-toggle";
 import { TabBar, type TabKey } from "@/components/tab-bar";
 import { Shell } from "@/components/shell";
 import { BrandLockup } from "@/components/brand-mark";
+import { AskHeader } from "@/components/ask-entry";
 import { SAVIA_BETA } from "@/lib/beta";
 
 export function AppShell({
@@ -19,6 +20,7 @@ export function AppShell({
         <div className="flex h-14 items-center justify-between gap-3 px-4">
           <BrandLockup />
           <div className="flex items-center gap-2">
+            <AskHeader />
             <LangToggle />
             {SAVIA_BETA ? null : <AuthSlot compact />}
           </div>

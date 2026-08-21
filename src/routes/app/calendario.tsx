@@ -9,13 +9,13 @@ import { loadToday, writeSex, betaPaid } from "@/lib/savia-api";
 import { SAVIA_BETA } from "@/lib/beta";
 import { localToday } from "@/lib/savia-local";
 import { useI18n } from "@/lib/i18n";
-import { isCycling, periodDaysFromLogs } from "@/lib/cycle";
+import { isCycling, periodDaysFromLogs, formatDay } from "@/lib/cycle";
 import type { SexKind, TodaySnapshot } from "@/lib/types";
 
 export const Route = createFileRoute("/app/calendario")({ component: CalendarTab });
 
 function CalendarTab() {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const navigate = useNavigate();
   const [data, setData] = useState<TodaySnapshot | null>(() => (SAVIA_BETA ? localToday() : null));
   const [err, setErr] = useState(false);
@@ -70,6 +70,7 @@ function CalendarTab() {
               periodLength={data.profile.periodLength}
               starts={data.periodStarts}
               intention={data.profile.intention}
+              stage={data.profile.stage}
             />
             <CycleCalendar
               lastStart={data.profile.lastPeriodStart}
@@ -83,6 +84,22 @@ function CalendarTab() {
               paid={paid}
               onSetSex={(iso, kind) => void onHeart(iso, kind)}
             />
+            {data.periodStarts.length ? (
+              <div className="mt-6">
+                <p className="text-sm font-semibold">{t.history}</p>
+                <ul className="mt-2 space-y-1.5">
+                  {[...data.periodStarts]
+                    .sort((a, b) => b.localeCompare(a))
+                    .slice(0, 8)
+                    .map((d) => (
+                      <li key={d} className="flex justify-between text-sm">
+                        <span>{formatDay(d, lang)}</span>
+                        <span className="size-2.5 self-center rounded-full bg-cal-period" />
+                      </li>
+                    ))}
+                </ul>
+              </div>
+            ) : null}
           </>
         ) : (
           <p className="text-sm leading-relaxed text-muted">{t.calNote}</p>

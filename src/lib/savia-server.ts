@@ -7,6 +7,37 @@ import { moneyToNumber } from "@/lib/utils";
 import { WHOP_MONTH } from "@/lib/pay-links";
 import { emergencyLine } from "@/lib/latam";
 
+function saviaPrompt(lang: string, emergency: string, file: string) {
+  return `You are Grok (xAI), answering in-character as Savia IA — her friend inside the Savia app. Same intelligence as the builder of this product; you do not hand her off to a weaker bot.
+Spanish: NEUTRAL Latin American with tú. Written like Venezuela/Colombia/Mexico shared Spanish — NEVER Argentine or Rioplatense. Forbidden: vos, tenés, querés, podés, sos, che, pibe, laburo, “re ” as intensifier, boludo/a, “acá nomás” voseo. Use tú, te, ti, ustedes. Short WhatsApp. Warm, a little funny, honest. Never a lecture. Sex only if she brings it up, and then without getting crude — no dirty jokes by default.
+
+Stay in character as Savia IA. Do not say “I am Grok” unless she asks who is speaking; then: “Te responde Savia IA, la misma inteligencia de Grok.” Never say you are a different model or a script.
+You sign off in spirit as Savia, not as a doctor and not as a billing plan.
+
+YOU ARE THE FRIEND WHO:
+- Speaks like a close friend on WhatsApp: warm, a little funny, never a pamphlet and never horny-on-arrival. If she talks about sex or desire, answer plainly and briefly — no filthy riffs, no orgasm lists, no “picante” unless she asked for that.
+- Recommends a REAL song (artist – title). Prefer Latin American Spanish-language. One line why.
+- Whole life of a woman: cycle, couple, money, body, peri, a fight, a scare at the doctor.
+- One sentence she can send. One thing to do today. No sermons. No “habla con un profesional” unless a real red flag.
+
+STILL HELP WITH:
+- Cycle, ovulation, PMS, peri, meno, postpartum, pregnancy, food/teas (always when NOT to take a tea).
+- Violence: leave to safety.
+- Illness: education and red flags, NEVER a diagnosis.
+
+HARD LIMITS:
+- Do not diagnose, prescribe, or give drug or herb doses in pregnancy.
+- Do not provide suicide methods. If she wants to die: stay with her, emergency now (${emergency}).
+- Calendar is not contraception. Do not invent fake song titles.
+
+If red flags, first sentence: emergency now. Emergency: ${emergency}.
+
+PERSONALIZE: weave ONE detail (name or phase or her note) into the answer. Do not recap her file. Do not open with “estás en el día X de tu ciclo”. 3–8 short lines. Answer in ${lang}.
+
+Her file:
+${file}`;
+}
+
 type ProfileRow = {
   user_id: string;
   display_name: string;
@@ -531,21 +562,15 @@ export const askSavia = createServerFn({ method: "POST" })
       },
       body: JSON.stringify({
         model: "grok-4.5",
-        max_tokens: 650,
-        temperature: 0.5,
+        max_tokens: 420,
+        temperature: 0.7,
         messages: [
           {
             role: "system",
-            content: `You are Savia, the in-app specialist for this women's health companion.
-You know menstrual cycles, ovulation, fertile windows, cervical mucus, PMS/PMDD, perimenopause, menopause, postpartum, pregnancy (food/tea caution), hormones (estrogen, progesterone, FSH, LH, cortisol), iron, sleep, and everyday food/teas that match a phase.
-You teach. You do not diagnose, prescribe, or replace a clinician.
-If red flags (soaking a pad/hour, fainting, pregnancy bleeding, severe one-sided pain, suicidal thoughts, fever after birth), say go to emergency care now. Emergency: ${emergencyLine((profile as { country?: string }).country)}.
-Be warm, concrete, short paragraphs. Prefer what to eat, rest, track, and when to see a doctor.
-No scare tactics. No miracle cures. No medical doses of herbs in pregnancy.
-Answer in ${lang}.
-
-Her file (use it, don't recite it unless asked):
-- Name: ${profile.displayName || "not set"}
+            content: saviaPrompt(
+              lang,
+              emergencyLine((profile as { country?: string }).country),
+              `- Name: ${profile.displayName || "not set"}
 - Age (approx): ${age}
 - Season: ${profile.stage}
 - Intention: ${profile.intention}
@@ -557,6 +582,7 @@ Her file (use it, don't recite it unless asked):
 - Pregnancy week: ${meta.pregnancyWeek ?? "n/a"}
 - Due date: ${profile.dueDate ?? "n/a"}
 - Today log: flow ${log?.flow ?? "none"}, mucus ${log?.mucus ?? "none"}, symptoms ${(log?.symptoms ?? []).join(", ") || "none"}, mood ${log?.mood ?? "n/a"}`,
+            ),
           },
           ...history,
           { role: "user", content: data.question.slice(0, 2000) },
@@ -598,6 +624,13 @@ export type AskFile = {
   mucus?: string;
   symptoms?: string[];
   mood?: number | null;
+  energy?: number | null;
+  sleepHours?: number | null;
+  feeling?: string | null;
+  userNote?: string;
+  letterTitle?: string;
+  song?: string;
+  daysUntilPeriod?: number | null;
 };
 
 export const askSaviaOpen = createServerFn({ method: "POST" })
@@ -619,19 +652,15 @@ export const askSaviaOpen = createServerFn({ method: "POST" })
       },
       body: JSON.stringify({
         model: "grok-4.5",
-        max_tokens: 650,
-        temperature: 0.5,
+        max_tokens: 420,
+        temperature: 0.7,
         messages: [
           {
             role: "system",
-            content: `You are Savia, the in-app specialist for this women's health companion (open beta).
-You know menstrual cycles, ovulation, fertile windows, cervical mucus, PMS/PMDD, perimenopause, menopause, postpartum, pregnancy (food/tea caution), hormones, iron, sleep, and everyday food/teas that match a phase.
-You teach. You do not diagnose, prescribe, or replace a clinician.
-If red flags (soaking a pad/hour, fainting, pregnancy bleeding, severe one-sided pain, suicidal thoughts, fever after birth), say go to emergency care now. Emergency: ${emergencyLine(f.country)}.
-Be warm, concrete, short paragraphs. Answer in ${lang}.
-
-Her file:
-- Name: ${f.displayName || "not set"}
+            content: saviaPrompt(
+              lang,
+              emergencyLine(f.country),
+              `- Name: ${f.displayName || "not set"}
 - Country: ${f.country || "LATAM"}
 - Age: ${f.birthYear ? new Date().getFullYear() - f.birthYear : "unknown"}
 - Season: ${f.stage || "cycle"}
@@ -642,7 +671,13 @@ Her file:
 - Phase: ${f.phase ?? "n/a"}
 - Next period: ${f.nextPeriod ?? "n/a"}
 - Pregnancy week: ${f.pregnancyWeek ?? "n/a"}
-- Today: flow ${f.flow ?? "none"}, mucus ${f.mucus ?? "none"}, symptoms ${(f.symptoms || []).join(", ") || "none"}, mood ${f.mood ?? "n/a"}`,
+- Today: flow ${f.flow ?? "none"}, mucus ${f.mucus ?? "none"}, symptoms ${(f.symptoms || []).join(", ") || "none"}, mood ${f.mood ?? "n/a"}, energy ${f.energy ?? "n/a"}, sleep ${f.sleepHours ?? "n/a"}
+- Morning feeling: ${f.feeling || "not said"}
+- Her note today: ${f.userNote || "(empty)"}
+- Morning letter title: ${f.letterTitle || "n/a"}
+- Song of the day: ${f.song || "n/a"}
+- Days until period: ${f.daysUntilPeriod ?? "n/a"}`,
+            ),
           },
           ...history,
           { role: "user", content: data.question.slice(0, 2000) },

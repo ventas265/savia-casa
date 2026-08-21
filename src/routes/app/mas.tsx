@@ -4,6 +4,7 @@ import { Bell, ChevronRight, Copy, FileText, MessageCircle, UserRound } from "lu
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
 import { PageTitle } from "@/components/color-blobs";
+import { PlanSplit } from "@/components/plan-split";
 import { Disclaimer } from "@/components/disclaimer";
 import { notifyPermission, requestNotify } from "@/lib/notify";
 import { emptyPay, getAskStatus, getPay, type PaySettings } from "@/lib/savia-server";
@@ -58,6 +59,7 @@ function MasTab() {
   return (
     <>
       <PageTitle title={t.more} />
+      <PlanSplit />
 
       <section className="mt-6 rounded-[1.6rem] bg-surface p-5 shadow-card">
         <p className="text-xs font-semibold uppercase tracking-wide text-muted">{t.moreYou}</p>
@@ -116,6 +118,7 @@ function MasTab() {
         <h2 className="text-lg font-bold">{t.moreTools}</h2>
         <ul className="mt-3 space-y-2">
           <Tool to="/app/preguntar" label={t.askTalk} icon={MessageCircle} />
+          <Tool to="/app/pareja" label={t.partnerTitle} icon={UserRound} />
           <Tool to="/app/informe" label={t.reportTitle} icon={FileText} />
           <Tool to="/app/onboarding" label={t.profile} icon={UserRound} />
         </ul>
@@ -199,7 +202,7 @@ function Tool({
   label,
   icon: Icon,
 }: {
-  to: "/app/preguntar" | "/app/informe" | "/app/onboarding";
+  to: "/app/preguntar" | "/app/informe" | "/app/onboarding" | "/app/pareja";
   label: string;
   icon: typeof UserRound;
 }) {

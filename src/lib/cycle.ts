@@ -166,6 +166,43 @@ export function averageCycle(starts: string[], fallback: number) {
   return Math.round(gaps.reduce((a, b) => a + b, 0) / gaps.length);
 }
 
+/** Recent cycles weigh more. Not ML: Ogino + her own gaps. */
+export function weightedCycle(starts: string[], fallback: number) {
+  const gaps = cycleGaps(starts);
+  if (!gaps.length) return fallback;
+  let sum = 0;
+  let w = 0;
+  gaps.forEach((g, i) => {
+    const weight = i === gaps.length - 1 ? 3 : i === gaps.length - 2 ? 2 : 1;
+    sum += g * weight;
+    w += weight;
+  });
+  return Math.round(sum / w);
+}
+
+export function predictPeriod(
+  lastStart: string | null,
+  starts: string[],
+  fallback: number,
+  stage: Stage = "cycle",
+) {
+  const p = cyclePattern(starts, fallback);
+  const len = weightedCycle(starts, fallback);
+  const next = nextPeriodDate(lastStart, len);
+  if (!next) return { next: null, from: null, to: null, pad: 0, n: p.n, len, irregular: p.irregular };
+  let pad = p.n < 1 ? 3 : p.n < 3 ? Math.max(2, Math.ceil(p.variation / 2) || 2) : Math.max(1, Math.ceil(p.variation / 2));
+  if (stage === "peri" || p.irregular) pad = Math.max(pad, 4);
+  return {
+    next,
+    from: addDaysISO(next, -pad),
+    to: addDaysISO(next, pad),
+    pad,
+    n: p.n,
+    len,
+    irregular: p.irregular,
+  };
+}
+
 export function cyclePattern(starts: string[], fallback: number) {
   const gaps = cycleGaps(starts);
   if (!gaps.length) {
