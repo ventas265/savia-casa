@@ -1,22 +1,41 @@
-import { Outlet, createFileRoute } from "@tanstack/react-router";
+import { Outlet, createFileRoute, useRouterState } from "@tanstack/react-router";
 import { RedirectToSignIn } from "@/lib/auth/gates";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { Skeleton } from "@/components/ui/skeleton";
+import { AppShell } from "@/components/app-shell";
 import { SAVIA_BETA } from "@/lib/beta";
+import type { TabKey } from "@/components/tab-bar";
 
 export const Route = createFileRoute("/app")({ component: AppLayout });
 
+function tabFromPath(path: string): TabKey {
+  if (path.startsWith("/app/hoy")) return "hoy";
+  if (path.startsWith("/app/registro")) return "log";
+  if (path.startsWith("/app/guia")) return "guia";
+  if (path === "/app" || path === "/app/") return "cal";
+  return "mas";
+}
+
 function AppLayout() {
   const { user, isPending } = useCurrentUserState();
-  if (SAVIA_BETA) return <Outlet />;
-  if (isPending) {
-    return (
-      <div className="min-h-dvh bg-bg p-6">
-        <Skeleton className="h-14 w-full" />
-        <Skeleton className="mt-8 h-40 w-full" />
-      </div>
-    );
+  const path = useRouterState({ select: (s) => s.location.pathname });
+  const current = tabFromPath(path);
+
+  if (!SAVIA_BETA) {
+    if (isPending) {
+      return (
+        <div className="min-h-dvh bg-bg p-6">
+          <Skeleton className="h-14 w-full" />
+          <Skeleton className="mt-8 h-40 w-full" />
+        </div>
+      );
+    }
+    if (!user) return <RedirectToSignIn />;
   }
-  if (!user) return <RedirectToSignIn />;
-  return <Outlet />;
+
+  return (
+    <AppShell current={current}>
+      <Outlet />
+    </AppShell>
+  );
 }

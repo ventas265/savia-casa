@@ -1,7 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Disclaimer } from "@/components/disclaimer";
@@ -33,22 +32,18 @@ function Informe() {
   }, []);
 
   if (!data) {
-    return (
-      <AppShell current="mas">
-        <Skeleton className="h-64 w-full" />
-      </AppShell>
-    );
+    return <Skeleton className="h-64 w-full" />;
   }
 
   if (!data.ok) {
     return (
-      <AppShell current="mas">
+      <>
         <h1 className="text-2xl font-semibold">{t.reportTitle}</h1>
         <p className="mt-3 text-sm leading-relaxed text-muted">{t.reportPay}</p>
         <Button className="mt-6" asChild>
           <Link to="/pagar">{t.payCta}</Link>
         </Button>
-      </AppShell>
+      </>
     );
   }
 
@@ -113,7 +108,7 @@ function Informe() {
     .join("\n");
 
   return (
-    <AppShell current="mas">
+    <>
       <p className="text-xs font-medium tracking-wide text-muted uppercase">{t.brand}</p>
       <h1 className="mt-1 text-2xl font-semibold">{t.reportTitle}</h1>
       <p className="mt-2 text-sm text-muted">{t.reportSub}</p>
@@ -208,6 +203,6 @@ function Informe() {
       <div className="mt-8">
         <Disclaimer />
       </div>
-    </AppShell>
+    </>
   );
 }

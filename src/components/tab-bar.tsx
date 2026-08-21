@@ -53,7 +53,7 @@ export function TabBar({
             );
           }
           return (
-            <Link key={item.key} to={item.to} className={className}>
+            <Link key={item.key} to={item.to} preload="intent" className={className}>
               {icon}
               {item.label}
             </Link>

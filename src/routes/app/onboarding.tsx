@@ -1,7 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { AppShell } from "@/components/app-shell";
 import { PageTitle } from "@/components/color-blobs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -88,7 +87,7 @@ function Onboarding() {
   }
 
   return (
-    <AppShell current="mas">
+    <>
       <PageTitle kicker={t.notebookNote} title={t.onboardingTitle} />
       <div className="mt-6 space-y-5 rounded-[1.6rem] bg-surface p-5 shadow-card">
         <div>
@@ -241,6 +240,6 @@ function Onboarding() {
           {next ? t.dateFits : t.save}
         </Button>
       </div>
-    </AppShell>
+    </>
   );
 }

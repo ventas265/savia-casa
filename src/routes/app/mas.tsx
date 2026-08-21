@@ -2,12 +2,13 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Bell, ChevronRight, Copy, FileText, MessageCircle, UserRound } from "lucide-react";
 import { toast } from "sonner";
-import { AppShell } from "@/components/app-shell";
 import { useI18n } from "@/lib/i18n";
 import { Disclaimer } from "@/components/disclaimer";
 import { notifyPermission, requestNotify } from "@/lib/notify";
-import { getAskStatus, getPay, type PaySettings } from "@/lib/savia-server";
+import { emptyPay, getAskStatus, getPay, type PaySettings } from "@/lib/savia-server";
 import { loadToday } from "@/lib/savia-api";
+import { SAVIA_BETA } from "@/lib/beta";
+import { localToday } from "@/lib/savia-local";
 import { pick, stageName } from "@/lib/savia-content";
 import { latamOf } from "@/lib/latam";
 import type { SaviaProfile } from "@/lib/types";
@@ -18,9 +19,9 @@ export const Route = createFileRoute("/app/mas")({ component: MasTab });
 function MasTab() {
   const { t, lang } = useI18n();
   const [perm, setPerm] = useState(notifyPermission);
-  const [profile, setProfile] = useState<SaviaProfile | null>(null);
-  const [pay, setPay] = useState<PaySettings | null>(null);
-  const [paid, setPaid] = useState(false);
+  const [profile, setProfile] = useState<SaviaProfile | null>(() => (SAVIA_BETA ? localToday().profile : null));
+  const [pay, setPay] = useState<PaySettings>(emptyPay);
+  const [paid, setPaid] = useState(SAVIA_BETA);
 
   useEffect(() => {
     loadToday()
@@ -31,10 +32,12 @@ function MasTab() {
       .catch(() => setProfile(null));
     getPay()
       .then(setPay)
-      .catch(() => setPay(null));
-    getAskStatus()
-      .then((s) => setPaid(s.paid))
-      .catch(() => setPaid(false));
+      .catch(() => {});
+    if (!SAVIA_BETA) {
+      getAskStatus()
+        .then((s) => setPaid(s.paid))
+        .catch(() => setPaid(false));
+    }
   }, []);
 
   async function copy(text: string) {
@@ -52,7 +55,7 @@ function MasTab() {
   const pmLine = pay ? [pay.pmBank, pay.pmPhone, pay.pmId].filter(Boolean).join(" · ") : "";
 
   return (
-    <AppShell current="mas">
+    <>
       <h1 className="text-3xl font-extrabold tracking-tight">{t.more}</h1>
 
       <section className="mt-6 rounded-[1.6rem] bg-surface p-5 shadow-card">
@@ -148,7 +151,7 @@ function MasTab() {
       <div className="mt-8">
         <Disclaimer compact />
       </div>
-    </AppShell>
+    </>
   );
 }
 

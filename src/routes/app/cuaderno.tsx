@@ -1,7 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -53,7 +52,7 @@ function Cuaderno() {
   }
 
   return (
-    <AppShell current="mas">
+    <>
       <h1 className="text-2xl font-semibold">{t.settings}</h1>
       <p className="mt-2 text-sm leading-relaxed text-muted">{t.morePayHint}</p>
       <Button className="mt-6" variant="secondary" asChild>
@@ -130,6 +129,6 @@ function Cuaderno() {
       <div className="mt-10">
         <Disclaimer />
       </div>
-    </AppShell>
+    </>
   );
 }

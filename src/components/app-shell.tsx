@@ -5,6 +5,7 @@ import { AuthSlot } from "@/components/auth-slot";
 import { LangToggle } from "@/components/lang-toggle";
 import { TabBar, type TabKey } from "@/components/tab-bar";
 import { Shell } from "@/components/shell";
+import { SAVIA_BETA } from "@/lib/beta";
 
 export function AppShell({
   children,
@@ -28,7 +29,7 @@ export function AppShell({
           )}
           <div className="flex items-center gap-2">
             <LangToggle />
-            <AuthSlot compact />
+            {SAVIA_BETA ? null : <AuthSlot compact />}
           </div>
         </div>
       }

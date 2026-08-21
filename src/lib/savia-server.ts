@@ -351,7 +351,7 @@ export type PaySettings = {
   bankHolder: string;
 };
 
-const emptyPay: PaySettings = {
+export const emptyPay: PaySettings = {
   zinli: "",
   pmPhone: "04141647902",
   pmBank: "BNC",

@@ -3,7 +3,6 @@ import { CHIP_TONES, PageTitle } from "@/components/color-blobs";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { Disclaimer } from "@/components/disclaimer";
 import { type ChatTurn } from "@/lib/savia-server";
@@ -47,7 +46,7 @@ function Preguntar() {
   }
 
   return (
-    <AppShell current="mas">
+    <>
       <div className="flex items-center gap-3">
         <span className="flex size-14 items-center justify-center rounded-full bg-accent text-ink shadow-card">
           <AskGlyph className="size-7" />
@@ -113,6 +112,6 @@ function Preguntar() {
           {busy ? t.asking : t.askCta}
         </Button>
       </form>
-    </AppShell>
+    </>
   );
 }
