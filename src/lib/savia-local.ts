@@ -86,9 +86,7 @@ export function localSaveProfile(data: {
 }) {
   const store = read();
   const last = data.lastPeriodStart;
-  const starts = last
-    ? Array.from(new Set([last, ...store.starts])).sort().reverse().slice(0, 12)
-    : store.starts;
+  store.starts = last ? [last] : [];
   store.profile = {
     ...store.profile,
     ...data,
@@ -97,7 +95,6 @@ export function localSaveProfile(data: {
     plan: "serena",
     onboardingDone: true,
   };
-  store.starts = starts;
   write(store);
   return { ok: true as const, profile: store.profile };
 }
@@ -242,3 +239,9 @@ export function localCameToday() {
     periodStarted: true,
   });
 }
+
+export function localReset() {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem(KEY);
+}
+

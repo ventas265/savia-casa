@@ -1,20 +1,30 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { toast } from "sonner";
-import { PageTitle } from "@/components/color-blobs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { loadToday, writeProfile } from "@/lib/savia-api";
+import { localReset } from "@/lib/savia-local";
 import { requestNotify } from "@/lib/notify";
 import { useI18n } from "@/lib/i18n";
 import { pick, stageName } from "@/lib/savia-content";
 import { STAGES, INTENTIONS, type Intention, type Stage } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { CYCLE_CHOICES, formatLong, nextPeriodDate } from "@/lib/cycle";
+import { CYCLE_CHOICES, daysUntil, formatLong, nextPeriodDate } from "@/lib/cycle";
 import { LATAM } from "@/lib/latam";
 
 export const Route = createFileRoute("/app/onboarding")({ component: Onboarding });
+
+function Block({ title, hint, children }: { title: string; hint?: string; children: ReactNode }) {
+  return (
+    <section className="rounded-[1.4rem] bg-surface p-5 shadow-card">
+      <h2 className="text-base font-bold">{title}</h2>
+      {hint ? <p className="mt-1 text-sm leading-relaxed text-muted">{hint}</p> : null}
+      <div className="mt-4">{children}</div>
+    </section>
+  );
+}
 
 function Onboarding() {
   const { t, lang } = useI18n();
@@ -50,12 +60,14 @@ function Onboarding() {
     () => (lastPeriodStart ? nextPeriodDate(lastPeriodStart, cycleLength) : null),
     [lastPeriodStart, cycleLength],
   );
+  const left = daysUntil(next);
   const cycling = stage === "cycle" || stage === "peri" || stage === "postpartum";
-  const canSave = Boolean(displayName.trim()) && (!cycling || Boolean(lastPeriodStart));
+  const ageN = Number(age);
+  const ageOk = Number.isFinite(ageN) && ageN >= 12 && ageN <= 80;
+  const canSave = Boolean(displayName.trim()) && ageOk && (!cycling || Boolean(lastPeriodStart));
 
   async function save() {
-    const years = age ? Number(age) : NaN;
-    const birthYear = Number.isFinite(years) && years >= 12 && years <= 80 ? new Date().getFullYear() - years : null;
+    const birthYear = ageOk ? new Date().getFullYear() - ageN : null;
     setBusy(true);
     try {
       const res = await writeProfile({
@@ -87,50 +99,58 @@ function Onboarding() {
   }
 
   return (
-    <>
-      <PageTitle kicker={t.welcomeBody} title={t.onboardingTitle} />
-      <div className="mt-6 space-y-5 rounded-[1.6rem] bg-surface p-5 shadow-card">
-        <div>
-          <Label htmlFor="name">{t.yourName}</Label>
-          <Input id="name" className="mt-1" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
-        </div>
-        <div>
-          <Label htmlFor="age">{t.yourAge}</Label>
-          <Input
-            id="age"
-            inputMode="numeric"
-            className="mt-1"
-            placeholder="32"
-            value={age}
-            onChange={(e) => setAge(e.target.value.replace(/\D/g, "").slice(0, 2))}
-          />
-        </div>
-        <div>
-          <p className="text-sm font-semibold">{t.yourCountry}</p>
-          <div className="mt-2 flex flex-wrap gap-2">
-            {LATAM.map((c) => (
-              <button
-                key={c.code}
-                type="button"
-                onClick={() => setCountry(c.code)}
-                className={cn(
-                  "h-11 rounded-full px-3 text-sm font-semibold",
-                  country === c.code ? "bg-primary text-primary-fg" : "bg-bg text-fg",
-                )}
-              >
-                {c.name}
-              </button>
-            ))}
-          </div>
-        </div>
-        <div className="flex flex-wrap gap-2">
+    <div className="space-y-4 pb-8">
+      <div>
+        <p className="text-sm font-semibold text-primary">{t.brand}</p>
+        <h1 className="mt-1 text-2xl font-extrabold tracking-tight">{t.onboardingTitle}</h1>
+        <p className="mt-2 text-sm leading-relaxed text-muted">{t.onboardingBody}</p>
+      </div>
+
+      <Block title={t.yourName}>
+        <Input id="name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
+        <Label htmlFor="age" className="mt-4 block">
+          {t.yourAge}
+        </Label>
+        <p className="mt-1 text-xs text-muted">{t.ageHint}</p>
+        <Input
+          id="age"
+          inputMode="numeric"
+          className="mt-2"
+          placeholder="32"
+          value={age}
+          onChange={(e) => setAge(e.target.value.replace(/\D/g, "").slice(0, 2))}
+        />
+        {ageOk ? (
+          <p className="mt-2 text-sm font-semibold">
+            {t.youAre} {ageN} {t.yearsOld}
+          </p>
+        ) : null}
+      </Block>
+
+      <Block title={t.yourCountry}>
+        <select
+          id="country"
+          className="h-12 w-full rounded-2xl border-0 bg-bg px-4 text-sm font-semibold"
+          value={country}
+          onChange={(e) => setCountry(e.target.value)}
+        >
+          {LATAM.map((c) => (
+            <option key={c.code} value={c.code}>
+              {c.name}
+            </option>
+          ))}
+        </select>
+      </Block>
+
+      <Block title={t.stageAsk} hint={t.stageHint}>
+        <div className="space-y-2">
           {STAGES.map((s) => (
             <button
               key={s}
               type="button"
               onClick={() => setStage(s)}
               className={cn(
-                "h-11 rounded-full px-4 text-sm font-semibold",
+                "flex min-h-12 w-full items-center rounded-2xl px-4 text-left text-sm font-semibold",
                 stage === s ? "bg-primary text-primary-fg" : "bg-bg text-fg",
               )}
             >
@@ -138,108 +158,117 @@ function Onboarding() {
             </button>
           ))}
         </div>
-        {stage === "cycle" || stage === "peri" || stage === "postpartum" ? (
-          <div>
-            <p className="text-sm font-semibold">{t.intentTitle}</p>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {INTENTIONS.map((i) => (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => setIntention(i)}
-                  className={cn(
-                    "h-11 rounded-full px-4 text-sm font-semibold",
-                    intention === i ? "bg-primary text-primary-fg" : "bg-bg text-fg",
-                  )}
-                >
-                  {i === "track" ? t.intentTrack : i === "avoid" ? t.intentAvoid : t.intentTtc}
-                </button>
-              ))}
-            </div>
+      </Block>
+
+      {stage === "cycle" || stage === "peri" || stage === "postpartum" ? (
+        <Block title={t.intentTitle}>
+          <div className="space-y-2">
+            {INTENTIONS.map((i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => setIntention(i)}
+                className={cn(
+                  "flex min-h-12 w-full items-center rounded-2xl px-4 text-left text-sm font-semibold",
+                  intention === i ? "bg-primary text-primary-fg" : "bg-bg text-fg",
+                )}
+              >
+                {i === "track" ? t.intentTrack : i === "avoid" ? t.intentAvoid : t.intentTtc}
+              </button>
+            ))}
           </div>
-        ) : null}
-        {stage === "pregnancy" ? (
-          <div>
-            <Label htmlFor="due">{t.dueDate}</Label>
-            <Input id="due" type="date" className="mt-1" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
+        </Block>
+      ) : null}
+
+      {stage === "pregnancy" ? (
+        <Block title={t.dueDate}>
+          <Input id="due" type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
+        </Block>
+      ) : null}
+
+      {stage === "meno" ? (
+        <Block title={t.lastPeriodYear}>
+          <Input
+            id="lpy"
+            type="number"
+            value={lastPeriodYear}
+            onChange={(e) => setLastPeriodYear(Number(e.target.value))}
+          />
+        </Block>
+      ) : null}
+
+      {cycling ? (
+        <Block title={t.lastPeriod} hint={t.cycleHint}>
+          <Input
+            id="lp"
+            type="date"
+            value={lastPeriodStart}
+            onChange={(e) => setLastPeriodStart(e.target.value)}
+          />
+          <p className="mt-4 text-sm font-semibold">{t.cycleLength}</p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {CYCLE_CHOICES.map((n) => (
+              <button
+                key={n}
+                type="button"
+                onClick={() => setCycleLength(n)}
+                className={cn(
+                  "h-11 min-w-11 rounded-full px-3 text-sm font-bold",
+                  cycleLength === n ? "bg-primary text-primary-fg" : "bg-bg text-fg",
+                )}
+              >
+                {n}
+              </button>
+            ))}
           </div>
-        ) : null}
-        {stage === "meno" ? (
-          <div>
-            <Label htmlFor="lpy">{t.lastPeriodYear}</Label>
-            <Input
-              id="lpy"
-              type="number"
-              className="mt-1"
-              value={lastPeriodYear}
-              onChange={(e) => setLastPeriodYear(Number(e.target.value))}
-            />
+          <p className="mt-4 text-sm font-semibold">{t.periodLength}</p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {[3, 4, 5, 6, 7].map((n) => (
+              <button
+                key={n}
+                type="button"
+                onClick={() => setPeriodLength(n)}
+                className={cn(
+                  "h-11 min-w-11 rounded-full px-3 text-sm font-bold",
+                  periodLength === n ? "bg-primary/20 text-fg" : "bg-bg text-fg",
+                )}
+              >
+                {n}
+              </button>
+            ))}
           </div>
-        ) : null}
-        {stage === "cycle" || stage === "peri" || stage === "postpartum" ? (
-          <>
-            <div>
-              <Label htmlFor="lp">{t.lastPeriod}</Label>
-              <Input
-                id="lp"
-                type="date"
-                className="mt-1"
-                value={lastPeriodStart}
-                onChange={(e) => setLastPeriodStart(e.target.value)}
-              />
+          {next && left != null ? (
+            <div className="mt-5 rounded-2xl bg-primary px-4 py-4 text-primary-fg">
+              <p className="text-sm font-semibold opacity-90">{t.periodBeginsIn}</p>
+              <p className="mt-1 text-3xl font-extrabold">
+                {left} {left === 1 ? t.dayLeft : t.daysLeft}
+              </p>
+              <p className="mt-1 text-sm opacity-90">{formatLong(next, lang)}</p>
             </div>
-            <div>
-              <Label>{t.cycleLength}</Label>
-              <p className="mt-1 text-xs text-muted">{t.cycleHint}</p>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {CYCLE_CHOICES.map((n) => (
-                  <button
-                    key={n}
-                    type="button"
-                    onClick={() => setCycleLength(n)}
-                    className={cn(
-                      "h-11 min-w-11 rounded-full px-3 text-sm font-bold",
-                      cycleLength === n ? "bg-primary text-primary-fg" : "bg-bg text-fg",
-                    )}
-                  >
-                    {n}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div>
-              <Label>{t.periodLength}</Label>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {[3, 4, 5, 6, 7].map((n) => (
-                  <button
-                    key={n}
-                    type="button"
-                    onClick={() => setPeriodLength(n)}
-                    className={cn(
-                      "h-11 min-w-11 rounded-full px-3 text-sm font-bold",
-                      periodLength === n ? "bg-accent text-ink" : "bg-bg text-fg",
-                    )}
-                  >
-                    {n}
-                  </button>
-                ))}
-              </div>
-            </div>
-            {next ? (
-              <div className="rounded-2xl bg-primary px-4 py-4 text-primary-fg shadow-card">
-                <p className="text-xs font-semibold uppercase tracking-wide opacity-80">{t.confirmDate}</p>
-                <p className="mt-1 text-2xl font-extrabold">{formatLong(next, lang)}</p>
-                <p className="mt-1 text-sm opacity-90">
-                  {t.cycleLength}: {cycleLength}
-                </p>
-              </div>
-            ) : null}
-          </>
-        ) : null}
-        <Button type="button" className="w-full" onClick={() => void save()} disabled={busy || !canSave}>
-          {next ? t.dateFits : t.save}
-        </Button>
-      </div>
-    </>
+          ) : null}
+        </Block>
+      ) : null}
+
+      <Button type="button" className="w-full" onClick={() => void save()} disabled={busy || !canSave}>
+        {next ? t.dateFits : t.save}
+      </Button>
+      <button
+        type="button"
+        className="w-full text-center text-xs text-muted underline-offset-4 hover:underline"
+        onClick={() => {
+          localReset();
+          setDisplayName("");
+          setAge("");
+          setStage("cycle");
+          setCycleLength(28);
+          setPeriodLength(5);
+          setLastPeriodStart("");
+          setIntention("track");
+          toast.success(t.resetNotebook);
+        }}
+      >
+        {t.resetNotebook}
+      </button>
+    </div>
   );
 }

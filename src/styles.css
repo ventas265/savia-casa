@@ -3,22 +3,22 @@
 @import "tw-animate-css";
 
 @theme {
-  --color-bg: #f4cfc6;
-  --color-surface: #fff8f5;
-  --color-surface-2: #f3b7b8;
-  --color-ink: #24151b;
-  --color-fg: #24151b;
-  --color-muted: #8a5964;
-  --color-primary: #ff3366;
+  --color-bg: #f6ebe6;
+  --color-surface: #fffdfb;
+  --color-surface-2: #f3ddd8;
+  --color-ink: #3a2428;
+  --color-fg: #3a2428;
+  --color-muted: #8d6b72;
+  --color-primary: #c94b6a;
   --color-primary-fg: #ffffff;
-  --color-accent: #1ec8b8;
-  --color-border: #efc4c2;
-  --color-danger: #ff3366;
-  --color-ring: #ff3366;
-  --color-cal-period: #ff3366;
-  --color-cal-peak: #1a4d55;
-  --color-cal-fertile: #7ee8dc;
-  --color-cal-quiet: #fff8f5;
+  --color-accent: #e8c9c4;
+  --color-border: #edd8d3;
+  --color-danger: #c94b6a;
+  --color-ring: #c94b6a;
+  --color-cal-period: #c94b6a;
+  --color-cal-peak: #6b2d3c;
+  --color-cal-fertile: #f3d5dc;
+  --color-cal-quiet: #fffdfb;
   --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Outfit", ui-sans-serif, system-ui, sans-serif;
   --radius-sm: 10px;
@@ -26,7 +26,7 @@
   --radius-lg: 22px;
   --radius-xl: 28px;
   --radius-2xl: 36px;
-  --shadow-card: 0 10px 28px rgb(255 51 102 / 0.12);
+  --shadow-card: 0 8px 24px rgb(58 36 40 / 0.06);
   --shadow-border: 0 0 0 1px rgb(36 21 27 / 0.06), 0 1px 2px -1px rgb(36 21 27 / 0.06);
   --spacing-hit: 2.75rem;
 }
@@ -39,8 +39,7 @@
 
   body {
     background:
-      radial-gradient(ellipse 80% 50% at 100% -10%, rgb(255 51 102 / 0.16), transparent 55%),
-      radial-gradient(ellipse 70% 40% at -10% 80%, rgb(30 200 184 / 0.14), transparent 50%),
+      radial-gradient(ellipse 80% 50% at 100% -10%, rgb(201 75 106 / 0.10), transparent 55%),
       var(--color-bg);
     color: var(--color-fg);
     font-family: var(--font-sans);
