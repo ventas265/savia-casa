@@ -1,12 +1,10 @@
-import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
-import { Droplets, Plus } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { CYCLE_CHOICES, daysUntil, formatLong, todayISO, weekStrip } from "@/lib/cycle";
-import type { Phase, Stage } from "@/lib/types";
+import type { DailyLog, Phase, Stage } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { AskGlyph } from "@/components/ask-fab";
 import { CartaHoy } from "@/components/carta-hoy";
+import { QuickLog } from "@/components/quick-log";
 import { maybeNotify, periodAlert } from "@/lib/notify";
 
 const DOW_ES = ["D", "L", "M", "X", "J", "V", "S"];
@@ -25,6 +23,8 @@ export function TodayHero({
   onCameToday,
   onCycleChange,
   notify = false,
+  log = null,
+  onLogSaved,
 }: {
   stage: Stage;
   phase: Phase;
@@ -38,6 +38,8 @@ export function TodayHero({
   onCameToday?: () => void;
   onCycleChange?: (n: number) => void;
   notify?: boolean;
+  log?: DailyLog | null;
+  onLogSaved?: () => void;
 }) {
   const { t, lang } = useI18n();
   const [adjust, setAdjust] = useState(false);
@@ -138,17 +140,8 @@ export function TodayHero({
 
       <CartaHoy name={name} stage={stage} phase={phase} onAsk={onAsk} />
 
-      <div className="relative mt-8 grid grid-cols-3 gap-3">
-        <ActionCircle label={t.logPeriod} onClick={onLog} tone="pink">
-          <Droplets className="size-7" />
-        </ActionCircle>
-        <ActionCircle label={t.symptoms} onClick={onLog} tone="white">
-          <Plus className="size-7" />
-        </ActionCircle>
-        <ActionCircle label={t.askMark} onClick={onAsk} tone="white">
-          <AskGlyph className="size-8 text-primary" />
-        </ActionCircle>
-      </div>
+      <QuickLog initial={log} onSaved={onLogSaved} />
+
       {!onPeriod && onCameToday ? (
         <button
           type="button"
@@ -187,32 +180,5 @@ export function TodayHero({
         </div>
       ) : null}
     </div>
-  );
-}
-
-function ActionCircle({
-  label,
-  onClick,
-  tone,
-  children,
-}: {
-  label: string;
-  onClick: () => void;
-  tone: "pink" | "white";
-  children: ReactNode;
-}) {
-  return (
-    <button type="button" onClick={onClick} className="flex flex-col items-center gap-2">
-      <span
-        className={cn(
-          "flex size-[4.4rem] items-center justify-center rounded-full shadow-card",
-          tone === "pink" && "bg-primary text-primary-fg",
-          tone === "white" && "bg-surface text-fg",
-        )}
-      >
-        {children}
-      </span>
-      <span className="max-w-24 text-center text-xs font-semibold leading-snug">{label}</span>
-    </button>
   );
 }

@@ -51,6 +51,7 @@ export function CycleCalendar({
   periodDays = [],
   sexDays = [],
   sexMarks = [],
+  logs = [],
   paid = false,
   onSelect,
   onSetSex,
@@ -62,6 +63,7 @@ export function CycleCalendar({
   periodDays?: string[];
   sexDays?: string[];
   sexMarks?: { day: string; kind: string }[];
+  logs?: { day: string; flow: string; symptoms: string[] }[];
   paid?: boolean;
   onSelect?: (iso: string) => void;
   onSetSex?: (iso: string, kind: "protected" | "unprotected" | "withdrawal") => void;
@@ -101,6 +103,7 @@ export function CycleCalendar({
 
   const sexSet = useMemo(() => new Set(sexDays.length ? sexDays : sexMarks.map((s) => s.day)), [sexDays, sexMarks]);
   const kindByDay = useMemo(() => Object.fromEntries(sexMarks.map((s) => [s.day, s.kind])), [sexMarks]);
+  const logByDay = useMemo(() => Object.fromEntries(logs.map((l) => [l.day, l])), [logs]);
   const marks = cells.map((c) => mark(c.iso));
 
   return (
@@ -140,13 +143,24 @@ export function CycleCalendar({
           const m = marks[i] ?? null;
           const isToday = cell.iso === today;
           const isPicked = cell.iso === picked;
+          const logged = logByDay[cell.iso];
+          const flow = logged?.flow;
           const fill =
-            m === "period"
+            flow === "heavy"
               ? "bg-cal-period text-primary-fg"
-              : m === "peak" || m === "fertile"
-                ? "bg-cal-fertile text-ink"
-                : "text-fg";
+              : flow === "medium"
+                ? "bg-primary/80 text-primary-fg"
+                : flow === "light"
+                  ? "bg-primary/50 text-ink"
+                  : flow === "spotting"
+                    ? "bg-primary/25 text-ink"
+                    : m === "period"
+                      ? "bg-cal-period/70 text-primary-fg"
+                      : m === "peak" || m === "fertile"
+                        ? "bg-cal-fertile text-ink"
+                        : "text-fg";
           const hasSex = sexSet.has(cell.iso);
+          const hasDot = Boolean(logged && (logged.symptoms.length || flow && flow !== "none"));
           return (
             <button
               key={cell.iso}
@@ -170,9 +184,11 @@ export function CycleCalendar({
                   <Heart
                     className={cn(
                       "absolute bottom-0.5 size-2.5 fill-current",
-                      m === "period" ? "text-primary-fg" : "text-primary",
+                      m === "period" || flow === "heavy" || flow === "medium" ? "text-primary-fg" : "text-primary",
                     )}
                   />
+                ) : hasDot ? (
+                  <span className="absolute bottom-1 size-1.5 rounded-full bg-ink/70" />
                 ) : null}
               </span>
             </button>
@@ -190,7 +206,7 @@ export function CycleCalendar({
           <span className="size-2.5 rounded-full bg-cal-peak" /> {t.legendPeak}
         </li>
         <li className="inline-flex items-center gap-1.5">
-          <Heart className="size-2.5 fill-primary text-primary" /> {t.legendSex}
+          <span className="size-1.5 rounded-full bg-ink/70" /> {t.calDot}
         </li>
       </ul>
       <div className="mt-4 border-t border-border pt-3">

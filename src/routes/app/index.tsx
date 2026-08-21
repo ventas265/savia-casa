@@ -80,6 +80,7 @@ function CalendarTab() {
           periodLength={data.profile.periodLength}
           periodStarts={data.periodStarts}
           periodDays={periodDaysFromLogs(data.recentLogs)}
+          logs={data.recentLogs.map((l) => ({ day: l.day, flow: l.flow, symptoms: l.symptoms }))}
           sexDays={sexMarks.map((s) => s.day)}
           sexMarks={sexMarks}
           paid={paid}

@@ -55,6 +55,10 @@ function HoyTab() {
         void setCycleLength(n).then(setData);
       }}
       notify
+      log={data.log}
+      onLogSaved={() => {
+        void loadToday().then(setData);
+      }}
     />
   );
 }

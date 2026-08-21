@@ -59,7 +59,7 @@ export function localToday(): TodaySnapshot {
   const store = read();
   const day = todayISO();
   const log = store.logs.find((l) => l.day === day) || null;
-  const recent = [...store.logs].sort((a, b) => b.day.localeCompare(a.day)).slice(0, 14);
+  const recent = [...store.logs].sort((a, b) => b.day.localeCompare(a.day)).slice(0, 90);
   const sexMarks = store.logs.filter((l) => l.sex).map((l) => ({ day: l.day, kind: l.sexKind }));
   const meta = snapshotMeta(store.profile, day);
   return {
