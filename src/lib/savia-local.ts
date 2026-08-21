@@ -1,4 +1,5 @@
 import { averageCycle, cyclePattern, daysUntil, fertileWindow, learnedCycle, nextPeriodDate, periodDaysFromLogs, snapshotMeta, symptomByPhase, todayISO, weightedCycle } from "@/lib/cycle";
+import { callName } from "@/lib/names";
 import { songToday } from "@/lib/songs";
 import { dailyLetters, pickDailyLetter, yesterdayISO } from "@/lib/carta";
 import { pick } from "@/lib/savia-content";
@@ -183,6 +184,7 @@ export function localAskFile() {
   const next = nextPeriodDate(p.lastPeriodStart, weightedCycle(snap.periodStarts, p.cycleLength));
   return {
     displayName: p.displayName,
+    callName: callName(p.displayName),
     birthYear: p.birthYear,
     stage: p.stage,
     intention: p.intention,

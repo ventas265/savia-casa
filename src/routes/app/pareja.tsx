@@ -38,15 +38,15 @@ function Pareja() {
         <div className="mt-6 space-y-3">
           <article className="rounded-[1.5rem] bg-primary p-5 text-primary-fg">
             <p className="font-display text-2xl font-semibold">{card.title}</p>
-            <p className="mt-3 text-sm leading-relaxed opacity-95">{card.do}</p>
+            <p className="mt-3 text-sm leading-relaxed opacity-95">{card.need}</p>
           </article>
           <article className="rounded-[1.5rem] bg-surface p-5 shadow-card">
-            <p className="text-[10px] font-bold uppercase tracking-wide text-muted">{t.partnerSay}</p>
-            <p className="mt-2 font-display text-xl font-semibold leading-snug">{card.say}</p>
+            <p className="text-[10px] font-bold uppercase tracking-wide text-muted">{t.partnerAsk}</p>
+            <p className="mt-2 font-display text-xl font-semibold leading-snug">{card.ask}</p>
           </article>
           <article className="rounded-[1.5rem] bg-plum p-5 text-primary-fg">
-            <p className="text-[10px] font-bold uppercase tracking-wide opacity-80">{t.partnerDont}</p>
-            <p className="mt-2 text-sm leading-relaxed">{card.dont}</p>
+            <p className="text-[10px] font-bold uppercase tracking-wide opacity-80">{t.partnerSkip}</p>
+            <p className="mt-2 text-sm leading-relaxed">{card.skip}</p>
           </article>
         </div>
       ) : null}

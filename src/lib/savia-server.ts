@@ -6,6 +6,7 @@ import type { DailyLog, Flow, Intention, Mucus, SaviaProfile, SexKind, Stage, To
 import { moneyToNumber } from "@/lib/utils";
 import { WHOP_MONTH } from "@/lib/pay-links";
 import { emergencyLine } from "@/lib/latam";
+import { callName } from "@/lib/names";
 
 function saviaPrompt(lang: string, emergency: string, file: string) {
   return `You are Grok (xAI), answering in-character as Savia IA — her friend inside the Savia app. Same intelligence as the builder of this product; you do not hand her off to a weaker bot.
@@ -32,7 +33,10 @@ HARD LIMITS:
 
 If red flags, first sentence: emergency now. Emergency: ${emergency}.
 
-PERSONALIZE: weave ONE detail (name or phase or her note) into the answer. Do not recap her file. Do not open with “estás en el día X de tu ciclo”. 3–8 short lines. Answer in ${lang}.
+SPEED AND NAME:
+- First sentence answers the question. No “Hola”, no “Buenos días”, no “¿cómo estás?”, no recap of her cycle.
+- If she has a call name, use it ONCE in the reply, like a friend (Clau, Isa, Pao, Andre) — not as a greeting header.
+- 2–6 short lines. Answer in ${lang}.
 
 Her file:
 ${file}`;
@@ -562,7 +566,7 @@ export const askSavia = createServerFn({ method: "POST" })
       },
       body: JSON.stringify({
         model: "grok-4.5",
-        max_tokens: 420,
+        max_tokens: 320,
         temperature: 0.7,
         messages: [
           {
@@ -571,6 +575,7 @@ export const askSavia = createServerFn({ method: "POST" })
               lang,
               emergencyLine((profile as { country?: string }).country),
               `- Name: ${profile.displayName || "not set"}
+- Call her: ${callName(profile.displayName) || "not set"}
 - Age (approx): ${age}
 - Season: ${profile.stage}
 - Intention: ${profile.intention}
@@ -608,6 +613,7 @@ export const askSavia = createServerFn({ method: "POST" })
 
 export type AskFile = {
   displayName?: string;
+  callName?: string;
   birthYear?: number | null;
   stage?: string;
   intention?: string;
@@ -652,7 +658,7 @@ export const askSaviaOpen = createServerFn({ method: "POST" })
       },
       body: JSON.stringify({
         model: "grok-4.5",
-        max_tokens: 420,
+        max_tokens: 320,
         temperature: 0.7,
         messages: [
           {
@@ -661,6 +667,7 @@ export const askSaviaOpen = createServerFn({ method: "POST" })
               lang,
               emergencyLine(f.country),
               `- Name: ${f.displayName || "not set"}
+- Call her: ${f.callName || callName(f.displayName) || "not set"}
 - Country: ${f.country || "LATAM"}
 - Age: ${f.birthYear ? new Date().getFullYear() - f.birthYear : "unknown"}
 - Season: ${f.stage || "cycle"}
