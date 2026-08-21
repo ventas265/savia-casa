@@ -245,7 +245,7 @@ function Pagar() {
                   method === "zinli"
                     ? pay?.zinli || ""
                     : method === "pm"
-                      ? pay?.pmPhone || ""
+                      ? [pay?.pmBank, pay?.pmPhone, pay?.pmId].filter(Boolean).join(" · ")
                       : method === "card"
                         ? cardLink
                         : method === "paypal"

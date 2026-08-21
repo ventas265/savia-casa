@@ -13,9 +13,9 @@ export const Route = createFileRoute("/app/cuaderno")({ component: Cuaderno });
 
 const empty: PaySettings = {
   zinli: "",
-  pmPhone: "",
-  pmBank: "",
-  pmId: "",
+  pmPhone: "04141647902",
+  pmBank: "BNC",
+  pmId: "V-16.919.161",
   usdt: "",
   cardUrl: "",
   paypalUrl: "",

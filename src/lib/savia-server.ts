@@ -351,9 +351,9 @@ export type PaySettings = {
 
 const emptyPay: PaySettings = {
   zinli: "",
-  pmPhone: "",
-  pmBank: "",
-  pmId: "",
+  pmPhone: "04141647902",
+  pmBank: "BNC",
+  pmId: "V-16.919.161",
   usdt: "",
   cardUrl: WHOP_MONTH,
   paypalUrl: "",
@@ -371,7 +371,14 @@ async function readPay(): Promise<PaySettings> {
   if (map.pay) {
     try {
       const p = JSON.parse(map.pay) as Partial<PaySettings>;
-      return { ...emptyPay, ...p, zinli: (p.zinli || map.zinli || "").replace(/^@/, "") };
+      return {
+        ...emptyPay,
+        ...p,
+        zinli: (p.zinli || map.zinli || "").replace(/^@/, ""),
+        pmPhone: p.pmPhone || emptyPay.pmPhone,
+        pmBank: p.pmBank || emptyPay.pmBank,
+        pmId: p.pmId || emptyPay.pmId,
+      };
     } catch {
       /* fall through */
     }
