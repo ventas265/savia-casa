@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { BrandMark } from "@/components/brand-mark";
 import { PlanSplit } from "@/components/plan-split";
 import { WelcomeHero } from "@/components/welcome-hero";
+import { InstallSavia } from "@/components/install-savia";
 
 export function WelcomeStart() {
   const { t } = useI18n();
@@ -21,6 +22,9 @@ export function WelcomeStart() {
         <Link to="/app/onboarding">{t.welcomeCta}</Link>
       </Button>
       <p className="mt-3 text-center text-xs text-muted">{t.welcomeNote}</p>
+      <div className="mt-8">
+        <InstallSavia />
+      </div>
     </div>
   );
 }

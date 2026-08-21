@@ -14,6 +14,7 @@ import { localToday } from "@/lib/savia-local";
 import { pick, stageName } from "@/lib/savia-content";
 import { latamOf } from "@/lib/latam";
 import type { SaviaProfile } from "@/lib/types";
+import { InstallSavia } from "@/components/install-savia";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/app/mas")({ component: MasTab });
@@ -59,6 +60,9 @@ function MasTab() {
   return (
     <>
       <PageTitle title={t.more} />
+      <div className="mt-4">
+        <InstallSavia />
+      </div>
       <PlanSplit />
 
       <section className="mt-6 rounded-[1.6rem] bg-surface p-5 shadow-card">
