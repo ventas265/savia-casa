@@ -12,7 +12,7 @@ import { useCurrentUserState } from "@/lib/auth/use-current-user";
 
 export const Route = createFileRoute("/pagar")({ component: Pagar });
 
-type Method = "zinli" | "pm" | "usdt" | "card" | "paypal" | "bank";
+type Method = "zinli" | "pm" | "usdt" | "card" | "paypal" | "bank" | "binance";
 
 function Pagar() {
   const { t } = useI18n();
@@ -68,6 +68,10 @@ function Pagar() {
           ? Boolean(pay?.usdt)
           : method === "bank"
             ? Boolean(pay?.bankAccount)
+            : method === "paypal"
+              ? Boolean(pay?.paypalEmail)
+              : method === "binance"
+                ? Boolean(pay?.binance)
           : true;
 
   async function copy(text: string) {
@@ -97,7 +101,9 @@ function Pagar() {
             : method === "usdt"
               ? pay?.usdt
               : method === "paypal"
-                ? paypalLink
+                ? pay?.paypalEmail || paypalLink
+                : method === "binance"
+                  ? pay?.binance
                 : method === "bank"
                   ? `${pay?.bankName || "Banplus"} ${pay?.bankAccount || ""}`
                 : cardLink;
@@ -164,6 +170,7 @@ function Pagar() {
             [
               ["card", t.methodCard],
               ["paypal", t.methodPaypal],
+              ["binance", t.methodBinance],
               ["bank", t.methodBank],
               ["zinli", t.methodZinli],
               ["pm", t.methodPm],
@@ -218,10 +225,24 @@ function Pagar() {
             </div>
           ) : null}
           {method === "paypal" ? (
-            <div className="mt-3 space-y-2">
-              <p className="text-sm leading-relaxed">{t.paypalBody}</p>
-              <p className="break-all text-sm font-medium">{paypalLink}</p>
-            </div>
+            pay?.paypalEmail ? (
+              <div className="mt-3 space-y-2">
+                <p className="text-sm leading-relaxed">{t.paypalBody}</p>
+                <p className="break-all text-2xl font-bold">{pay.paypalEmail}</p>
+              </div>
+            ) : (
+              <p className="mt-3 text-sm text-muted">{t.zinliNeed}</p>
+            )
+          ) : null}
+          {method === "binance" ? (
+            pay?.binance ? (
+              <div className="mt-3 space-y-2">
+                <p className="text-sm leading-relaxed">{t.binanceBody}</p>
+                <p className="break-all text-2xl font-bold">{pay.binance}</p>
+              </div>
+            ) : (
+              <p className="mt-3 text-sm text-muted">{t.zinliNeed}</p>
+            )
           ) : null}
           {method === "bank" ? (
             pay?.bankAccount ? (
@@ -249,7 +270,9 @@ function Pagar() {
                       : method === "card"
                         ? cardLink
                         : method === "paypal"
-                          ? paypalLink
+                          ? pay?.paypalEmail || ""
+                          : method === "binance"
+                            ? pay?.binance || ""
                           : method === "bank"
                             ? pay?.bankAccount || ""
                           : pay?.usdt || "",
@@ -269,13 +292,6 @@ function Pagar() {
               <Button type="button" asChild>
                 <a href={cardLink} target="_blank" rel="noreferrer">
                   {t.cardOpen}
-                </a>
-              </Button>
-            ) : null}
-            {method === "paypal" ? (
-              <Button type="button" asChild>
-                <a href={paypalLink} target="_blank" rel="noreferrer">
-                  {t.paypalOpen}
                 </a>
               </Button>
             ) : null}

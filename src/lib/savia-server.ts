@@ -344,6 +344,8 @@ export type PaySettings = {
   usdt: string;
   cardUrl: string;
   paypalUrl: string;
+  paypalEmail: string;
+  binance: string;
   bankName: string;
   bankAccount: string;
   bankHolder: string;
@@ -357,6 +359,8 @@ const emptyPay: PaySettings = {
   usdt: "",
   cardUrl: WHOP_MONTH,
   paypalUrl: "",
+  paypalEmail: "Claufaria85@gmail.com",
+  binance: "claufaria_14@hotmail.com",
   bankName: "Banplus",
   bankAccount: "",
   bankHolder: "",
@@ -378,6 +382,8 @@ async function readPay(): Promise<PaySettings> {
         pmPhone: p.pmPhone || emptyPay.pmPhone,
         pmBank: p.pmBank || emptyPay.pmBank,
         pmId: p.pmId || emptyPay.pmId,
+        paypalEmail: p.paypalEmail || emptyPay.paypalEmail,
+        binance: p.binance || emptyPay.binance,
       };
     } catch {
       /* fall through */
@@ -405,6 +411,8 @@ export const savePay = createServerFn({ method: "POST" })
       usdt: data.usdt.trim(),
       cardUrl: data.cardUrl.trim(),
       paypalUrl: data.paypalUrl.trim(),
+      paypalEmail: data.paypalEmail.trim(),
+      binance: data.binance.trim(),
       bankName: data.bankName.trim() || "Banplus",
       bankAccount: data.bankAccount.trim(),
       bankHolder: data.bankHolder.trim(),

@@ -19,6 +19,8 @@ const empty: PaySettings = {
   usdt: "",
   cardUrl: "",
   paypalUrl: "",
+  paypalEmail: "Claufaria85@gmail.com",
+  binance: "claufaria_14@hotmail.com",
   bankName: "Banplus",
   bankAccount: "",
   bankHolder: "",
@@ -40,30 +42,7 @@ function Cuaderno() {
     try {
       const res = await savePay({ data: pay });
       if (res.ok) {
-        const {
-          zinli,
-          pmPhone,
-          pmBank,
-          pmId,
-          usdt,
-          cardUrl,
-          paypalUrl,
-          bankName,
-          bankAccount,
-          bankHolder,
-        } = res;
-        setPay({
-          zinli,
-          pmPhone,
-          pmBank,
-          pmId,
-          usdt,
-          cardUrl,
-          paypalUrl: paypalUrl || "",
-          bankName: bankName || "Banplus",
-          bankAccount: bankAccount || "",
-          bankHolder: bankHolder || "",
-        });
+        setPay({ ...empty, ...res });
         toast.success(t.saved);
       } else toast.error(t.errorGeneric);
     } catch {
@@ -172,6 +151,28 @@ function Cuaderno() {
             placeholder="https://"
           />
           <p className="mt-1 text-xs text-muted">{t.cardUrlHint}</p>
+        </div>
+        <div>
+          <Label htmlFor="paypalEmail">{t.paypalEmail}</Label>
+          <Input
+            id="paypalEmail"
+            className="mt-2"
+            type="email"
+            value={pay.paypalEmail}
+            onChange={(e) => setPay({ ...pay, paypalEmail: e.target.value })}
+            placeholder="correo@paypal.com"
+          />
+        </div>
+        <div>
+          <Label htmlFor="binance">{t.binanceLabel}</Label>
+          <Input
+            id="binance"
+            className="mt-2"
+            type="email"
+            value={pay.binance}
+            onChange={(e) => setPay({ ...pay, binance: e.target.value })}
+            placeholder="correo@binance"
+          />
         </div>
         <div>
           <Label htmlFor="paypalUrl">{t.paypalUrl}</Label>
