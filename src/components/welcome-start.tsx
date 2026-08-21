@@ -11,9 +11,9 @@ export function WelcomeStart() {
   ];
   return (
     <div>
-      <p className="text-sm font-semibold tracking-wide text-primary">{t.brand}</p>
+      <p className="text-sm font-semibold tracking-wide text-primary">{t.tagline}</p>
       <h1 className="mt-2 text-3xl font-extrabold tracking-tight">{t.welcomeTitle}</h1>
-      <p className="mt-3 text-sm leading-relaxed text-muted">{t.welcomeBody}</p>
+      <p className="mt-3 text-base leading-relaxed text-fg">{t.welcomeBody}</p>
       <ol className="mt-6 space-y-3">
         {steps.map((s, i) => (
           <li key={s.t} className="flex gap-3 rounded-[1.25rem] bg-surface p-4 shadow-card">
