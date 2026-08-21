@@ -1,0 +1,36 @@
+import { Link } from "@tanstack/react-router";
+import { useI18n } from "@/lib/i18n";
+import { Button } from "@/components/ui/button";
+
+export function WelcomeStart() {
+  const { t } = useI18n();
+  const steps = [
+    { t: t.welcome1t, d: t.welcome1d },
+    { t: t.welcome2t, d: t.welcome2d },
+    { t: t.welcome3t, d: t.welcome3d },
+  ];
+  return (
+    <div>
+      <p className="text-sm font-semibold tracking-wide text-primary">{t.brand}</p>
+      <h1 className="mt-2 text-3xl font-extrabold tracking-tight">{t.welcomeTitle}</h1>
+      <p className="mt-3 text-sm leading-relaxed text-muted">{t.welcomeBody}</p>
+      <ol className="mt-6 space-y-3">
+        {steps.map((s, i) => (
+          <li key={s.t} className="flex gap-3 rounded-[1.25rem] bg-surface p-4 shadow-card">
+            <span className="grid size-9 shrink-0 place-items-center rounded-full bg-primary text-sm font-extrabold text-primary-fg">
+              {i + 1}
+            </span>
+            <div>
+              <p className="font-bold">{s.t}</p>
+              <p className="mt-0.5 text-sm leading-relaxed text-muted">{s.d}</p>
+            </div>
+          </li>
+        ))}
+      </ol>
+      <Button className="mt-8 w-full" asChild>
+        <Link to="/app/onboarding">{t.welcomeCta}</Link>
+      </Button>
+      <p className="mt-3 text-center text-xs leading-relaxed text-muted">{t.welcomeNote}</p>
+    </div>
+  );
+}

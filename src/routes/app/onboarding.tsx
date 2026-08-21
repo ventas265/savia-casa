@@ -88,7 +88,7 @@ function Onboarding() {
 
   return (
     <>
-      <PageTitle kicker={t.notebookNote} title={t.onboardingTitle} />
+      <PageTitle kicker={t.welcomeBody} title={t.onboardingTitle} />
       <div className="mt-6 space-y-5 rounded-[1.6rem] bg-surface p-5 shadow-card">
         <div>
           <Label htmlFor="name">{t.yourName}</Label>
