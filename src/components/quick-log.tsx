@@ -4,16 +4,22 @@ import { writeLog } from "@/lib/savia-api";
 import { todayISO } from "@/lib/cycle";
 import type { DailyLog, Flow } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { symptomLabel, pick } from "@/lib/savia-content";
+import { haptic } from "@/lib/haptic";
+import { pick, symptomLabel } from "@/lib/savia-content";
 
-const FLOWS: { id: Flow; cls: string }[] = [
-  { id: "spotting", cls: "bg-primary/25 text-ink" },
-  { id: "light", cls: "bg-primary/50 text-primary-fg" },
-  { id: "medium", cls: "bg-primary/80 text-primary-fg" },
-  { id: "heavy", cls: "bg-primary text-primary-fg" },
+const FLOWS: { id: Flow; ring: string }[] = [
+  { id: "spotting", ring: "bg-primary/25" },
+  { id: "light", ring: "bg-primary/50" },
+  { id: "medium", ring: "bg-primary" },
+  { id: "heavy", ring: "bg-plum" },
 ];
 
-const QUICK = ["cramps", "bloating", "headache", "low_mood"] as const;
+const QUICK: { id: string; dot: string }[] = [
+  { id: "cramps", dot: "bg-accent" },
+  { id: "bloating", dot: "bg-sand" },
+  { id: "headache", dot: "bg-plum" },
+  { id: "low_mood", dot: "bg-primary/70" },
+];
 
 export function QuickLog({
   initial,
@@ -48,12 +54,14 @@ export function QuickLog({
   }
 
   function tapFlow(id: Flow) {
+    haptic(14);
     const next = flow === id ? "none" : id;
     setFlow(next);
     void persist(next, symptoms);
   }
 
   function tapSym(id: string) {
+    haptic(14);
     const next = symptoms.includes(id) ? symptoms.filter((s) => s !== id) : [...symptoms, id].slice(0, 12);
     setSymptoms(next);
     void persist(flow, next);
@@ -68,40 +76,47 @@ export function QuickLog({
   };
 
   return (
-    <section className="relative mt-6">
-      <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted">{t.quickLog}</p>
-      <div className="mt-3 flex justify-between gap-2">
+    <section className="relative mt-8">
+      <p className="text-sm font-semibold">{t.quickLog}</p>
+      <div className="mt-4 flex justify-between">
         {FLOWS.map((f) => (
           <button
             key={f.id}
             type="button"
             disabled={busy}
             onClick={() => tapFlow(f.id)}
-            className={cn(
-              "flex h-16 flex-1 flex-col items-center justify-center rounded-2xl text-[11px] font-semibold",
-              flow === f.id ? f.cls : "bg-surface text-fg shadow-card",
-            )}
+            className="press flex w-[4.4rem] flex-col items-center gap-2"
           >
-            <span className={cn("mb-1 size-3 rounded-full", flow === f.id ? "bg-white/80" : "bg-primary/40")} />
-            {flowLabel[f.id]}
+            <span
+              className={cn(
+                "flex size-14 items-center justify-center rounded-full",
+                f.ring,
+                flow === f.id ? "ring-4 ring-ink/20" : "opacity-80",
+              )}
+            />
+            <span className="text-[11px] font-semibold">{flowLabel[f.id]}</span>
           </button>
         ))}
       </div>
-      <div className="mt-3 flex flex-wrap gap-2">
-        {QUICK.map((id) => (
-            <button
-              key={id}
-              type="button"
-              disabled={busy}
-              onClick={() => tapSym(id)}
+      <div className="mt-6 flex justify-between">
+        {QUICK.map((s) => (
+          <button
+            key={s.id}
+            type="button"
+            disabled={busy}
+            onClick={() => tapSym(s.id)}
+            className="press flex w-[4.4rem] flex-col items-center gap-2"
+          >
+            <span
               className={cn(
-                "h-11 rounded-full px-4 text-sm font-semibold",
-                symptoms.includes(id) ? "bg-ink text-primary-fg" : "bg-surface text-fg shadow-card",
+                "flex size-14 items-center justify-center rounded-full",
+                s.dot,
+                symptoms.includes(s.id) ? "ring-4 ring-ink/20" : "opacity-80",
               )}
-            >
-              {pick(symptomLabel[id]!, lang)}
-            </button>
-          ))}
+            />
+            <span className="text-[11px] font-semibold leading-tight">{pick(symptomLabel[s.id]!, lang)}</span>
+          </button>
+        ))}
       </div>
     </section>
   );

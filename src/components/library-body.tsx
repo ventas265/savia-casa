@@ -39,7 +39,7 @@ export function LibraryBody() {
               type="button"
               onClick={() => setTab(j.id)}
               className={cn(
-                "h-11 shrink-0 rounded-full px-4 text-sm font-semibold",
+                "press h-11 shrink-0 rounded-full px-4 text-sm font-semibold",
                 tab === j.id ? "bg-primary text-primary-fg" : "bg-surface text-fg shadow-card",
               )}
             >

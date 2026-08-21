@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Bell, ChevronRight, Copy, FileText, MessageCircle, UserRound } from "lucide-react";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
+import { PageTitle } from "@/components/color-blobs";
 import { Disclaimer } from "@/components/disclaimer";
 import { notifyPermission, requestNotify } from "@/lib/notify";
 import { emptyPay, getAskStatus, getPay, type PaySettings } from "@/lib/savia-server";
@@ -56,13 +57,13 @@ function MasTab() {
 
   return (
     <>
-      <h1 className="text-3xl font-extrabold tracking-tight">{t.more}</h1>
+      <PageTitle title={t.more} />
 
       <section className="mt-6 rounded-[1.6rem] bg-surface p-5 shadow-card">
         <p className="text-xs font-semibold uppercase tracking-wide text-muted">{t.moreYou}</p>
         {profile?.displayName ? (
           <>
-            <p className="mt-2 text-2xl font-extrabold">{profile.displayName}</p>
+            <p className="mt-2 font-display text-2xl font-semibold tracking-[-0.03em]">{profile.displayName}</p>
             <p className="mt-1 text-sm text-muted">
               {pick(stageName[profile.stage], lang)}
               {age ? ` · ${age}` : ""}
@@ -75,7 +76,7 @@ function MasTab() {
         )}
         <Link
           to="/app/onboarding"
-          className="mt-4 flex min-h-12 items-center justify-between rounded-full bg-primary px-4 text-sm font-semibold text-primary-fg"
+        className="press mt-4 flex min-h-12 items-center justify-between rounded-full bg-primary px-4 text-sm font-semibold text-primary-fg"
         >
           {t.profile}
           <ChevronRight className="size-4" />
@@ -206,7 +207,7 @@ function Tool({
     <li>
       <Link
         to={to}
-        className="flex min-h-14 items-center justify-between rounded-[1.25rem] bg-surface px-4 text-sm font-semibold shadow-card"
+        className="press flex min-h-14 items-center justify-between rounded-[1.25rem] bg-surface px-4 text-sm font-semibold shadow-card"
       >
         <span className="flex items-center gap-3">
           <Icon className="size-5 text-primary" />

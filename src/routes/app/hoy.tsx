@@ -40,11 +40,12 @@ function HoyTab() {
       stage={data.profile.stage}
       phase={data.phase}
       cycleLength={data.profile.cycleLength}
+      cycleDay={data.cycleDay}
       nextPeriod={nextPeriodDate(
         data.profile.lastPeriodStart,
         averageCycle(data.periodStarts, data.profile.cycleLength),
       )}
-      onCal={() => void navigate({ to: "/app" })}
+      onCal={() => void navigate({ to: "/app/calendario" })}
       onLog={() => void navigate({ to: "/app/registro" })}
       onGuia={() => void navigate({ to: "/app/guia" })}
       onAsk={() => void navigate({ to: "/app/preguntar" })}

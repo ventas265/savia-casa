@@ -48,7 +48,7 @@ function Preguntar() {
   return (
     <>
       <div className="flex items-center gap-3">
-        <span className="flex size-14 items-center justify-center rounded-full bg-accent text-ink shadow-card">
+        <span className="flex size-14 items-center justify-center rounded-full bg-primary text-primary-fg shadow-card">
           <AskGlyph className="size-7" />
         </span>
         <PageTitle kicker={t.askSub} title={t.askTitle} />

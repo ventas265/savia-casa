@@ -10,16 +10,16 @@ export const Route = createFileRoute("/app")({ component: AppLayout });
 
 function tabFromPath(path: string): TabKey {
   if (path.startsWith("/app/hoy")) return "hoy";
+  if (path.startsWith("/app/calendario") || path.startsWith("/app/ciclo")) return "cal";
   if (path.startsWith("/app/registro")) return "log";
   if (path.startsWith("/app/guia")) return "guia";
-  if (path === "/app" || path === "/app/") return "cal";
   return "mas";
 }
 
 function AppLayout() {
   const { user, isPending } = useCurrentUserState();
   const path = useRouterState({ select: (s) => s.location.pathname });
-  const current = tabFromPath(path);
+  const current = path.startsWith("/app/onboarding") ? "other" : tabFromPath(path);
 
   if (!SAVIA_BETA) {
     if (isPending) {

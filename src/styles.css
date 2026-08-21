@@ -3,22 +3,24 @@
 @import "tw-animate-css";
 
 @theme {
-  --color-bg: #f3e6df;
-  --color-surface: #fffdfa;
-  --color-surface-2: #ead7d1;
-  --color-ink: #2c181c;
-  --color-fg: #2c181c;
-  --color-muted: #8a656c;
-  --color-primary: #b03a58;
-  --color-primary-fg: #fffdfa;
-  --color-accent: #e8b7b4;
-  --color-border: #e5d0c9;
-  --color-danger: #b03a58;
-  --color-ring: #b03a58;
-  --color-cal-period: #b03a58;
-  --color-cal-peak: #6b2d3c;
-  --color-cal-fertile: #f0d4d6;
-  --color-cal-quiet: #fffdfa;
+  --color-bg: #f6efea;
+  --color-surface: #fffcfb;
+  --color-surface-2: #eee2dc;
+  --color-ink: #2b181c;
+  --color-fg: #2b181c;
+  --color-muted: #8a6a70;
+  --color-primary: #c4455c;
+  --color-primary-fg: #fffcfb;
+  --color-accent: #a8b89a;
+  --color-sand: #e4c9a8;
+  --color-plum: #6b3a46;
+  --color-border: #e6d6d0;
+  --color-danger: #c4455c;
+  --color-ring: #c4455c;
+  --color-cal-period: #c4455c;
+  --color-cal-peak: #6b3a46;
+  --color-cal-fertile: #d5e0cc;
+  --color-cal-quiet: #fffcfb;
   --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Fraunces", "Times New Roman", serif;
   --radius-sm: 10px;
@@ -39,7 +41,7 @@
 
   body {
     background:
-      radial-gradient(ellipse 80% 50% at 100% -10%, rgb(176 58 88 / 0.10), transparent 55%),
+      radial-gradient(ellipse 80% 50% at 100% -10%, rgb(196 69 92 / 0.10), transparent 55%),
       var(--color-bg);
     color: var(--color-fg);
     font-family: var(--font-sans);
@@ -76,6 +78,22 @@
   .float-slow {
     animation: float-y 5.5s ease-in-out infinite;
   }
+  .press {
+    transition: transform 0.16s cubic-bezier(0.2, 1.6, 0.3, 1);
+    transform-origin: center;
+  }
+  .press:active {
+    transform: scale(0.9);
+  }
+  .pulse-today {
+    animation: pulse-soft 2.2s ease-in-out infinite;
+  }
+  .plus-live {
+    animation: plus-breathe 2.4s ease-in-out infinite;
+  }
+  .ring-draw {
+    animation: ring-in 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+  }
 }
 
 @keyframes blob-move {
@@ -109,6 +127,39 @@
   }
   50% {
     transform: translateY(-6px);
+  }
+}
+
+@keyframes pulse-soft {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgb(196 69 92 / 0.35);
+  }
+  50% {
+    transform: scale(1.06);
+    box-shadow: 0 0 0 8px rgb(196 69 92 / 0);
+  }
+}
+
+@keyframes plus-breathe {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-3px) scale(1.04);
+  }
+}
+
+@keyframes ring-in {
+  from {
+    stroke-dashoffset: 80;
+    opacity: 0.2;
+  }
+  to {
+    stroke-dashoffset: 0;
+    opacity: 1;
   }
 }
 

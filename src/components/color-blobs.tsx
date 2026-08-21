@@ -10,5 +10,6 @@ export function PageTitle({ kicker, title }: { kicker?: string; title: string })
 export const CHIP_TONES = [
   "bg-primary text-primary-fg",
   "bg-accent text-ink",
-  "bg-surface text-fg ring-1 ring-ink/10",
+  "bg-sand text-ink",
+  "bg-plum text-primary-fg",
 ];

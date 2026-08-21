@@ -167,7 +167,7 @@ export function CycleCalendar({
               type="button"
               onClick={() => choose(cell.iso)}
               className={cn(
-                "flex aspect-square items-center justify-center",
+                "press flex aspect-square items-center justify-center",
                 !cell.inMonth && "opacity-30",
               )}
             >

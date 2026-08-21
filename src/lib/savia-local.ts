@@ -1,5 +1,7 @@
 import { averageCycle, cyclePattern, fertileWindow, learnedCycle, nextPeriodDate, periodDaysFromLogs, snapshotMeta, symptomByPhase, todayISO } from "@/lib/cycle";
-import type { DailyLog, Flow, Intention, Mucus, SaviaProfile, SexKind, Stage, TodaySnapshot } from "@/lib/types";
+import { dailyLetters, pickDailyLetter, yesterdayISO } from "@/lib/carta";
+import { pick } from "@/lib/savia-content";
+import type { DailyLog, Flow, Intention, Mucus, Phase, SaviaProfile, SexKind, Stage, TodaySnapshot } from "@/lib/types";
 
 const KEY = "savia.beta.v1";
 
@@ -10,6 +12,7 @@ type Store = {
   logs: DailyLog[];
   starts: string[];
   checkins: Record<string, Feeling>;
+  notes: Record<string, { letterId: string; userText: string }>;
 };
 
 function emptyProfile(): SaviaProfile {
@@ -34,20 +37,21 @@ function emptyProfile(): SaviaProfile {
 
 function read(): Store {
   if (typeof window === "undefined") {
-    return { profile: emptyProfile(), logs: [], starts: [], checkins: {} };
+    return { profile: emptyProfile(), logs: [], starts: [], checkins: {}, notes: {} };
   }
   try {
     const raw = localStorage.getItem(KEY);
-    if (!raw) return { profile: emptyProfile(), logs: [], starts: [], checkins: {} };
+    if (!raw) return { profile: emptyProfile(), logs: [], starts: [], checkins: {}, notes: {} };
     const parsed = JSON.parse(raw) as Store;
     return {
       profile: { ...emptyProfile(), ...parsed.profile, plan: "serena", userId: "beta" },
       logs: parsed.logs || [],
       starts: parsed.starts || [],
       checkins: parsed.checkins || {},
+      notes: parsed.notes || {},
     };
   } catch {
-    return { profile: emptyProfile(), logs: [], starts: [], checkins: {} };
+    return { profile: emptyProfile(), logs: [], starts: [], checkins: {}, notes: {} };
   }
 }
 
@@ -274,4 +278,35 @@ export function localStreak() {
 }
 
 export type { Feeling };
+
+export function localNoteToday(stage: Stage, phase: Phase, lang: "es" | "en") {
+  const day = todayISO();
+  const store = read();
+  const saved = store.notes[day];
+  const yestId = store.notes[yesterdayISO(day)]?.letterId ?? null;
+  const letters = dailyLetters(stage, phase);
+  const locked = saved?.letterId ? letters.find((l) => l.id === saved.letterId) : null;
+  const letter = locked ?? pickDailyLetter(day, stage, phase, yestId);
+  if (!saved || saved.letterId !== letter.id) {
+    store.notes[day] = { letterId: letter.id, userText: saved?.userText ?? "" };
+    write(store);
+  }
+  return {
+    id: letter.id,
+    title: pick(letter.title, lang),
+    body: pick(letter.body, lang),
+    ask: pick(letter.ask, lang),
+    userText: store.notes[day]?.userText ?? "",
+    letterId: letter.id,
+  };
+}
+
+export function localSetUserNote(text: string) {
+  const store = read();
+  const day = todayISO();
+  const prev = store.notes[day] ?? { letterId: "", userText: "" };
+  store.notes[day] = { letterId: prev.letterId, userText: text.slice(0, 400) };
+  write(store);
+}
+
 

@@ -13,16 +13,11 @@ export function AppShell({
   children: ReactNode;
   current: TabKey | "other";
 }) {
-  const immersive = current === "hoy";
   return (
     <Shell
       header={
         <div className="flex h-14 items-center justify-between gap-3 px-4">
-          {immersive ? (
-            <span className="w-16" />
-          ) : (
-            <BrandLockup />
-          )}
+          <BrandLockup />
           <div className="flex items-center gap-2">
             <LangToggle />
             {SAVIA_BETA ? null : <AuthSlot compact />}
@@ -30,7 +25,6 @@ export function AppShell({
         </div>
       }
       footer={current !== "other" ? <TabBar current={current} /> : undefined}
-      ask
     >
       {children}
     </Shell>

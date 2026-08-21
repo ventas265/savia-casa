@@ -22,6 +22,30 @@ const menstrual: Letter[] = [
     ),
     ask: t("¿Quieres que te arme un plato para hoy?", "Want me to build you a plate for today?"),
   },
+  {
+    title: t("Agua y calor, nada heroico", "Water and warmth, nothing heroic"),
+    body: t(
+      "Hoy basta con no exigir. Un vaso más de agua. Si el cólico aprieta, paracetamol o ibuprofeno según te haya dicho tu médica — no te tomes el doble “porque sí”.",
+      "Today it’s enough not to demand. One extra glass of water. If cramps bite, paracetamol or ibuprofen as your clinician said — don’t double it “just because.”",
+    ),
+    ask: t("¿El cólico ya bajó un poco?", "Has the cramp eased a little?"),
+  },
+  {
+    title: t("El segundo o tercer día suele ser el más rojo", "Day two or three is often the reddest"),
+    body: t(
+      "Si hoy empapa más, no es que “empeoraste el ciclo”. Es el desprendimiento. Cambia con calma. Si mareo al levantarte: siéntate, hierro, avisa a alguien.",
+      "If today soaks more, you didn’t “worsen the cycle”. It’s the shed. Change calmly. If you dizzy on standing: sit, iron, tell someone.",
+    ),
+    ask: t("¿Hoy el sangrado es más, igual o menos que ayer?", "Is today’s bleed more, the same, or less than yesterday?"),
+  },
+  {
+    title: t("Hacia el final, el cuerpo afloja", "Toward the end, the body loosens"),
+    body: t(
+      "El flujo se oscurece, el vientre suelta. Un paseo corto ayuda más que quedarte enroscada todo el día — si las piernas quieren.",
+      "Flow darkens, the belly lets go. A short walk helps more than curling up all day — if the legs want it.",
+    ),
+    ask: t("¿Ya sientes que está pasando, o todavía no?", "Do you feel it’s passing, or not yet?"),
+  },
 ];
 
 const follicular: Letter[] = [
@@ -40,6 +64,30 @@ const follicular: Letter[] = [
       "Salad, ferments, egg, a little load if the body says yes. Mucus clears. Log it: tomorrow Savia uses it to get you right, not to judge you.",
     ),
     ask: t("¿Quieres anotar cómo está el moco hoy?", "Want to log cervical mucus today?"),
+  },
+  {
+    title: t("Ganas de empezar no son obligación", "The itch to start is not an order"),
+    body: t(
+      "El estrógeno empuja proyectos. Elige uno. El resto puede esperar. Dormir sigue contando como trabajo.",
+      "Estrogen pushes projects. Pick one. The rest can wait. Sleep still counts as work.",
+    ),
+    ask: t("¿Hoy tienes más ganas o más prisa?", "Do you have more want, or more hurry, today?"),
+  },
+  {
+    title: t("La piel y el ánimo suelen ir juntos aquí", "Skin and mood often travel together here"),
+    body: t(
+      "Si el cutis mejora, el humor también. No es magia: es estrógeno. Guarda el día para comparar el mes que viene.",
+      "If skin improves, mood often does. Not magic: estrogen. Keep the day to compare next month.",
+    ),
+    ask: t("¿La cara de hoy se parece a la de hace una semana?", "Does today’s face look like a week ago?"),
+  },
+  {
+    title: t("Moco más claro: el cuerpo avisa", "Clearer mucus: the body is signaling"),
+    body: t(
+      "Se pone cremoso y luego más filante cerca de ovular. No hace falta obsesionarse. Un toque en el calendario basta.",
+      "It turns creamy, then stretchier near ovulation. No need to obsess. One tap on the calendar is enough.",
+    ),
+    ask: t("¿Hoy lo notaste, o no hay nada que anotar?", "Did you notice it today, or is there nothing to log?"),
   },
 ];
 
@@ -60,6 +108,30 @@ const ovulatory: Letter[] = [
     ),
     ask: t("¿El deseo de hoy es alto, bajo, o ni idea?", "Is desire high, low, or no idea today?"),
   },
+  {
+    title: t("Tres días, no toda la semana", "Three days, not the whole week"),
+    body: t(
+      "La ventana fértil es corta. Fuera de ella, el cuerpo no está “fallando”. Si no buscas, cuídate estos días. Si buscas, aquí vale la pena el intento.",
+      "The fertile window is short. Outside it, the body isn’t “failing”. If you’re not trying, be careful these days. If you are, this is worth the try.",
+    ),
+    ask: t("¿Estos días te cuadran con lo que buscas?", "Do these days match what you want?"),
+  },
+  {
+    title: t("Un pinchazo a un lado no es urgente por sí solo", "A one-sided twinge is not an emergency on its own"),
+    body: t(
+      "Mittelschmerz: un lado, unas horas. Si el dolor es fuerte, con mareo o sangrado raro, eso sí es consulta. Lo demás, anótalo.",
+      "Mittelschmerz: one side, a few hours. If pain is strong, with dizziness or odd bleeding, that is a visit. The rest, log it.",
+    ),
+    ask: t("¿El pinchazo de hoy es leve o no te deja hacer nada?", "Is today’s twinge mild, or does it stop you?"),
+  },
+  {
+    title: t("Después del pico, un hueco es normal", "After the peak, a hollow is normal"),
+    body: t(
+      "Baja el estrógeno. Puede haber un día raro de ánimo. No decidas dejar un trabajo hoy si puedes esperarte tres días.",
+      "Estrogen drops. There can be an odd mood day. Don’t quit a job today if you can wait three days.",
+    ),
+    ask: t("¿Hoy el ánimo bajó de golpe?", "Did mood drop suddenly today?"),
+  },
 ];
 
 const luteal: Letter[] = [
@@ -79,6 +151,38 @@ const luteal: Letter[] = [
     ),
     ask: t("¿Quieres que te recuerde qué te sentó bien el mes pasado?", "Want me to remember what helped last month?"),
   },
+  {
+    title: t("Hambre no es falta de voluntad", "Hunger is not a lack of will"),
+    body: t(
+      "La progesterona pide carbohidrato. Un plátano, avena, pan de verdad. El ayuno extremo estos días suele salir caro.",
+      "Progesterone asks for carbohydrate. A banana, oats, real bread. Extreme fasting these days usually costs you.",
+    ),
+    ask: t("¿Hoy el hambre es de comida o de todo?", "Is today’s hunger for food, or for everything?"),
+  },
+  {
+    title: t("Piel y pecho: también es este tramo", "Skin and breasts: this stretch too"),
+    body: t(
+      "Granos y pecho tenso unos días antes. Baja la sal si hincha. Un sostenedor que no apriete. No es “te descuidaste”.",
+      "Spots and tender breasts a few days before. Lower salt if you swell. A bra that doesn’t clamp. You didn’t “let yourself go.”",
+    ),
+    ask: t("¿Hoy hincha más el pecho, la cara, o nada?", "Does it swell more in the breasts, the face, or not at all today?"),
+  },
+  {
+    title: t("Si puedes, acuéstate más temprano", "If you can, go to bed earlier"),
+    body: t(
+      "La lútea duerme peor. Corta pantallas un rato. Magnesio en la comida, no en un milagro de TikTok.",
+      "The luteal sleeps worse. Cut screens a while. Magnesium in food, not in a TikTok miracle.",
+    ),
+    ask: t("¿Anoche dormiste o solo te acostaste?", "Last night did you sleep, or just lie down?"),
+  },
+  {
+    title: t("Mañana o pasado puede ser el primer día", "Tomorrow or the next day may be day one"),
+    body: t(
+      "Si ya conoces tu cuerpo, a veces el cólico avisa. Ten toallas o copa a mano. Si se atrasa más de lo tuyo, anótalo y espera unos días antes de alarmarte.",
+      "If you know your body, cramps sometimes warn. Have pads or a cup ready. If it’s later than yours, log it and wait a few days before alarming.",
+    ),
+    ask: t("¿Sientes que ya viene, o todavía no?", "Do you feel it’s coming, or not yet?"),
+  },
 ];
 
 const peri: Letter[] = [
@@ -89,6 +193,30 @@ const peri: Letter[] = [
       "Periods that come early, late, leave and return. Flush, fog, broken sleep. You’re not “old”: it’s peri. Log the odd. The visit needs dates, not “I feel bad.”",
     ),
     ask: t("¿Este mes se pareció al anterior, o no?", "Did this month look like the last, or not?"),
+  },
+  {
+    title: t("Sofoco no es “ponerte nerviosa”", "A flush is not you “getting nervous”"),
+    body: t(
+      "Ola de calor, sudor, a veces palpitación. Ventila, capas de ropa, menos alcohol de noche. Si te despierta todas las noches, hay de qué hablar en consulta.",
+      "Heat, sweat, sometimes a pounding heart. Air, layers, less alcohol at night. If it wakes you every night, that’s a visit conversation.",
+    ),
+    ask: t("¿Anoche el sofoco te despertó?", "Did a flush wake you last night?"),
+  },
+  {
+    title: t("Niebla: anota, no te insultes", "Fog: log it, don’t insult yourself"),
+    body: t(
+      "Olvidas una palabra, pierdes el hilo. Es hormona, no que “ya no sirves”. Lista corta. Una cosa a la vez.",
+      "You lose a word, lose the thread. Hormone, not “you’re useless now.” Short list. One thing at a time.",
+    ),
+    ask: t("¿Hoy la niebla es leve o te trabó el día?", "Is today’s fog light, or did it stall the day?"),
+  },
+  {
+    title: t("Sangrado raro: fechas, no adivinanza", "Odd bleeding: dates, not a guess"),
+    body: t(
+      "Manchado entre reglas, o un mes sí y otro no. Eso es peri. Llévalo escrito. Un sangrado muy abundante de golpe sí es pronto a consulta.",
+      "Spotting between periods, or one month yes and one no. That’s peri. Take it written. A sudden very heavy bleed is a prompt visit.",
+    ),
+    ask: t("¿Este sangrado se parece a tu regla de antes?", "Does this bleed look like your old period?"),
   },
 ];
 
@@ -101,6 +229,30 @@ const meno: Letter[] = [
     ),
     ask: t("¿El sofoco de esta semana te deja dormir?", "Do this week’s flushes let you sleep?"),
   },
+  {
+    title: t("Sequedad tiene nombre y tiene trato", "Dryness has a name and a treatment"),
+    body: t(
+      "No es “así es la edad” en silencio. Lubricante, hidratante vaginal, a veces estrógeno local. Pregunta. No tienes que aguantar dolor en el sexo.",
+      "It’s not “age” in silence. Lubricant, vaginal moisturizer, sometimes local estrogen. Ask. You don’t have to bear pain with sex.",
+    ),
+    ask: t("¿Hoy hay molestia o hoy está calma?", "Is there discomfort today, or is it calm?"),
+  },
+  {
+    title: t("Hueso y músculo: un poco, casi todos los días", "Bone and muscle: a little, almost every day"),
+    body: t(
+      "Sentadillas a la silla, caminar, bolsa de arroz. El calcio en pastilla no reemplaza el movimiento. Si te mareas, siéntate.",
+      "Chair squats, walking, a rice bag. Pill calcium doesn’t replace movement. If you dizzy, sit.",
+    ),
+    ask: t("¿Hoy te moviste aunque fuera diez minutos?", "Did you move today, even ten minutes?"),
+  },
+  {
+    title: t("El sueño se puede pelear con horario, no con milagro", "Sleep is fought with a schedule, not a miracle"),
+    body: t(
+      "Misma hora de cama. Fresco. Menos vino de noche. Si el sofoco corta el sueño, eso es el tema a tratar, no tu “mala costumbre”.",
+      "Same bedtime. Cool. Less wine at night. If flushes cut sleep, that’s the issue to treat, not your “bad habit.”",
+    ),
+    ask: t("¿A qué hora te acostaste anoche, más o menos?", "About what time did you go to bed last night?"),
+  },
 ];
 
 const pregnancy: Letter[] = [
@@ -112,6 +264,22 @@ const pregnancy: Letter[] = [
     ),
     ask: t("¿Qué es lo que más te preocupa de esta semana?", "What’s worrying you most this week?"),
   },
+  {
+    title: t("Come aunque no tengas ganas", "Eat even if you don’t feel like it"),
+    body: t(
+      "Galleta salada, plátano, jengibre. Poco y seguido. Si no retienes nada y orinas muy poco, consulta. El café, suave.",
+      "Salty cracker, banana, ginger. Little and often. If nothing stays down and you barely pee, get seen. Coffee, mild.",
+    ),
+    ask: t("¿Hoy pudiste desayunar algo?", "Did you manage any breakfast today?"),
+  },
+  {
+    title: t("Miedo y pecho tenso pueden convivir", "Fear and tender breasts can coexist"),
+    body: t(
+      "No tienes que estar feliz todo el rato. Un paseo, agua, la próxima cita en el calendario. Sangrado o dolor fuerte de un lado: no esperes.",
+      "You don’t have to be happy the whole time. A walk, water, the next appointment on the calendar. Bleeding or strong one-sided pain: don’t wait.",
+    ),
+    ask: t("¿Hoy el miedo es ruido, o es una señal rara?", "Is today’s fear noise, or an odd signal?"),
+  },
 ];
 
 const postpartum: Letter[] = [
@@ -122,6 +290,22 @@ const postpartum: Letter[] = [
       "Lochia, hormone drop, broken sleep, pelvic floor. The period may wait months if you nurse — or return at six weeks. Neither is a test you pass. If mood goes black and doesn’t lift, get help now.",
     ),
     ask: t("¿Hoy aguantas, o necesitas que alguien te cargue un rato?", "Are you holding today, or do you need someone to carry you a while?"),
+  },
+  {
+    title: t("Dormir a ratos también es dormir", "Sleeping in snatches is still sleep"),
+    body: t(
+      "No compares tu noche con la de antes. Un vaso de agua, un cuerpo que se apoya. Si el ánimo está negro más de dos semanas, pide ayuda — no es “ser mamá”.",
+      "Don’t compare tonight to before. A glass of water, a body that leans. If mood is black more than two weeks, get help — that’s not “being a mum.”",
+    ),
+    ask: t("¿Hoy alguien te puede cubrir una hora?", "Can someone cover you for an hour today?"),
+  },
+  {
+    title: t("El sangrado de ahora no es la regla de antes", "This bleed is not your old period"),
+    body: t(
+      "Loquios: de rojo a rosado a crema. Si de pronto vuelve rojo vivo con coágulos grandes o fiebre, consulta. El resto, cambia y anota.",
+      "Lochia: red to pink to cream. If it suddenly goes bright red with large clots or fever, get seen. The rest, change and log.",
+    ),
+    ask: t("¿Hoy el sangrado cambió de color?", "Did the bleed change color today?"),
   },
 ];
 
@@ -136,18 +320,58 @@ function pool(stage: Stage, phase: Phase): Letter[] {
   return luteal;
 }
 
-function hash(s: string) {
-  let n = 0;
-  for (let i = 0; i < s.length; i++) n = (n * 33 + s.charCodeAt(i)) >>> 0;
-  return n;
+function poolKey(stage: Stage, phase: Phase) {
+  if (stage === "peri" || stage === "meno" || stage === "pregnancy" || stage === "postpartum") return stage;
+  return phase === "none" ? "luteal" : phase;
 }
 
-export function cartaDeHoy(day: string, stage: Stage, phase: Phase, lang: "es" | "en") {
-  const letters = pool(stage, phase);
-  const letter = letters[hash(day + stage + phase) % letters.length]!;
+export function dailyLetters(stage: Stage, phase: Phase) {
+  const key = poolKey(stage, phase);
+  return pool(stage, phase).map((letter, i) => ({
+    id: `${key}-${i}`,
+    ...letter,
+  }));
+}
+
+/** Same calendar day → same note. Next day → next note, never yesterday’s if there’s another. */
+export function pickDailyLetter(
+  day: string,
+  stage: Stage,
+  phase: Phase,
+  avoidId?: string | null,
+) {
+  const letters = dailyLetters(stage, phase);
+  const seed = Number(day.replaceAll("-", "")) || 0;
+  let i = seed % letters.length;
+  if (letters.length > 1 && avoidId && letters[i]!.id === avoidId) {
+    i = (i + 1) % letters.length;
+  }
+  return letters[i]!;
+}
+
+export function cartaDeHoy(
+  day: string,
+  stage: Stage,
+  phase: Phase,
+  lang: "es" | "en",
+  avoidId?: string | null,
+) {
+  const letter = pickDailyLetter(day, stage, phase, avoidId);
   return {
+    id: letter.id,
     title: pick(letter.title, lang),
     body: pick(letter.body, lang),
     ask: pick(letter.ask, lang),
   };
 }
+
+export function yesterdayISO(day: string) {
+  const [y, m, d] = day.split("-").map(Number);
+  const dt = new Date(y!, (m ?? 1) - 1, d ?? 1);
+  dt.setDate(dt.getDate() - 1);
+  const yy = dt.getFullYear();
+  const mm = String(dt.getMonth() + 1).padStart(2, "0");
+  const dd = String(dt.getDate()).padStart(2, "0");
+  return `${yy}-${mm}-${dd}`;
+}
+

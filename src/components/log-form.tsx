@@ -1,14 +1,19 @@
-import { Heart } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { useI18n } from "@/lib/i18n";
 import { writeLog } from "@/lib/savia-api";
+import { haptic } from "@/lib/haptic";
 import { pick, symptomLabel } from "@/lib/savia-content";
-import { FLOWS, MUCUS, SYMPTOMS, type DailyLog, type Flow, type Mucus } from "@/lib/types";
+import { MUCUS, SYMPTOMS, type DailyLog, type Flow, type Mucus } from "@/lib/types";
 import { cn } from "@/lib/utils";
+
+const FLOW_DOT: { id: Flow; cls: string }[] = [
+  { id: "spotting", cls: "bg-primary/25" },
+  { id: "light", cls: "bg-primary/50" },
+  { id: "medium", cls: "bg-primary" },
+  { id: "heavy", cls: "bg-plum" },
+];
 
 export function LogForm({
   day,
@@ -28,7 +33,6 @@ export function LogForm({
   const [sleepHours, setSleepHours] = useState(initial?.sleepHours ?? 7);
   const [notes, setNotes] = useState(initial?.notes || "");
   const [symptoms, setSymptoms] = useState<string[]>(initial?.symptoms || []);
-  const [periodStarted, setPeriodStarted] = useState(initial?.periodStarted || false);
   const [mucus, setMucus] = useState<Mucus>(initial?.mucus || "none");
   const [sex, setSex] = useState(Boolean(initial?.sex));
   const [busy, setBusy] = useState(false);
@@ -41,29 +45,36 @@ export function LogForm({
     heavy: t.flowHeavy,
   };
 
-  function toggle(id: string) {
-    setSymptoms((prev) => (prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]));
-  }
-
-  async function save() {
+  async function persist(patch: Partial<{
+    flow: Flow;
+    mood: number;
+    energy: number;
+    sleepHours: number;
+    notes: string;
+    symptoms: string[];
+    mucus: Mucus;
+    sex: boolean;
+  }>) {
+    const next = {
+      flow: patch.flow ?? flow,
+      mood: patch.mood ?? mood,
+      energy: patch.energy ?? energy,
+      sleepHours: patch.sleepHours ?? sleepHours,
+      notes: patch.notes ?? notes,
+      symptoms: patch.symptoms ?? symptoms,
+      mucus: patch.mucus ?? mucus,
+      sex: patch.sex ?? sex,
+    };
+    haptic(12);
     setBusy(true);
     try {
       const res = await writeLog({
-          day,
-          flow,
-          mood,
-          energy,
-          sleepHours,
-          notes,
-          symptoms,
-          periodStarted,
-          mucus,
-          sex: paid ? sex : undefined,
+        day,
+        ...next,
+        periodStarted: next.flow === "light" || next.flow === "medium" || next.flow === "heavy",
+        sex: paid ? next.sex : undefined,
       });
-      if (res.ok) {
-        toast.success(t.saved);
-        onSaved?.(res.log);
-      } else toast.error(t.errorGeneric);
+      if (res.ok) onSaved?.(res.log);
     } catch {
       toast.error(t.errorGeneric);
     } finally {
@@ -72,175 +83,168 @@ export function LogForm({
   }
 
   return (
-    <div className="space-y-4">
-      <div className="relative overflow-hidden rounded-[1.6rem] bg-primary/15 p-5 shadow-card">
-        <span className="absolute -right-6 -top-6 size-24 rounded-full bg-white/30" />
-        <p className="relative text-sm font-bold">{t.flow}</p>
-        <div className="mt-3 grid grid-cols-4 gap-2">
-          {FLOWS.filter((f) => f !== "none").map((f) => (
+    <div className="space-y-8">
+      <section>
+        <p className="text-sm font-semibold">{t.flow}</p>
+        <div className="mt-4 flex justify-between">
+          {FLOW_DOT.map((f) => (
             <button
-              key={f}
+              key={f.id}
               type="button"
-              onClick={() => setFlow(f)}
-              className={cn(
-                "rounded-2xl border py-4 text-xs font-medium",
-                flow === f ? "border-primary bg-primary text-primary-fg" : "border-border bg-bg text-fg",
-              )}
+              className="press flex w-[4.4rem] flex-col items-center gap-2"
+              onClick={() => {
+                const next = flow === f.id ? "none" : f.id;
+                setFlow(next);
+                void persist({ flow: next });
+              }}
             >
-              {flowLabel[f]}
+              <span className={cn("size-14 rounded-full", f.cls, flow === f.id && "ring-4 ring-ink/20")} />
+              <span className="text-[11px] font-semibold">{flowLabel[f.id]}</span>
             </button>
           ))}
         </div>
-        <label className="mt-4 flex min-h-11 items-center gap-3 text-sm">
-          <input
-            type="checkbox"
-            className="size-5 accent-primary"
-            checked={periodStarted}
-            onChange={(e) => {
-              setPeriodStarted(e.target.checked);
-              if (e.target.checked && flow === "none") setFlow("medium");
-            }}
-          />
-          {t.periodStarted}
-        </label>
-        <button
-          type="button"
-          onClick={() => {
-            if (!paid) {
-              toast.error(t.sexPay);
-              return;
-            }
-            setSex((s) => !s);
-          }}
-          className={cn(
-            "mt-3 inline-flex min-h-11 items-center gap-2 rounded-full px-4 text-sm",
-            sex && paid ? "bg-primary text-primary-fg" : "bg-bg text-fg",
-          )}
-        >
-          <Heart className={cn("size-4", sex && paid && "fill-current")} />
-          {sex && paid ? t.sexOn : t.sexOff}
-        </button>
-        {paid ? null : <p className="mt-2 text-xs text-muted">{t.sexPay}</p>}
-      </div>
+      </section>
 
-      <div className="relative overflow-hidden rounded-[1.6rem] bg-accent/20 p-5 shadow-card">
-        <span className="absolute -right-8 -bottom-8 size-24 rounded-full bg-white/40" />
-        <p className="relative text-sm font-bold">{t.mucus}</p>
+      <section>
+        <p className="text-sm font-semibold">{t.mucus}</p>
         <div className="mt-3 flex flex-wrap gap-2">
           {MUCUS.map((m) => (
             <button
               key={m}
               type="button"
-              onClick={() => setMucus(m)}
+              onClick={() => {
+                setMucus(m);
+                void persist({ mucus: m });
+              }}
               className={cn(
-                "h-11 rounded-full px-4 text-sm",
-                mucus === m ? "bg-primary text-primary-fg" : "bg-bg text-fg",
+                "press h-11 rounded-full px-4 text-sm font-semibold",
+                mucus === m ? "bg-accent text-ink" : "bg-surface text-fg shadow-card",
               )}
             >
               {m === "none" ? t.mucusNone : m === "sticky" ? t.mucusSticky : m === "creamy" ? t.mucusCreamy : m === "eggwhite" ? t.mucusEgg : t.mucusWatery}
             </button>
           ))}
         </div>
-      </div>
+      </section>
 
-      <div className="relative overflow-hidden rounded-[1.6rem] bg-surface-2/40 p-5 shadow-card">
-        <p className="text-sm font-bold">{t.symptoms}</p>
+      <section>
+        <p className="text-sm font-semibold">{t.symptoms}</p>
         <div className="mt-3 flex flex-wrap gap-2">
           {SYMPTOMS.map((id) => (
             <button
               key={id}
               type="button"
-              onClick={() => toggle(id)}
+              onClick={() => {
+                const next = symptoms.includes(id) ? symptoms.filter((s) => s !== id) : [...symptoms, id];
+                setSymptoms(next);
+                void persist({ symptoms: next });
+              }}
               className={cn(
-                "h-11 rounded-full px-3 text-sm",
-                symptoms.includes(id) ? "bg-primary text-primary-fg" : "bg-bg text-fg",
+                "press h-11 rounded-full px-3 text-sm font-semibold",
+                symptoms.includes(id) ? "bg-primary text-primary-fg" : "bg-surface text-fg shadow-card",
               )}
             >
               {pick(symptomLabel[id]!, lang)}
             </button>
           ))}
         </div>
-      </div>
+      </section>
 
-      <div className="relative overflow-hidden rounded-[1.6rem] bg-surface p-5 shadow-card">
-        <p className="text-sm font-bold">{t.moodAsk}</p>
-        <p className="mt-1 text-xs text-muted">{t.moodHint}</p>
-        <div className="mt-3 grid grid-cols-5 gap-1.5">
-          {(
-            [
-              [1, "😣", t.mood1],
-              [2, "😕", t.mood2],
-              [3, "🙂", t.mood3],
-              [4, "😊", t.mood4],
-              [5, "🤩", t.mood5],
-            ] as const
-          ).map(([n, face, label]) => (
+      <section>
+        <p className="text-sm font-semibold">{t.mood}</p>
+        <div className="mt-3 flex justify-between">
+          {[1, 2, 3, 4, 5].map((n) => (
             <button
               key={n}
               type="button"
-              onClick={() => setMood(n)}
-              className={cn(
-                "flex flex-col items-center gap-1 rounded-2xl py-3 text-[11px] leading-tight",
-                mood === n ? "bg-primary text-primary-fg" : "bg-bg text-fg",
-              )}
+              className="press flex size-12 items-center justify-center rounded-full"
+              onClick={() => {
+                setMood(n);
+                void persist({ mood: n });
+              }}
             >
-              <span className="text-xl">{face}</span>
-              {label}
+              <span
+                className={cn(
+                  "size-10 rounded-full bg-sand",
+                  mood === n ? "ring-4 ring-ink/20" : "opacity-50",
+                )}
+                style={{ transform: `scale(${0.7 + n * 0.08})` }}
+              />
             </button>
           ))}
         </div>
-
-        <p className="mt-6 text-sm font-semibold">{t.energyAsk}</p>
-        <p className="mt-1 text-xs text-muted">{t.energyHint}</p>
-        <div className="mt-3 flex flex-wrap gap-2">
-          {(
-            [
-              [1, t.energy1],
-              [2, t.energy2],
-              [3, t.energy3],
-              [4, t.energy4],
-              [5, t.energy5],
-            ] as const
-          ).map(([n, label]) => (
+        <p className="mt-5 text-sm font-semibold">{t.energy}</p>
+        <div className="mt-3 flex justify-between">
+          {[1, 2, 3, 4, 5].map((n) => (
             <button
               key={n}
               type="button"
-              onClick={() => setEnergy(n)}
-              className={cn(
-                "h-11 rounded-full px-4 text-sm",
-                energy === n ? "bg-primary text-primary-fg" : "bg-bg text-fg",
-              )}
+              className="press flex size-12 items-center justify-center rounded-full"
+              onClick={() => {
+                setEnergy(n);
+                void persist({ energy: n });
+              }}
             >
-              {label}
+              <span
+                className={cn(
+                  "size-10 rounded-full bg-accent",
+                  energy === n ? "ring-4 ring-ink/20" : "opacity-50",
+                )}
+                style={{ transform: `scale(${0.7 + n * 0.08})` }}
+              />
             </button>
           ))}
         </div>
-
-        <p className="mt-6 text-sm font-semibold">{t.sleepAsk}</p>
-        <p className="mt-1 text-xs text-muted">{t.sleepHint}</p>
+        <p className="mt-5 text-sm font-semibold">{t.sleep}</p>
         <div className="mt-3 flex flex-wrap gap-2">
-          {[4, 5, 6, 7, 8, 9, 10].map((h) => (
+          {[5, 6, 7, 8, 9].map((h) => (
             <button
               key={h}
               type="button"
-              onClick={() => setSleepHours(h)}
+              onClick={() => {
+                setSleepHours(h);
+                void persist({ sleepHours: h });
+              }}
               className={cn(
-                "h-11 min-w-12 rounded-full px-3 text-sm",
-                sleepHours === h ? "bg-primary text-primary-fg" : "bg-bg text-fg",
+                "press h-11 min-w-12 rounded-full px-3 text-sm font-semibold",
+                sleepHours === h ? "bg-plum text-primary-fg" : "bg-surface text-fg shadow-card",
               )}
             >
-              {h === 10 ? "10+" : `${h} h`}
+              {h} h
             </button>
           ))}
         </div>
-      </div>
+      </section>
 
-      <div className="relative overflow-hidden rounded-[1.6rem] bg-surface p-5 shadow-card">
-        <Label htmlFor="notes">{t.notes}</Label>
-        <Textarea id="notes" className="mt-2" value={notes} onChange={(e) => setNotes(e.target.value)} />
-      </div>
+      <section>
+        <p className="text-sm font-semibold">{t.notes}</p>
+        <textarea
+          className="mt-2 min-h-24 w-full resize-none rounded-[1.25rem] bg-surface px-4 py-3 text-sm shadow-card outline-none"
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          onBlur={() => void persist({ notes })}
+        />
+        {paid ? (
+          <button
+            type="button"
+            onClick={() => {
+              const next = !sex;
+              setSex(next);
+              void persist({ sex: next });
+            }}
+            className={cn(
+              "press mt-4 inline-flex min-h-12 items-center rounded-full px-5 text-sm font-semibold",
+              sex ? "bg-primary text-primary-fg" : "bg-surface text-fg shadow-card",
+            )}
+          >
+            {sex ? t.sexOn : t.sexOff}
+          </button>
+        ) : (
+          <p className="mt-3 text-xs text-muted">{t.sexPay}</p>
+        )}
+      </section>
 
-      <Button type="button" className="w-full" onClick={() => void save()} disabled={busy}>
+      <Button type="button" className="w-full" onClick={() => void persist({ notes })} disabled={busy}>
         {t.save}
       </Button>
     </div>

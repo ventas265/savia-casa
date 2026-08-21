@@ -19,6 +19,7 @@ import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PrivacidadRouteImport } from './routes/privacidad'
 import { Route as TerminosRouteImport } from './routes/terminos'
 import { Route as AppIndexRouteImport } from './routes/app/index'
+import { Route as AppCalendarioRouteImport } from './routes/app/calendario'
 import { Route as AppCicloRouteImport } from './routes/app/ciclo'
 import { Route as AppCuadernoRouteImport } from './routes/app/cuaderno'
 import { Route as AppGuiaRouteImport } from './routes/app/guia'
@@ -78,6 +79,11 @@ const TerminosRoute = TerminosRouteImport.update({
 const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCalendarioRoute = AppCalendarioRouteImport.update({
+  id: '/calendario',
+  path: '/calendario',
   getParentRoute: () => AppRoute,
 } as any)
 const AppCicloRoute = AppCicloRouteImport.update({
@@ -141,6 +147,7 @@ export interface FileRoutesByFullPath {
   '/pricing': typeof PricingRoute
   '/privacidad': typeof PrivacidadRoute
   '/terminos': typeof TerminosRoute
+  '/app/calendario': typeof AppCalendarioRoute
   '/app/ciclo': typeof AppCicloRoute
   '/app/cuaderno': typeof AppCuadernoRoute
   '/app/guia': typeof AppGuiaRoute
@@ -162,6 +169,7 @@ export interface FileRoutesByTo {
   '/pricing': typeof PricingRoute
   '/privacidad': typeof PrivacidadRoute
   '/terminos': typeof TerminosRoute
+  '/app/calendario': typeof AppCalendarioRoute
   '/app/ciclo': typeof AppCicloRoute
   '/app/cuaderno': typeof AppCuadernoRoute
   '/app/guia': typeof AppGuiaRoute
@@ -185,6 +193,7 @@ export interface FileRoutesById {
   '/pricing': typeof PricingRoute
   '/privacidad': typeof PrivacidadRoute
   '/terminos': typeof TerminosRoute
+  '/app/calendario': typeof AppCalendarioRoute
   '/app/ciclo': typeof AppCicloRoute
   '/app/cuaderno': typeof AppCuadernoRoute
   '/app/guia': typeof AppGuiaRoute
@@ -209,6 +218,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/privacidad'
     | '/terminos'
+    | '/app/calendario'
     | '/app/ciclo'
     | '/app/cuaderno'
     | '/app/guia'
@@ -230,6 +240,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/privacidad'
     | '/terminos'
+    | '/app/calendario'
     | '/app/ciclo'
     | '/app/cuaderno'
     | '/app/guia'
@@ -252,6 +263,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/privacidad'
     | '/terminos'
+    | '/app/calendario'
     | '/app/ciclo'
     | '/app/cuaderno'
     | '/app/guia'
@@ -350,6 +362,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/calendario': {
+      id: '/app/calendario'
+      path: '/calendario'
+      fullPath: '/app/calendario'
+      preLoaderRoute: typeof AppCalendarioRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/ciclo': {
       id: '/app/ciclo'
       path: '/ciclo'
@@ -424,6 +443,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AppRouteChildren {
+  AppCalendarioRoute: typeof AppCalendarioRoute
   AppCicloRoute: typeof AppCicloRoute
   AppCuadernoRoute: typeof AppCuadernoRoute
   AppGuiaRoute: typeof AppGuiaRoute
@@ -437,6 +457,7 @@ interface AppRouteChildren {
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppCalendarioRoute: AppCalendarioRoute,
   AppCicloRoute: AppCicloRoute,
   AppCuadernoRoute: AppCuadernoRoute,
   AppGuiaRoute: AppGuiaRoute,

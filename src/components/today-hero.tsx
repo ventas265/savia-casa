@@ -4,7 +4,9 @@ import { CYCLE_CHOICES, daysUntil, formatLong, todayISO, weekStrip } from "@/lib
 import type { DailyLog, Phase, Stage } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { CartaHoy } from "@/components/carta-hoy";
+import { CycleRing } from "@/components/cycle-ring";
 import { QuickLog } from "@/components/quick-log";
+import { haptic } from "@/lib/haptic";
 import { maybeNotify, periodAlert } from "@/lib/notify";
 
 const DOW_ES = ["D", "L", "M", "X", "J", "V", "S"];
@@ -15,6 +17,7 @@ export function TodayHero({
   phase,
   nextPeriod,
   cycleLength = 28,
+  cycleDay = null,
   name,
   onCal,
   onLog,
@@ -30,6 +33,7 @@ export function TodayHero({
   phase: Phase;
   nextPeriod?: string | null;
   cycleLength?: number;
+  cycleDay?: number | null;
   name?: string;
   onCal: () => void;
   onLog: () => void;
@@ -100,43 +104,49 @@ export function TodayHero({
 
   return (
     <div className="relative -mx-4 overflow-hidden px-4 pb-4">
-      <p className="relative text-center text-sm font-semibold">{formatLong(today, lang)}</p>
+      {name ? (
+        <p className="relative font-display text-2xl font-semibold tracking-[-0.03em]">
+          {t.goodMorning}, {name}
+        </p>
+      ) : (
+        <p className="relative font-display text-2xl font-semibold tracking-[-0.03em]">{t.goodMorning}</p>
+      )}
+      <p className="relative mt-1 text-center text-sm font-semibold text-muted">{formatLong(today, lang)}</p>
 
       <div className="relative mt-4 grid grid-cols-7 text-center">
         {days.map((d) => {
           const isToday = d.iso === today;
           return (
-            <div key={d.iso} className="flex flex-col items-center gap-2">
+            <button
+              key={d.iso}
+              type="button"
+              onClick={() => {
+                haptic();
+                onCal();
+              }}
+              className="press flex flex-col items-center gap-2"
+            >
               <span className="text-xs font-semibold text-muted">{dow[d.dow]}</span>
               <span
                 className={cn(
                   "flex size-10 items-center justify-center rounded-full text-base font-semibold",
-                  isToday ? "bg-primary text-primary-fg shadow-card" : "bg-surface text-fg",
+                  isToday ? "pulse-today bg-primary text-primary-fg" : "bg-surface text-fg",
                 )}
               >
                 {d.date}
               </span>
-            </div>
+            </button>
           );
         })}
       </div>
 
-      <div className="hero-pop relative mt-8 text-center">
-        {name ? <p className="mb-2 text-sm font-semibold text-muted">{t.hello}, {name}</p> : null}
-        {hero.kicker ? <p className="text-lg font-semibold text-fg/80">{hero.kicker}</p> : null}
-        <h1
-          className={cn(
-            "bg-gradient-to-br from-primary to-ink bg-clip-text font-display font-semibold tracking-tight text-transparent",
-            hero.kicker ? "mt-1 text-6xl" : "text-5xl leading-[1.05]",
-          )}
-        >
-          {hero.title}
-        </h1>
-        <p className="mt-3 text-base font-medium">{chance}</p>
-        {left != null && !onPeriod ? (
-          <p className="mt-2 text-xs text-muted">{t.periodEstimate}</p>
-        ) : null}
-      </div>
+      <CycleRing
+        progress={cycleDay && cycleLength ? cycleDay / cycleLength : 0.08}
+        kicker={hero.kicker}
+        title={hero.title}
+        sub={chance}
+        onClick={onCal}
+      />
 
       <CartaHoy name={name} stage={stage} phase={phase} onAsk={onAsk} />
 
