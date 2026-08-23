@@ -127,7 +127,7 @@ function mapLog(row: LogRow): DailyLog {
   };
 }
 
-async function getOrCreateProfile(userId: string): Promise<SaviaProfile> {
+export async function getOrCreateProfile(userId: string): Promise<SaviaProfile> {
   const sql = await getSql();
   const existing = await sql<ProfileRow>`select * from savia_profiles where user_id = ${userId} limit 1`;
   if (existing[0]) return mapProfile(existing[0]);
@@ -141,43 +141,45 @@ async function getOrCreateProfile(userId: string): Promise<SaviaProfile> {
   return mapProfile(again[0]!);
 }
 
+export async function snapshotFor(userId: string): Promise<TodaySnapshot> {
+  const sql = await getSql();
+  const profile = await getOrCreateProfile(userId);
+  const day = todayISO();
+  const logRows = await sql<LogRow>`
+    select * from daily_logs where user_id = ${userId} and day = ${day} limit 1
+  `;
+  const recent = await sql<LogRow>`
+    select * from daily_logs where user_id = ${userId} order by day desc limit 14
+  `;
+  const starts = await sql<{ start_date: string }>`
+    select start_date from period_starts where user_id = ${userId} order by start_date desc limit 12
+  `;
+  const sexRows = await sql<{ day: string; sex_kind?: string }>`
+    select day, sex_kind from daily_logs
+    where user_id = ${userId} and sex = true
+    order by day desc
+    limit 90
+  `;
+  const meta = snapshotMeta(profile, day);
+  const sexMarks = sexRows.map((s) => ({
+    day: String(s.day).slice(0, 10),
+    kind: ((s.sex_kind as SexKind) || "unprotected") as SexKind,
+  }));
+  return {
+    profile,
+    day,
+    ...meta,
+    log: logRows[0] ? mapLog(logRows[0]!) : null,
+    recentLogs: recent.map(mapLog),
+    periodStarts: starts.map((s) => String(s.start_date).slice(0, 10)),
+    sexDays: sexMarks.map((s) => s.day),
+    sexMarks,
+  };
+}
+
 export const getToday = createServerFn({ method: "GET" })
   .middleware([authMiddleware])
-  .handler(async ({ context }): Promise<TodaySnapshot> => {
-    const sql = await getSql();
-    const profile = await getOrCreateProfile(context.userId);
-    const day = todayISO();
-    const logRows = await sql<LogRow>`
-      select * from daily_logs where user_id = ${context.userId} and day = ${day} limit 1
-    `;
-    const recent = await sql<LogRow>`
-      select * from daily_logs where user_id = ${context.userId} order by day desc limit 14
-    `;
-    const starts = await sql<{ start_date: string }>`
-      select start_date from period_starts where user_id = ${context.userId} order by start_date desc limit 12
-    `;
-    const sexRows = await sql<{ day: string; sex_kind?: string }>`
-      select day, sex_kind from daily_logs
-      where user_id = ${context.userId} and sex = true
-      order by day desc
-      limit 90
-    `;
-    const meta = snapshotMeta(profile, day);
-    const sexMarks = sexRows.map((s) => ({
-      day: String(s.day).slice(0, 10),
-      kind: ((s.sex_kind as SexKind) || "unprotected") as SexKind,
-    }));
-    return {
-      profile,
-      day,
-      ...meta,
-      log: logRows[0] ? mapLog(logRows[0]) : null,
-      recentLogs: recent.map(mapLog),
-      periodStarts: starts.map((s) => String(s.start_date).slice(0, 10)),
-      sexDays: sexMarks.map((s) => s.day),
-      sexMarks,
-    };
-  });
+  .handler(async ({ context }): Promise<TodaySnapshot> => snapshotFor(context.userId));
 
 export const saveProfile = createServerFn({ method: "POST" })
   .middleware([authMiddleware])

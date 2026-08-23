@@ -3,6 +3,7 @@ import { SAVIA_BETA } from "@/lib/beta";
 import {
   localAskFile,
   localCameToday,
+  localHydrate,
   localReport,
   localSaveLog,
   localSaveProfile,
@@ -11,13 +12,45 @@ import {
   localToday,
 } from "@/lib/savia-local";
 import { askSavia, askSaviaOpen, getReport, getToday, saveLog, saveProfile, toggleSex } from "@/lib/savia-server";
+import { getTodayDevice, saveLogDevice, saveProfileDevice, saveSexDevice } from "@/lib/savia-device";
 import { deviceId } from "@/lib/device";
 import { registerTester } from "@/lib/testers";
 import type { Flow, Intention, Mucus, SexKind, Stage } from "@/lib/types";
 
 export async function loadToday() {
-  if (SAVIA_BETA) return localToday();
-  return getToday();
+  if (!SAVIA_BETA) return getToday();
+  const id = deviceId();
+  const local = localToday();
+  if (id) {
+    try {
+      const remote = await getTodayDevice({ data: { deviceId: id } });
+      if (remote?.profile.onboardingDone) {
+        localHydrate(remote);
+        return remote;
+      }
+      if (local.profile.onboardingDone) {
+        void saveProfileDevice({
+          data: {
+            deviceId: id,
+            displayName: local.profile.displayName,
+            stage: local.profile.stage,
+            birthYear: local.profile.birthYear,
+            cycleLength: local.profile.cycleLength,
+            periodLength: local.profile.periodLength,
+            lastPeriodStart: local.profile.lastPeriodStart,
+            dueDate: local.profile.dueDate,
+            lastPeriodYear: local.profile.lastPeriodYear,
+            onboardingDone: true,
+            locale: local.profile.locale,
+            intention: local.profile.intention,
+          },
+        });
+      }
+    } catch {
+      /* offline: local */
+    }
+  }
+  return local;
 }
 
 export async function writeProfile(data: {
@@ -34,7 +67,31 @@ export async function writeProfile(data: {
   intention?: Intention;
   country?: string;
 }) {
-  const saved = SAVIA_BETA ? localSaveProfile(data) : await saveProfile({ data });
+  if (!SAVIA_BETA) {
+    const saved = await saveProfile({ data });
+    void pulseTester();
+    return saved;
+  }
+  const saved = localSaveProfile(data);
+  const id = deviceId();
+  if (id) {
+    void saveProfileDevice({
+      data: {
+        deviceId: id,
+        displayName: data.displayName,
+        stage: data.stage,
+        birthYear: data.birthYear,
+        cycleLength: data.cycleLength,
+        periodLength: data.periodLength,
+        lastPeriodStart: data.lastPeriodStart,
+        dueDate: data.dueDate,
+        lastPeriodYear: data.lastPeriodYear,
+        onboardingDone: true,
+        locale: data.locale,
+        intention: data.intention,
+      },
+    }).catch(() => {});
+  }
   void pulseTester();
   return saved;
 }
@@ -66,13 +123,21 @@ export async function writeLog(data: {
   mucus?: Mucus;
   sex?: boolean;
 }) {
-  if (SAVIA_BETA) return localSaveLog(data);
-  return saveLog({ data });
+  if (!SAVIA_BETA) return saveLog({ data });
+  const saved = localSaveLog(data);
+  const id = deviceId();
+  if (id) {
+    void saveLogDevice({ data: { deviceId: id, ...data } }).catch(() => {});
+  }
+  return saved;
 }
 
 export async function writeSex(day: string, kind: SexKind) {
-  if (SAVIA_BETA) return localSetSex(day, kind);
-  return toggleSex({ data: { day, kind } });
+  if (!SAVIA_BETA) return toggleSex({ data: { day, kind } });
+  const saved = localSetSex(day, kind);
+  const id = deviceId();
+  if (id) void saveSexDevice({ data: { deviceId: id, day, kind } }).catch(() => {});
+  return saved;
 }
 
 export async function loadReport() {
@@ -96,7 +161,30 @@ export function betaPaid() {
 }
 
 export async function setCycleLength(n: number) {
-  if (SAVIA_BETA) return localSetCycle(n);
+  if (SAVIA_BETA) {
+    const snap = localSetCycle(n);
+    const id = deviceId();
+    const p = snap.profile;
+    if (id && p.onboardingDone) {
+      void saveProfileDevice({
+        data: {
+          deviceId: id,
+          displayName: p.displayName,
+          stage: p.stage,
+          birthYear: p.birthYear,
+          cycleLength: p.cycleLength,
+          periodLength: p.periodLength,
+          lastPeriodStart: p.lastPeriodStart,
+          dueDate: p.dueDate,
+          lastPeriodYear: p.lastPeriodYear,
+          onboardingDone: true,
+          locale: p.locale,
+          intention: p.intention,
+        },
+      }).catch(() => {});
+    }
+    return snap;
+  }
   const snap = await loadToday();
   return writeProfile({
     displayName: snap.profile.displayName,
@@ -116,6 +204,22 @@ export async function setCycleLength(n: number) {
 export async function markCameToday() {
   if (SAVIA_BETA) {
     localCameToday();
+    const id = deviceId();
+    if (id) {
+      void saveLogDevice({
+        data: {
+          deviceId: id,
+          day: todayISO(),
+          flow: "medium",
+          mood: null,
+          energy: null,
+          sleepHours: null,
+          notes: "",
+          symptoms: [],
+          periodStarted: true,
+        },
+      }).catch(() => {});
+    }
     return localToday();
   }
   await writeLog({

@@ -80,6 +80,18 @@ export function localToday(): TodaySnapshot {
   };
 }
 
+export function localHydrate(snap: TodaySnapshot) {
+  if (!snap.profile.onboardingDone) return;
+  const store = read();
+  store.profile = { ...store.profile, ...snap.profile };
+  if (snap.periodStarts.length) store.starts = snap.periodStarts;
+  const map = new Map(store.logs.map((l) => [l.day, l]));
+  for (const l of snap.recentLogs) map.set(l.day, l);
+  if (snap.log) map.set(snap.log.day, snap.log);
+  store.logs = [...map.values()].sort((a, b) => b.day.localeCompare(a.day)).slice(0, 180);
+  write(store);
+}
+
 export function localSaveProfile(data: {
   displayName: string;
   stage: Stage;
