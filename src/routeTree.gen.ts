@@ -22,6 +22,7 @@ import { Route as AppIndexRouteImport } from './routes/app/index'
 import { Route as AppCalendarioRouteImport } from './routes/app/calendario'
 import { Route as AppCicloRouteImport } from './routes/app/ciclo'
 import { Route as AppCuadernoRouteImport } from './routes/app/cuaderno'
+import { Route as AppCuadernosRouteImport } from './routes/app/cuadernos'
 import { Route as AppGuiaRouteImport } from './routes/app/guia'
 import { Route as AppHoyRouteImport } from './routes/app/hoy'
 import { Route as AppInformeRouteImport } from './routes/app/informe'
@@ -97,6 +98,11 @@ const AppCuadernoRoute = AppCuadernoRouteImport.update({
   path: '/cuaderno',
   getParentRoute: () => AppRoute,
 } as any)
+const AppCuadernosRoute = AppCuadernosRouteImport.update({
+  id: '/cuadernos',
+  path: '/cuadernos',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppGuiaRoute = AppGuiaRouteImport.update({
   id: '/guia',
   path: '/guia',
@@ -156,6 +162,7 @@ export interface FileRoutesByFullPath {
   '/app/calendario': typeof AppCalendarioRoute
   '/app/ciclo': typeof AppCicloRoute
   '/app/cuaderno': typeof AppCuadernoRoute
+  '/app/cuadernos': typeof AppCuadernosRoute
   '/app/guia': typeof AppGuiaRoute
   '/app/hoy': typeof AppHoyRoute
   '/app/informe': typeof AppInformeRoute
@@ -179,6 +186,7 @@ export interface FileRoutesByTo {
   '/app/calendario': typeof AppCalendarioRoute
   '/app/ciclo': typeof AppCicloRoute
   '/app/cuaderno': typeof AppCuadernoRoute
+  '/app/cuadernos': typeof AppCuadernosRoute
   '/app/guia': typeof AppGuiaRoute
   '/app/hoy': typeof AppHoyRoute
   '/app/informe': typeof AppInformeRoute
@@ -204,6 +212,7 @@ export interface FileRoutesById {
   '/app/calendario': typeof AppCalendarioRoute
   '/app/ciclo': typeof AppCicloRoute
   '/app/cuaderno': typeof AppCuadernoRoute
+  '/app/cuadernos': typeof AppCuadernosRoute
   '/app/guia': typeof AppGuiaRoute
   '/app/hoy': typeof AppHoyRoute
   '/app/informe': typeof AppInformeRoute
@@ -230,6 +239,7 @@ export interface FileRouteTypes {
     | '/app/calendario'
     | '/app/ciclo'
     | '/app/cuaderno'
+    | '/app/cuadernos'
     | '/app/guia'
     | '/app/hoy'
     | '/app/informe'
@@ -253,6 +263,7 @@ export interface FileRouteTypes {
     | '/app/calendario'
     | '/app/ciclo'
     | '/app/cuaderno'
+    | '/app/cuadernos'
     | '/app/guia'
     | '/app/hoy'
     | '/app/informe'
@@ -277,6 +288,7 @@ export interface FileRouteTypes {
     | '/app/calendario'
     | '/app/ciclo'
     | '/app/cuaderno'
+    | '/app/cuadernos'
     | '/app/guia'
     | '/app/hoy'
     | '/app/informe'
@@ -395,6 +407,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCuadernoRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/cuadernos': {
+      id: '/app/cuadernos'
+      path: '/cuadernos'
+      fullPath: '/app/cuadernos'
+      preLoaderRoute: typeof AppCuadernosRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/guia': {
       id: '/app/guia'
       path: '/guia'
@@ -465,6 +484,7 @@ interface AppRouteChildren {
   AppCalendarioRoute: typeof AppCalendarioRoute
   AppCicloRoute: typeof AppCicloRoute
   AppCuadernoRoute: typeof AppCuadernoRoute
+  AppCuadernosRoute: typeof AppCuadernosRoute
   AppGuiaRoute: typeof AppGuiaRoute
   AppHoyRoute: typeof AppHoyRoute
   AppInformeRoute: typeof AppInformeRoute
@@ -480,6 +500,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppCalendarioRoute: AppCalendarioRoute,
   AppCicloRoute: AppCicloRoute,
   AppCuadernoRoute: AppCuadernoRoute,
+  AppCuadernosRoute: AppCuadernosRoute,
   AppGuiaRoute: AppGuiaRoute,
   AppHoyRoute: AppHoyRoute,
   AppInformeRoute: AppInformeRoute,

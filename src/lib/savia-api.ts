@@ -11,6 +11,8 @@ import {
   localToday,
 } from "@/lib/savia-local";
 import { askSavia, askSaviaOpen, getReport, getToday, saveLog, saveProfile, toggleSex } from "@/lib/savia-server";
+import { deviceId } from "@/lib/device";
+import { registerTester } from "@/lib/testers";
 import type { Flow, Intention, Mucus, SexKind, Stage } from "@/lib/types";
 
 export async function loadToday() {
@@ -32,8 +34,24 @@ export async function writeProfile(data: {
   intention?: Intention;
   country?: string;
 }) {
-  if (SAVIA_BETA) return localSaveProfile(data);
-  return saveProfile({ data });
+  const saved = SAVIA_BETA ? localSaveProfile(data) : await saveProfile({ data });
+  void pulseTester();
+  return saved;
+}
+
+export async function pulseTester() {
+  const id = deviceId();
+  if (!id) return;
+  const p = localToday().profile;
+  if (!p.onboardingDone || !p.displayName.trim()) return;
+  await registerTester({
+    data: {
+      deviceId: id,
+      displayName: p.displayName,
+      stage: p.stage,
+      country: p.country,
+    },
+  }).catch(() => {});
 }
 
 export async function writeLog(data: {
