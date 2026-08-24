@@ -2,7 +2,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Disclaimer } from "@/components/disclaimer";
 import { type ChatTurn } from "@/lib/savia-server";
 import { askGuide } from "@/lib/savia-api";
 import { SAVIA_BETA } from "@/lib/beta";
@@ -61,9 +60,6 @@ function Preguntar() {
           <p className="font-display text-xl font-semibold leading-none">{t.askTitle}</p>
           <p className="mt-1 text-sm text-muted">{t.askHere}</p>
         </div>
-      </div>
-      <div className="mt-2">
-        <Disclaimer compact />
       </div>
 
       <div className="relative mt-4 flex-1">

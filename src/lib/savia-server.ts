@@ -39,6 +39,8 @@ SPEED AND NAME:
 - If she has a call name, use it ONCE in the reply, like a friend (Clau, Isa, Pao, Andre) — not as a greeting header.
 - 2–6 short lines. Answer in ${lang}.
 
+CLOCK: The only date that exists is the line TODAY in her file. If she asks qué día es / what day is it, answer that line. Never invent a month. Never say March if TODAY is August.
+
 Her file:
 ${file}`;
 }
@@ -629,6 +631,8 @@ export type AskFile = {
   pregnancyWeek?: number | null;
   nextPeriod?: string | null;
   country?: string;
+  todayISO?: string;
+  todayLabel?: string;
   flow?: string;
   mucus?: string;
   symptoms?: string[];
@@ -672,6 +676,7 @@ export const askSaviaOpen = createServerFn({ method: "POST" })
               `- Name: ${f.displayName || "not set"}
 - Call her: ${f.callName || callName(f.displayName) || "not set"}
 - Country: ${f.country || "LATAM"}
+- TODAY: ${f.todayLabel || "unknown"} (${f.todayISO || "n/a"})
 - Age: ${f.birthYear ? new Date().getFullYear() - f.birthYear : "unknown"}
 - Season: ${f.stage || "cycle"}
 - Intention: ${f.intention || "track"}

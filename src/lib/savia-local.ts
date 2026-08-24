@@ -201,6 +201,13 @@ export function localAskFile() {
     stage: p.stage,
     intention: p.intention,
     country: p.country,
+    todayISO: todayISO(),
+    todayLabel: new Date().toLocaleDateString(p.locale === "en" ? "en-US" : "es-VE", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    }),
     cycleLength: p.cycleLength,
     periodLength: p.periodLength,
     lastPeriodStart: p.lastPeriodStart,
