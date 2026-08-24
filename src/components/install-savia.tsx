@@ -46,7 +46,7 @@ export function InstallSavia() {
           <p className="font-display text-xl font-semibold leading-tight">
             {trapped ? t.installInAppTitle : t.installTitle}
           </p>
-          <p className="mt-1 text-sm opacity-90">{trapped ? t.installInApp : t.installBody}</p>
+          <p className="mt-1 text-sm opacity-90">{trapped ? t.installInApp : ios ? t.installIos : t.installAndroid}</p>
         </div>
       </div>
       {deferred && !trapped ? (
@@ -58,9 +58,6 @@ export function InstallSavia() {
           {t.installCta}
         </button>
       ) : null}
-      <p className="mt-3 text-xs leading-relaxed opacity-80">
-        {trapped ? t.installInApp : ios ? t.installIos : t.installAndroid}
-      </p>
     </section>
   );
 }
