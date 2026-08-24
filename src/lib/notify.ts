@@ -1,14 +1,15 @@
 import { todayISO } from "@/lib/cycle";
 
-export type AlertKind = "period" | "today" | "tomorrow" | "soon" | "late" | "fertile" | null;
+export type AlertKind = "period" | "today" | "tomorrow" | "soon" | "late" | "fertile" | "pms" | null;
 
-export function periodAlert(left: number | null, onPeriod: boolean): AlertKind {
+export function periodAlert(left: number | null, onPeriod: boolean, phase?: string): AlertKind {
   if (onPeriod) return "period";
   if (left == null) return null;
   if (left < 0) return "late";
   if (left === 0) return "today";
   if (left === 1) return "tomorrow";
   if (left === 2) return "soon";
+  if (phase === "luteal" && left >= 3 && left <= 7) return "pms";
   return null;
 }
 
@@ -44,7 +45,7 @@ export function maybeNotify(opts: {
     /* ignore */
   }
   try {
-    new Notification(opts.title, { body: opts.body, icon: "/favicon.svg" });
+    new Notification(opts.title, { body: opts.body, icon: "/icon-192.png" });
   } catch {
     /* ignore */
   }

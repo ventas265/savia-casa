@@ -3,7 +3,6 @@ import { useI18n } from "@/lib/i18n";
 import { localFeelingToday, localNoteToday, localSetFeeling, localSetUserNote, type Feeling } from "@/lib/savia-local";
 import type { Phase, Stage } from "@/lib/types";
 import { haptic } from "@/lib/haptic";
-import { songListenUrl, songToday } from "@/lib/songs";
 import { cn } from "@/lib/utils";
 
 export function CartaHoy({
@@ -18,7 +17,6 @@ export function CartaHoy({
 }) {
   const { t, lang } = useI18n();
   const note = localNoteToday(stage, phase, lang);
-  const song = songToday(stage, phase);
   const [feeling, setFeeling] = useState<Feeling | null>(() => localFeelingToday());
   const [mine, setMine] = useState(note.userText);
 
@@ -43,20 +41,6 @@ export function CartaHoy({
       <button type="button" onClick={onAsk} className="mt-4 text-left text-sm font-medium text-primary">
         {note.ask}
       </button>
-
-      <a
-        href={songListenUrl(song)}
-        target="_blank"
-        rel="noreferrer"
-        className="press mt-5 block w-full rounded-[1.25rem] bg-plum p-4 text-left text-primary-fg"
-      >
-        <p className="text-[10px] font-bold uppercase tracking-[0.14em] opacity-80">{t.playsToday}</p>
-        <p className="mt-1 font-display text-xl font-semibold leading-snug">
-          {song.artist} — {song.title}
-        </p>
-        <p className="mt-1 text-sm opacity-90">{song.why}</p>
-        <p className="mt-3 text-xs font-semibold uppercase tracking-wide">{t.listen}</p>
-      </a>
 
       <p className="mt-6 text-sm font-semibold">{t.howMorning}</p>
       <div className="mt-2 flex flex-wrap gap-2">

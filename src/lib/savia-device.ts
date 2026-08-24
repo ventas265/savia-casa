@@ -2,16 +2,13 @@ import { createServerFn } from "@tanstack/react-start";
 import { getSql } from "@/lib/db";
 import { learnedCycle } from "@/lib/cycle";
 import { getOrCreateProfile, snapshotFor } from "@/lib/savia-server";
+import { assertDevice } from "@/lib/testers";
 import type { Flow, Intention, Mucus, SexKind, Stage, TodaySnapshot } from "@/lib/types";
 
-function okId(id: string) {
-  return id.length >= 8 && id.length <= 80;
-}
-
 export const getTodayDevice = createServerFn({ method: "POST" })
-  .validator((input: { deviceId: string }) => input)
+  .validator((input: { deviceId: string; token: string }) => input)
   .handler(async ({ data }): Promise<TodaySnapshot | null> => {
-    if (!okId(data.deviceId)) return null;
+    if (!(await assertDevice(data.deviceId, data.token))) return null;
     return snapshotFor(data.deviceId);
   });
 
@@ -19,6 +16,7 @@ export const saveProfileDevice = createServerFn({ method: "POST" })
   .validator(
     (input: {
       deviceId: string;
+      token: string;
       displayName: string;
       stage: Stage;
       birthYear: number | null;
@@ -33,7 +31,7 @@ export const saveProfileDevice = createServerFn({ method: "POST" })
     }) => input,
   )
   .handler(async ({ data }) => {
-    if (!okId(data.deviceId)) return { ok: false as const };
+    if (!(await assertDevice(data.deviceId, data.token))) return { ok: false as const };
     const sql = await getSql();
     const userId = data.deviceId;
     await getOrCreateProfile(userId);
@@ -50,7 +48,7 @@ export const saveProfileDevice = createServerFn({ method: "POST" })
         onboarding_done = ${data.onboardingDone},
         locale = ${data.locale},
         intention = ${data.intention || "track"},
-        plan = 'serena',
+        plan = 'beta',
         updated_at = now()
       where user_id = ${userId}
     `;
@@ -68,6 +66,7 @@ export const saveLogDevice = createServerFn({ method: "POST" })
   .validator(
     (input: {
       deviceId: string;
+      token: string;
       day: string;
       flow: Flow;
       mood: number | null;
@@ -81,7 +80,7 @@ export const saveLogDevice = createServerFn({ method: "POST" })
     }) => input,
   )
   .handler(async ({ data }) => {
-    if (!okId(data.deviceId)) return { ok: false as const };
+    if (!(await assertDevice(data.deviceId, data.token))) return { ok: false as const };
     const sql = await getSql();
     const userId = data.deviceId;
     const profile = await getOrCreateProfile(userId);
@@ -123,9 +122,9 @@ export const saveLogDevice = createServerFn({ method: "POST" })
   });
 
 export const saveSexDevice = createServerFn({ method: "POST" })
-  .validator((input: { deviceId: string; day: string; kind: SexKind }) => input)
+  .validator((input: { deviceId: string; token: string; day: string; kind: SexKind }) => input)
   .handler(async ({ data }) => {
-    if (!okId(data.deviceId)) return { ok: false as const };
+    if (!(await assertDevice(data.deviceId, data.token))) return { ok: false as const };
     const sql = await getSql();
     const on = data.kind !== "none";
     await sql`

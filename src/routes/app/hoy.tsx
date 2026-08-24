@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TodayHero } from "@/components/today-hero";
+import { RecoveryCard } from "@/components/recovery-card";
 import { WelcomeStart } from "@/components/welcome-start";
 import { loadToday, markCameToday, pulseTester, setCycleLength } from "@/lib/savia-api";
 import { SAVIA_BETA } from "@/lib/beta";
@@ -38,7 +39,9 @@ function HoyTab() {
   }
 
   return (
-    <TodayHero
+    <>
+      <RecoveryCard />
+      <TodayHero
       name={data.profile.displayName}
       stage={data.profile.stage}
       phase={data.phase}
@@ -67,5 +70,6 @@ function HoyTab() {
         void loadToday().then(setData);
       }}
     />
+    </>
   );
 }

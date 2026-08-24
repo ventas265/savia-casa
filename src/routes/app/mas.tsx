@@ -87,6 +87,13 @@ function MasTab() {
           {t.profile}
           <ChevronRight className="size-4" />
         </Link>
+        <Link
+          to="/app/recuperar"
+          className="press mt-2 flex min-h-12 items-center justify-between rounded-full bg-bg px-4 text-sm font-semibold"
+        >
+          {t.recoverTitle}
+          <ChevronRight className="size-4" />
+        </Link>
       </section>
 
       <section className="mt-4 rounded-[1.6rem] bg-ink p-5 text-primary-fg shadow-card">

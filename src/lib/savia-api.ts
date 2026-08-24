@@ -13,17 +13,43 @@ import {
 } from "@/lib/savia-local";
 import { askSavia, askSaviaOpen, getReport, getToday, saveLog, saveProfile, toggleSex } from "@/lib/savia-server";
 import { getTodayDevice, saveLogDevice, saveProfileDevice, saveSexDevice } from "@/lib/savia-device";
-import { deviceId } from "@/lib/device";
+import { deviceId, deviceToken, setDeviceToken, claimRecovery } from "@/lib/device";
 import { registerTester } from "@/lib/testers";
 import type { Flow, Intention, Mucus, SexKind, Stage } from "@/lib/types";
 
+export async function pulseTester() {
+  const id = deviceId();
+  if (!id) return;
+  const p = localToday().profile;
+  if (!p.onboardingDone || !p.displayName.trim()) return;
+  const res = await registerTester({
+    data: {
+      deviceId: id,
+      displayName: p.displayName,
+      stage: p.stage,
+      country: p.country,
+    },
+  }).catch(() => null);
+  if (res?.ok && res.token) setDeviceToken(res.token);
+  if (res?.ok && res.recovery) claimRecovery(res.recovery);
+}
+
+async function creds() {
+  const id = deviceId();
+  if (!id) return null;
+  if (!deviceToken()) await pulseTester();
+  const token = deviceToken();
+  if (!token) return null;
+  return { deviceId: id, token };
+}
+
 export async function loadToday() {
   if (!SAVIA_BETA) return getToday();
-  const id = deviceId();
   const local = localToday();
-  if (id) {
+  const c = await creds();
+  if (c) {
     try {
-      const remote = await getTodayDevice({ data: { deviceId: id } });
+      const remote = await getTodayDevice({ data: c });
       if (remote?.profile.onboardingDone) {
         localHydrate(remote);
         return remote;
@@ -31,7 +57,7 @@ export async function loadToday() {
       if (local.profile.onboardingDone) {
         void saveProfileDevice({
           data: {
-            deviceId: id,
+            ...c,
             displayName: local.profile.displayName,
             stage: local.profile.stage,
             birthYear: local.profile.birthYear,
@@ -47,7 +73,7 @@ export async function loadToday() {
         });
       }
     } catch {
-      /* offline: local */
+      /* offline */
     }
   }
   return local;
@@ -73,11 +99,12 @@ export async function writeProfile(data: {
     return saved;
   }
   const saved = localSaveProfile(data);
-  const id = deviceId();
-  if (id) {
+  await pulseTester();
+  const c = await creds();
+  if (c) {
     void saveProfileDevice({
       data: {
-        deviceId: id,
+        ...c,
         displayName: data.displayName,
         stage: data.stage,
         birthYear: data.birthYear,
@@ -92,23 +119,7 @@ export async function writeProfile(data: {
       },
     }).catch(() => {});
   }
-  void pulseTester();
   return saved;
-}
-
-export async function pulseTester() {
-  const id = deviceId();
-  if (!id) return;
-  const p = localToday().profile;
-  if (!p.onboardingDone || !p.displayName.trim()) return;
-  await registerTester({
-    data: {
-      deviceId: id,
-      displayName: p.displayName,
-      stage: p.stage,
-      country: p.country,
-    },
-  }).catch(() => {});
 }
 
 export async function writeLog(data: {
@@ -125,18 +136,16 @@ export async function writeLog(data: {
 }) {
   if (!SAVIA_BETA) return saveLog({ data });
   const saved = localSaveLog(data);
-  const id = deviceId();
-  if (id) {
-    void saveLogDevice({ data: { deviceId: id, ...data } }).catch(() => {});
-  }
+  const c = await creds();
+  if (c) void saveLogDevice({ data: { ...c, ...data } }).catch(() => {});
   return saved;
 }
 
 export async function writeSex(day: string, kind: SexKind) {
   if (!SAVIA_BETA) return toggleSex({ data: { day, kind } });
   const saved = localSetSex(day, kind);
-  const id = deviceId();
-  if (id) void saveSexDevice({ data: { deviceId: id, day, kind } }).catch(() => {});
+  const c = await creds();
+  if (c) void saveSexDevice({ data: { ...c, day, kind } }).catch(() => {});
   return saved;
 }
 
@@ -163,12 +172,12 @@ export function betaPaid() {
 export async function setCycleLength(n: number) {
   if (SAVIA_BETA) {
     const snap = localSetCycle(n);
-    const id = deviceId();
+    const c = await creds();
     const p = snap.profile;
-    if (id && p.onboardingDone) {
+    if (c && p.onboardingDone) {
       void saveProfileDevice({
         data: {
-          deviceId: id,
+          ...c,
           displayName: p.displayName,
           stage: p.stage,
           birthYear: p.birthYear,
@@ -204,11 +213,11 @@ export async function setCycleLength(n: number) {
 export async function markCameToday() {
   if (SAVIA_BETA) {
     localCameToday();
-    const id = deviceId();
-    if (id) {
+    const c = await creds();
+    if (c) {
       void saveLogDevice({
         data: {
-          deviceId: id,
+          ...c,
           day: todayISO(),
           flow: "medium",
           mood: null,

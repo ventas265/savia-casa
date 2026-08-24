@@ -7,12 +7,11 @@ import { AskComposer } from "@/components/ask-entry";
 import { CartaHoy } from "@/components/carta-hoy";
 import { CycleRing } from "@/components/cycle-ring";
 import { PatternStrip } from "@/components/pattern-strip";
-import { PhaseForYou } from "@/components/phase-for-you";
 import { QuickLog } from "@/components/quick-log";
 import { haptic } from "@/lib/haptic";
 import { maybeNotify, periodAlert } from "@/lib/notify";
 
-const DOW_ES = ["D", "L", "M", "X", "J", "V", "S"];
+const DOW_ES = ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa"];
 const DOW_EN = ["S", "M", "T", "W", "T", "F", "S"];
 
 export function TodayHero({
@@ -62,7 +61,7 @@ export function TodayHero({
   const onPeriod = phase === "menstrual";
   const fertile = phase === "ovulatory";
   const dow = lang === "es" ? DOW_ES : DOW_EN;
-  const kind = periodAlert(left, onPeriod);
+  const kind = periodAlert(left, onPeriod, phase);
 
   const hero =
     kind === "period"
@@ -97,7 +96,9 @@ export function TodayHero({
               ? t.periodLate
               : fertile
                 ? t.fertileToday
-                : "";
+                : kind === "pms"
+                  ? t.notifyPms
+                  : "";
   const notifyBody =
     kind === "period"
       ? t.notifyBodyPeriod
@@ -109,6 +110,8 @@ export function TodayHero({
             ? t.notifyBodySoon
             : kind === "late"
               ? t.notifyBodyLate
+              : kind === "pms"
+                ? t.notifyBodyPms
               : t.notifyBodyFertile;
 
   useEffect(() => {
@@ -170,12 +173,13 @@ export function TodayHero({
         sub={chance}
         onClick={onCal}
       />
+      <button type="button" onClick={onGuia} className="relative mt-2 block w-full text-center text-xs font-semibold text-muted">
+        {t.forYou}
+      </button>
 
       <PatternStrip starts={periodStarts} fallback={cycleLength} />
-      <PhaseForYou stage={stage} phase={phase} onGuia={onGuia} />
 
       <CartaHoy name={name} stage={stage} phase={phase} onAsk={onAsk} />
-      <AskComposer />
 
       <QuickLog initial={log} onSaved={onLogSaved} />
 

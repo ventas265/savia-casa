@@ -30,6 +30,7 @@ import { Route as AppMasRouteImport } from './routes/app/mas'
 import { Route as AppOnboardingRouteImport } from './routes/app/onboarding'
 import { Route as AppParejaRouteImport } from './routes/app/pareja'
 import { Route as AppPreguntarRouteImport } from './routes/app/preguntar'
+import { Route as AppRecuperarRouteImport } from './routes/app/recuperar'
 import { Route as AppRegistroRouteImport } from './routes/app/registro'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
@@ -138,6 +139,11 @@ const AppPreguntarRoute = AppPreguntarRouteImport.update({
   path: '/preguntar',
   getParentRoute: () => AppRoute,
 } as any)
+const AppRecuperarRoute = AppRecuperarRouteImport.update({
+  id: '/recuperar',
+  path: '/recuperar',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppRegistroRoute = AppRegistroRouteImport.update({
   id: '/registro',
   path: '/registro',
@@ -170,6 +176,7 @@ export interface FileRoutesByFullPath {
   '/app/onboarding': typeof AppOnboardingRoute
   '/app/pareja': typeof AppParejaRoute
   '/app/preguntar': typeof AppPreguntarRoute
+  '/app/recuperar': typeof AppRecuperarRoute
   '/app/registro': typeof AppRegistroRoute
   '/app/': typeof AppIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -194,6 +201,7 @@ export interface FileRoutesByTo {
   '/app/onboarding': typeof AppOnboardingRoute
   '/app/pareja': typeof AppParejaRoute
   '/app/preguntar': typeof AppPreguntarRoute
+  '/app/recuperar': typeof AppRecuperarRoute
   '/app/registro': typeof AppRegistroRoute
   '/app': typeof AppIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -220,6 +228,7 @@ export interface FileRoutesById {
   '/app/onboarding': typeof AppOnboardingRoute
   '/app/pareja': typeof AppParejaRoute
   '/app/preguntar': typeof AppPreguntarRoute
+  '/app/recuperar': typeof AppRecuperarRoute
   '/app/registro': typeof AppRegistroRoute
   '/app/': typeof AppIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -247,6 +256,7 @@ export interface FileRouteTypes {
     | '/app/onboarding'
     | '/app/pareja'
     | '/app/preguntar'
+    | '/app/recuperar'
     | '/app/registro'
     | '/app/'
     | '/api/auth/$'
@@ -271,6 +281,7 @@ export interface FileRouteTypes {
     | '/app/onboarding'
     | '/app/pareja'
     | '/app/preguntar'
+    | '/app/recuperar'
     | '/app/registro'
     | '/app'
     | '/api/auth/$'
@@ -296,6 +307,7 @@ export interface FileRouteTypes {
     | '/app/onboarding'
     | '/app/pareja'
     | '/app/preguntar'
+    | '/app/recuperar'
     | '/app/registro'
     | '/app/'
     | '/api/auth/$'
@@ -463,6 +475,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPreguntarRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/recuperar': {
+      id: '/app/recuperar'
+      path: '/recuperar'
+      fullPath: '/app/recuperar'
+      preLoaderRoute: typeof AppRecuperarRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/registro': {
       id: '/app/registro'
       path: '/registro'
@@ -492,6 +511,7 @@ interface AppRouteChildren {
   AppOnboardingRoute: typeof AppOnboardingRoute
   AppParejaRoute: typeof AppParejaRoute
   AppPreguntarRoute: typeof AppPreguntarRoute
+  AppRecuperarRoute: typeof AppRecuperarRoute
   AppRegistroRoute: typeof AppRegistroRoute
   AppIndexRoute: typeof AppIndexRoute
 }
@@ -508,6 +528,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppOnboardingRoute: AppOnboardingRoute,
   AppParejaRoute: AppParejaRoute,
   AppPreguntarRoute: AppPreguntarRoute,
+  AppRecuperarRoute: AppRecuperarRoute,
   AppRegistroRoute: AppRegistroRoute,
   AppIndexRoute: AppIndexRoute,
 }
