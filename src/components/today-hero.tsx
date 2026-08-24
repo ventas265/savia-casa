@@ -173,6 +173,7 @@ export function TodayHero({
         sub={chance}
         onClick={onCal}
       />
+      <p className="relative mt-3 text-center text-sm text-muted">{t.comeBack}</p>
       <button type="button" onClick={onGuia} className="relative mt-2 block w-full text-center text-xs font-semibold text-muted">
         {t.forYou}
       </button>
