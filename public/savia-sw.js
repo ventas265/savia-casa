@@ -1,0 +1,66 @@
+const PLAN = "/savia-remind-plan";
+
+self.addEventListener("install", (e) => {
+  e.waitUntil(self.skipWaiting());
+});
+
+self.addEventListener("activate", (e) => {
+  e.waitUntil(self.clients.claim());
+});
+
+function todayISO() {
+  const d = new Date();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${d.getFullYear()}-${m}-${day}`;
+}
+
+async function readPlan() {
+  const cache = await caches.open("savia-remind");
+  const res = await cache.match(PLAN);
+  if (!res) return null;
+  try {
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
+
+async function fire() {
+  const plan = await readPlan();
+  if (!plan || !Array.isArray(plan.items)) return;
+  const today = todayISO();
+  const hit = plan.items.find((x) => x.day === today);
+  if (!hit) return;
+  const key = `shown-${today}-${hit.kind || "day"}`;
+  const cache = await caches.open("savia-remind");
+  if (await cache.match("/" + key)) return;
+  await cache.put("/" + key, new Response("1"));
+  await self.registration.showNotification(hit.title, {
+    body: hit.body,
+    icon: "/icon-192.png",
+    badge: "/icon-192.png",
+    tag: `savia-${hit.kind || today}`,
+    data: { url: "/app/hoy" },
+  });
+}
+
+self.addEventListener("periodicsync", (e) => {
+  if (e.tag === "savia-daily") e.waitUntil(fire());
+});
+
+self.addEventListener("message", (e) => {
+  if (e.data && e.data.type === "arm") e.waitUntil(fire());
+});
+
+self.addEventListener("notificationclick", (e) => {
+  e.notification.close();
+  const url = (e.notification.data && e.notification.data.url) || "/app/hoy";
+  e.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((windows) => {
+      const open = windows.find((c) => c.url.includes("/app"));
+      if (open) return open.focus();
+      return self.clients.openWindow(url);
+    }),
+  );
+});

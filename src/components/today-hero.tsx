@@ -8,6 +8,7 @@ import { CycleRing } from "@/components/cycle-ring";
 import { QuickLog } from "@/components/quick-log";
 import { haptic } from "@/lib/haptic";
 import { maybeNotify, periodAlert } from "@/lib/notify";
+import { armReminders, remindPlan } from "@/lib/reminders";
 
 const DOW_ES = ["Lu", "Ma", "Mi", "Ju", "Vi", "Sa", "Do"];
 const DOW_EN = ["M", "T", "W", "T", "F", "S", "S"];
@@ -115,7 +116,21 @@ export function TodayHero({
   useEffect(() => {
     if (!notify) return;
     maybeNotify({ kind: kind ?? (fertile ? "fertile" : null), fertile, title: notifyTitle, body: notifyBody });
-  }, [notify, kind, fertile, notifyTitle, notifyBody]);
+    void armReminders(
+      remindPlan({
+        nextPeriod: nextPeriod ?? null,
+        onPeriod,
+        kind,
+        titles: {
+          period: { title: t.periodToday, body: t.notifyBodyPeriod },
+          today: { title: t.periodComesToday, body: t.notifyBodyToday },
+          tomorrow: { title: t.periodComesTomorrow, body: t.notifyBodyTomorrow },
+          soon: { title: t.periodComesSoon, body: t.notifyBodySoon },
+          pms: { title: t.notifyPms, body: t.notifyBodyPms },
+        },
+      }),
+    );
+  }, [notify, kind, fertile, notifyTitle, notifyBody, nextPeriod, onPeriod, t]);
 
   return (
     <div className="relative -mx-4 overflow-hidden px-4 pb-4">

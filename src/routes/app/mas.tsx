@@ -6,7 +6,8 @@ import { useI18n } from "@/lib/i18n";
 import { PageTitle } from "@/components/color-blobs";
 import { PlanSplit } from "@/components/plan-split";
 import { Disclaimer } from "@/components/disclaimer";
-import { notifyPermission, requestNotify } from "@/lib/notify";
+import { notifyPermission } from "@/lib/notify";
+import { enableReminders } from "@/lib/reminders";
 import { emptyPay, getAskStatus, getPay, type PaySettings } from "@/lib/savia-server";
 import { loadToday } from "@/lib/savia-api";
 import { SAVIA_BETA } from "@/lib/beta";
@@ -137,7 +138,7 @@ function MasTab() {
           type="button"
           className="mt-2 flex min-h-14 w-full items-center justify-between rounded-[1.25rem] bg-surface px-4 text-left text-sm font-semibold shadow-card"
           onClick={() => {
-            void requestNotify().then((p) => {
+            void enableReminders().then((p) => {
               setPerm(p);
               if (p === "granted") toast.success(t.notifyOn);
             });
