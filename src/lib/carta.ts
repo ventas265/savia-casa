@@ -25,7 +25,7 @@ const menstrual: Letter[] = [
   {
     title: t("Agua y calor, nada heroico", "Water and warmth, nothing heroic"),
     body: t(
-      "Hoy basta con no exigir. Un vaso más de agua. Si el cólico aprieta, paracetamol o ibuprofeno según te haya dicho tu médica — no te tomes el doble “porque sí”.",
+      "Hoy basta con no exigir. Un vaso más de agua. Si el cólico aprieta, paracetamol o ibuprofeno según te haya dicho tu médico — no te tomes el doble “porque sí”.",
       "Today it’s enough not to demand. One extra glass of water. If cramps bite, paracetamol or ibuprofen as your clinician said — don’t double it “just because.”",
     ),
     ask: t("¿El cólico ya bajó un poco?", "Has the cramp eased a little?"),
@@ -259,7 +259,7 @@ const pregnancy: Letter[] = [
   {
     title: t("Esta semana, con calma", "This week, slowly"),
     body: t(
-      "Náusea, pecho, ganas de orinar, miedo. Café bajo. Té: jengibre suave, no litros de hierbas “milagro”. Sangrado, dolor fuerte de un lado, desmayo: urgencias. Savia acompaña; no sustituye a tu médica.",
+      "Náusea, pecho, ganas de orinar, miedo. Café bajo. Té: jengibre suave, no litros de hierbas “milagro”. Sangrado, dolor fuerte de un lado, desmayo: urgencias. Savia acompaña; no sustituye a tu médico.",
       "Nausea, breasts, peeing, fear. Coffee low. Tea: mild ginger, not litres of miracle herbs. Bleeding, strong one-sided pain, fainting: emergency. Savia walks with you; she doesn’t replace your clinician.",
     ),
     ask: t("¿Qué es lo que más te preocupa de esta semana?", "What’s worrying you most this week?"),

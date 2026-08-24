@@ -97,7 +97,7 @@ export const teas: Tea[] = [
     taste: t("Picante, cálido.", "Sharp, warm."),
     for: t("Náusea, cólico suave, manos frías.", "Nausea, mild cramps, cold hands."),
     brew: t("Rodaja fresca 10 min. Miel si quieres.", "Fresh slice, 10 min. Honey if you like."),
-    avoid: t("Dosis altas de concentrado en el primer trimestre: habla con tu médica. Gastritis.", "High-dose extracts in the first trimester: ask your clinician. Gastritis."),
+    avoid: t("Dosis altas de concentrado en el primer trimestre: habla con tu médico. Gastritis.", "High-dose extracts in the first trimester: ask your clinician. Gastritis."),
     stages: ["cycle", "pregnancy", "postpartum", "peri", "meno"],
     phases: ["menstrual", "luteal"],
   },
@@ -386,7 +386,7 @@ export const periGuide: { title: Copy; body: Copy }[] = [
   {
     title: t("Lo que puedes hacer esta semana", "What you can do this week"),
     body: t(
-      "Proteína en cada comida, fuerza 2 veces, alcohol a raya si sudas, cafeína solo mañana, dormitorio fresco, magnesio de noche. Anota sofocos y sueño: es el papel que una médica toma en serio.",
+      "Proteína en cada comida, fuerza 2 veces, alcohol a raya si sudas, cafeína solo mañana, dormitorio fresco, magnesio de noche. Anota sofocos y sueño: es el papel que un médico toma en serio.",
       "Protein each meal, strength twice, alcohol down if you sweat, caffeine only in the morning, a cool bedroom, magnesium at night. Log flashes and sleep: that’s the paper a clinician takes seriously.",
     ),
   },
@@ -478,7 +478,7 @@ export const trimester: { n: 1 | 2 | 3; title: Copy; body: Copy }[] = [
 ];
 
 export const disclaimer = t(
-  "Savia acompaña y enseña. No diagnostica, no receta, no sustituye a tu médica, matrona o farmacéutica. Los tés y comidas son tradición y nutrición, no tratamiento. Si hay sangre abundante, dolor nuevo, tristeza que no te deja cuidar, fiebre, o un test de embarazo y dudas, busca atención.",
+  "Savia acompaña y enseña. No diagnostica, no receta, no sustituye a tu médico, matrona o farmacéutica. Los tés y comidas son tradición y nutrición, no tratamiento. Si hay sangre abundante, dolor nuevo, tristeza que no te deja cuidar, fiebre, o un test de embarazo y dudas, busca atención.",
   "Savia accompanies and teaches. It does not diagnose, prescribe, or replace your clinician, midwife, or pharmacist. Teas and food are tradition and nutrition, not treatment. Heavy bleeding, new pain, sadness that stops you caring, fever, or a pregnancy test and doubt — get care.",
 );
 
