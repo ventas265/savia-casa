@@ -267,11 +267,13 @@ export function daysUntil(iso: string | null, from = todayISO()) {
 
 export function weekStrip(iso = todayISO()) {
   const d = fromISO(iso);
-  const sun = new Date(d);
-  sun.setDate(d.getDate() - d.getDay());
+  const js = d.getDay();
+  const fromMon = js === 0 ? 6 : js - 1;
+  const mon = new Date(d);
+  mon.setDate(d.getDate() - fromMon);
   return Array.from({ length: 7 }, (_, i) => {
-    const x = new Date(sun);
-    x.setDate(sun.getDate() + i);
+    const x = new Date(mon);
+    x.setDate(mon.getDate() + i);
     return { iso: todayISO(x), date: x.getDate(), dow: i };
   });
 }

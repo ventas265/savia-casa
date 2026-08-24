@@ -3,16 +3,14 @@ import { useI18n } from "@/lib/i18n";
 import { CYCLE_CHOICES, daysUntil, formatLong, markForDate, todayISO, weekStrip } from "@/lib/cycle";
 import type { DailyLog, Phase, Stage } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { AskComposer } from "@/components/ask-entry";
 import { CartaHoy } from "@/components/carta-hoy";
 import { CycleRing } from "@/components/cycle-ring";
-import { PatternStrip } from "@/components/pattern-strip";
 import { QuickLog } from "@/components/quick-log";
 import { haptic } from "@/lib/haptic";
 import { maybeNotify, periodAlert } from "@/lib/notify";
 
-const DOW_ES = ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa"];
-const DOW_EN = ["S", "M", "T", "W", "T", "F", "S"];
+const DOW_ES = ["Lu", "Ma", "Mi", "Ju", "Vi", "Sa", "Do"];
+const DOW_EN = ["M", "T", "W", "T", "F", "S", "S"];
 
 export function TodayHero({
   stage,
@@ -76,7 +74,7 @@ export function TodayHero({
               ? { kicker: t.periodLate, title: `${Math.abs(left ?? 0)} ${t.daysLeft}` }
               : { kicker: t.periodIn, title: left == null ? "—" : `${left} ${left === 1 ? t.dayLeft : t.daysLeft}` };
 
-  const chance = stage === "peri" ? t.periSub : onPeriod ? t.chanceLow : fertile ? t.ovToday : t.chanceLow;
+  const chance = stage === "peri" ? t.periSub : onPeriod ? t.periodSub : fertile ? t.ovToday : t.chanceLow;
 
   const periHero =
     stage === "peri"
@@ -174,11 +172,6 @@ export function TodayHero({
         onClick={onCal}
       />
       <p className="relative mt-3 text-center text-sm text-muted">{t.comeBack}</p>
-      <button type="button" onClick={onGuia} className="relative mt-2 block w-full text-center text-xs font-semibold text-muted">
-        {t.forYou}
-      </button>
-
-      <PatternStrip starts={periodStarts} fallback={cycleLength} />
 
       <CartaHoy name={name} stage={stage} phase={phase} onAsk={onAsk} />
 
