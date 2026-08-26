@@ -524,4 +524,6 @@ export const symptomLabel: Record<string, Copy> = {
   discharge: t("Flujo", "Discharge"),
   dryness: t("Sequedad", "Dryness"),
   pain_sex: t("Dolor en el sexo", "Pain with sex"),
+  diarrhea: t("Diarrea", "Diarrhea"),
+  backache: t("Espalda", "Back"),
 };

@@ -80,5 +80,7 @@ export const SYMPTOMS = [
   "discharge",
   "dryness",
   "pain_sex",
+  "diarrhea",
+  "backache",
 ] as const;
 export type SymptomId = (typeof SYMPTOMS)[number];

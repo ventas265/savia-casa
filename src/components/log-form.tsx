@@ -5,7 +5,7 @@ import { useI18n } from "@/lib/i18n";
 import { writeLog } from "@/lib/savia-api";
 import { haptic } from "@/lib/haptic";
 import { pick, symptomLabel } from "@/lib/savia-content";
-import { MUCUS, SYMPTOMS, type DailyLog, type Flow, type Mucus } from "@/lib/types";
+import { MUCUS, type DailyLog, type Flow, type Mucus } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 const FLOW_DOT: { id: Flow; cls: string }[] = [
@@ -128,9 +128,29 @@ export function LogForm({
       </section>
 
       <section>
-        <p className="text-sm font-semibold">{t.symptoms}</p>
+        <p className="text-sm font-semibold">{t.logBody}</p>
         <div className="mt-3 flex flex-wrap gap-2">
-          {SYMPTOMS.map((id) => (
+          {["cramps", "headache", "bloating", "breast", "acne", "fatigue", "nausea", "constipation", "craving", "spotting", "dryness", "diarrhea", "backache", "hot_flash", "night_sweat"].map((id) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => {
+                const next = symptoms.includes(id) ? symptoms.filter((s) => s !== id) : [...symptoms, id];
+                setSymptoms(next);
+                void persist({ symptoms: next });
+              }}
+              className={cn(
+                "press h-11 rounded-full px-3 text-sm font-semibold",
+                symptoms.includes(id) ? "bg-primary text-primary-fg" : "bg-surface text-fg shadow-card",
+              )}
+            >
+              {pick(symptomLabel[id]!, lang)}
+            </button>
+          ))}
+        </div>
+        <p className="mt-6 text-sm font-semibold">{t.logMood}</p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {["low_mood", "anxiety", "irritable", "insomnia", "brain_fog", "libido_up", "libido_down", "pain_sex"].map((id) => (
             <button
               key={id}
               type="button"
