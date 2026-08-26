@@ -4,7 +4,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { TodayHero } from "@/components/today-hero";
 import { RecoveryCard } from "@/components/recovery-card";
 import { WelcomeStart } from "@/components/welcome-start";
-import { loadToday, markCameToday, pulseTester, setCycleLength } from "@/lib/savia-api";
+import { loadToday, markCameToday, setCycleLength } from "@/lib/savia-api";
 import { SAVIA_BETA } from "@/lib/beta";
 import { localToday } from "@/lib/savia-local";
 import { isCycling, nextPeriodDate, weightedCycle } from "@/lib/cycle";
@@ -20,7 +20,6 @@ function HoyTab() {
     loadToday()
       .then((snap) => {
         setData(snap);
-        if (SAVIA_BETA) void pulseTester();
       })
       .catch(() => {
         if (!SAVIA_BETA) setData(null);

@@ -46,37 +46,23 @@ async function creds() {
 export async function loadToday() {
   if (!SAVIA_BETA) return getToday();
   const local = localToday();
-  const c = await creds();
-  if (c) {
-    try {
-      const remote = await getTodayDevice({ data: c });
-      if (remote?.profile.onboardingDone) {
-        localHydrate(remote);
-        return remote;
-      }
-      if (local.profile.onboardingDone) {
-        void saveProfileDevice({
-          data: {
-            ...c,
-            displayName: local.profile.displayName,
-            stage: local.profile.stage,
-            birthYear: local.profile.birthYear,
-            cycleLength: local.profile.cycleLength,
-            periodLength: local.profile.periodLength,
-            lastPeriodStart: local.profile.lastPeriodStart,
-            dueDate: local.profile.dueDate,
-            lastPeriodYear: local.profile.lastPeriodYear,
-            onboardingDone: true,
-            locale: local.profile.locale,
-            intention: local.profile.intention,
-          },
-        });
-      }
-    } catch {
-      /* offline */
-    }
+  if (local.profile.onboardingDone) {
+    void pullRemote();
+    return local;
   }
-  return local;
+  await pullRemote();
+  return localToday();
+}
+
+async function pullRemote() {
+  const c = await creds();
+  if (!c) return;
+  try {
+    const remote = await getTodayDevice({ data: c });
+    if (remote?.profile.onboardingDone) localHydrate(remote);
+  } catch {
+    /* offline */
+  }
 }
 
 export async function writeProfile(data: {
@@ -136,9 +122,24 @@ export async function writeLog(data: {
 }) {
   if (!SAVIA_BETA) return saveLog({ data });
   const saved = localSaveLog(data);
+  void pushLog(data);
+  return saved;
+}
+
+async function pushLog(data: {
+  day: string;
+  flow: Flow;
+  mood: number | null;
+  energy: number | null;
+  sleepHours: number | null;
+  notes: string;
+  symptoms: string[];
+  periodStarted: boolean;
+  mucus?: Mucus;
+  sex?: boolean;
+}) {
   const c = await creds();
   if (c) void saveLogDevice({ data: { ...c, ...data } }).catch(() => {});
-  return saved;
 }
 
 export async function writeSex(day: string, kind: SexKind) {

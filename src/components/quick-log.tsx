@@ -30,26 +30,19 @@ export function QuickLog({
   const [flow, setFlow] = useState<Flow>(initial?.flow && initial.flow !== "none" ? initial.flow : "none");
   const [symptoms, setSymptoms] = useState<string[]>(initial?.symptoms ?? []);
   const [mucus, setMucus] = useState<Mucus>(initial?.mucus || "none");
-  const [busy, setBusy] = useState(false);
 
-  async function persist(nextFlow: Flow, nextSym: string[], nextMucus: Mucus) {
-    setBusy(true);
-    try {
-      await writeLog({
-        day: todayISO(),
-        flow: nextFlow,
-        mood: initial?.mood ?? null,
-        energy: initial?.energy ?? null,
-        sleepHours: initial?.sleepHours ?? null,
-        notes: initial?.notes ?? "",
-        symptoms: nextSym,
-        periodStarted: nextFlow === "light" || nextFlow === "medium" || nextFlow === "heavy",
-        mucus: nextMucus,
-      });
-      onSaved?.();
-    } finally {
-      setBusy(false);
-    }
+  function persist(nextFlow: Flow, nextSym: string[], nextMucus: Mucus) {
+    void writeLog({
+      day: todayISO(),
+      flow: nextFlow,
+      mood: initial?.mood ?? null,
+      energy: initial?.energy ?? null,
+      sleepHours: initial?.sleepHours ?? null,
+      notes: initial?.notes ?? "",
+      symptoms: nextSym,
+      periodStarted: nextFlow === "light" || nextFlow === "medium" || nextFlow === "heavy",
+      mucus: nextMucus,
+    });
   }
 
   const flowLabel: Record<Flow, string> = {
@@ -83,7 +76,6 @@ export function QuickLog({
           <button
             key={f.id}
             type="button"
-            disabled={busy}
             onClick={() => {
               haptic(14);
               const next = flow === f.id ? "none" : f.id;
@@ -110,7 +102,6 @@ export function QuickLog({
           <button
             key={id}
             type="button"
-            disabled={busy}
             onClick={() => tapSym(id)}
             className={cn(
               "press h-11 rounded-full px-4 text-sm font-semibold",
@@ -128,7 +119,6 @@ export function QuickLog({
           <button
             key={id}
             type="button"
-            disabled={busy}
             onClick={() => tapSym(id)}
             className={cn(
               "press h-11 rounded-full px-4 text-sm font-semibold",
@@ -146,7 +136,6 @@ export function QuickLog({
           <button
             key={m}
             type="button"
-            disabled={busy}
             onClick={() => {
               haptic(14);
               setMucus(m);

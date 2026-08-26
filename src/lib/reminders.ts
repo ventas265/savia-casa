@@ -17,6 +17,14 @@ export async function armReminders(items: RemindItem[]) {
   if (typeof window === "undefined" || !("serviceWorker" in navigator)) return false;
   if (!("Notification" in window) || Notification.permission !== "granted") return false;
   try {
+    if (sessionStorage.getItem("savia.armed") === "1") {
+      const cache = await caches.open("savia-remind");
+      await cache.put(
+        "/savia-remind-plan",
+        new Response(JSON.stringify({ items }), { headers: { "content-type": "application/json" } }),
+      );
+      return true;
+    }
     await navigator.serviceWorker.register("/savia-sw.js");
     const cache = await caches.open("savia-remind");
     await cache.put(
@@ -32,6 +40,7 @@ export async function armReminders(items: RemindItem[]) {
     if (sync) {
       await sync.register("savia-daily", { minInterval: 6 * 60 * 60 * 1000 }).catch(() => {});
     }
+    sessionStorage.setItem("savia.armed", "1");
     return true;
   } catch {
     return false;
