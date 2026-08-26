@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
+import { BatteryLow, Droplets, SmilePlus, Sparkles } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { writeLog } from "@/lib/savia-api";
 import { todayISO } from "@/lib/cycle";
@@ -17,7 +18,8 @@ const FLOWS: { id: Flow; ring: string }[] = [
 ];
 
 const FEEL = ["fatigue", "low_mood", "craving", "acne", "irritable"];
-const BODY = ["cramps", "bloating", "headache", "breast", "backache", "nausea", "constipation"];
+const BODY = ["cramps", "headache", "breast", "backache", "acne"];
+const GUT = ["bloating", "nausea", "constipation", "diarrhea"];
 
 export function QuickLog({
   initial,
@@ -65,98 +67,138 @@ export function QuickLog({
     haptic(14);
     const next = symptoms.includes(id) ? symptoms.filter((s) => s !== id) : [...symptoms, id].slice(0, 16);
     setSymptoms(next);
-    void persist(flow, next, mucus);
+    persist(flow, next, mucus);
   }
 
   return (
-    <section className="relative mt-6 rounded-[1.75rem] bg-surface p-5 shadow-card">
-      <p className="font-display text-xl font-semibold">{t.quickLog}</p>
-      <div className="mt-4 flex justify-between">
-        {FLOWS.map((f) => (
-          <button
-            key={f.id}
-            type="button"
-            onClick={() => {
-              haptic(14);
-              const next = flow === f.id ? "none" : f.id;
-              setFlow(next);
-              void persist(next, symptoms, mucus);
-            }}
-            className="press flex w-[4.4rem] flex-col items-center gap-2"
-          >
-            <span
+    <div id="anotar" className="relative mt-6 space-y-3">
+      <Card tone="rose" icon={<Droplets className="size-4" />} title={t.quickLog}>
+        <div className="flex justify-between">
+          {FLOWS.map((f) => (
+            <button
+              key={f.id}
+              type="button"
+              onClick={() => {
+                haptic(14);
+                const next = flow === f.id ? "none" : f.id;
+                setFlow(next);
+                persist(next, symptoms, mucus);
+              }}
+              className="press flex w-[4.2rem] flex-col items-center gap-2"
+            >
+              <span
+                className={cn(
+                  "flex size-12 items-center justify-center rounded-full",
+                  f.ring,
+                  flow === f.id ? "ring-4 ring-ink/20" : "opacity-80",
+                )}
+              />
+              <span className="text-[11px] font-semibold">{flowLabel[f.id]}</span>
+            </button>
+          ))}
+        </div>
+      </Card>
+
+      <Card tone="sand" icon={<BatteryLow className="size-4" />} title={t.howMorning}>
+        <Chips ids={FEEL} selected={symptoms} onTap={tapSym} lang={lang} />
+      </Card>
+
+      <Card tone="plum" icon={<SmilePlus className="size-4" />} title={t.logBody}>
+        <Chips ids={BODY} selected={symptoms} onTap={tapSym} lang={lang} />
+      </Card>
+
+      <Card tone="sage" icon={<Sparkles className="size-4" />} title={t.mucus}>
+        <div className="flex flex-wrap gap-2">
+          {MUCUS.map((m) => (
+            <button
+              key={m}
+              type="button"
+              onClick={() => {
+                haptic(14);
+                setMucus(m);
+                persist(flow, symptoms, m);
+              }}
               className={cn(
-                "flex size-14 items-center justify-center rounded-full",
-                f.ring,
-                flow === f.id ? "ring-4 ring-ink/20" : "opacity-80",
+                "press h-11 rounded-full px-4 text-sm font-semibold",
+                mucus === m ? "bg-accent text-ink" : "bg-bg text-fg",
               )}
-            />
-            <span className="text-[11px] font-semibold">{flowLabel[f.id]}</span>
-          </button>
-        ))}
-      </div>
-
-      <p className="mt-6 text-sm font-semibold">{t.howMorning}</p>
-      <div className="mt-3 flex flex-wrap gap-2">
-        {FEEL.map((id) => (
-          <button
-            key={id}
-            type="button"
-            onClick={() => tapSym(id)}
-            className={cn(
-              "press h-11 rounded-full px-4 text-sm font-semibold",
-              symptoms.includes(id) ? "bg-primary text-primary-fg" : "bg-bg text-fg",
-            )}
-          >
-            {pick(symptomLabel[id]!, lang)}
-          </button>
-        ))}
-      </div>
-
-      <p className="mt-6 text-sm font-semibold">{t.logBody}</p>
-      <div className="mt-3 flex flex-wrap gap-2">
-        {BODY.map((id) => (
-          <button
-            key={id}
-            type="button"
-            onClick={() => tapSym(id)}
-            className={cn(
-              "press h-11 rounded-full px-4 text-sm font-semibold",
-              symptoms.includes(id) ? "bg-primary text-primary-fg" : "bg-bg text-fg",
-            )}
-          >
-            {pick(symptomLabel[id]!, lang)}
-          </button>
-        ))}
-      </div>
-
-      <p className="mt-6 text-sm font-semibold">{t.mucus}</p>
-      <div className="mt-3 flex flex-wrap gap-2">
-        {MUCUS.map((m) => (
-          <button
-            key={m}
-            type="button"
-            onClick={() => {
-              haptic(14);
-              setMucus(m);
-              void persist(flow, symptoms, m);
-            }}
-            className={cn(
-              "press h-11 rounded-full px-4 text-sm font-semibold",
-              mucus === m ? "bg-accent text-ink" : "bg-bg text-fg",
-            )}
-          >
-            {mucusLabel[m]}
-          </button>
-        ))}
-      </div>
+            >
+              {mucusLabel[m]}
+            </button>
+          ))}
+        </div>
+        <p className="mt-5 text-sm font-semibold">{t.logGut}</p>
+        <div className="mt-3">
+          <Chips ids={GUT} selected={symptoms} onTap={tapSym} lang={lang} />
+        </div>
+      </Card>
 
       <Link
         to="/app/registro"
-        className="press mt-6 flex min-h-12 items-center justify-center rounded-full bg-bg text-sm font-semibold"
+        className="press flex min-h-12 items-center justify-center rounded-full bg-surface text-sm font-semibold shadow-card"
       >
         {t.logMore}
       </Link>
+    </div>
+  );
+}
+
+function Card({
+  tone,
+  icon,
+  title,
+  children,
+}: {
+  tone: "rose" | "sand" | "plum" | "sage";
+  icon: ReactNode;
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section
+      className={cn(
+        "rounded-[1.6rem] p-5 shadow-card",
+        tone === "rose" && "bg-primary/10",
+        tone === "sand" && "bg-sand/50",
+        tone === "plum" && "bg-plum/10",
+        tone === "sage" && "bg-accent/35",
+      )}
+    >
+      <p className="mb-4 flex items-center gap-2 text-sm font-semibold">
+        <span className="text-primary">{icon}</span>
+        {title}
+      </p>
+      {children}
     </section>
+  );
+}
+
+function Chips({
+  ids,
+  selected,
+  onTap,
+  lang,
+}: {
+  ids: string[];
+  selected: string[];
+  onTap: (id: string) => void;
+  lang: "es" | "en";
+}) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      {ids.map((id) => (
+        <button
+          key={id}
+          type="button"
+          onClick={() => onTap(id)}
+          className={cn(
+            "press h-11 rounded-full px-4 text-sm font-semibold",
+            selected.includes(id) ? "bg-primary text-primary-fg" : "bg-surface text-fg",
+          )}
+        >
+          {pick(symptomLabel[id]!, lang)}
+        </button>
+      ))}
+    </div>
   );
 }

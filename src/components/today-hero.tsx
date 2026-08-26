@@ -3,8 +3,8 @@ import { useI18n } from "@/lib/i18n";
 import { CYCLE_CHOICES, daysUntil, formatLong, markForDate, todayISO, weekStrip } from "@/lib/cycle";
 import type { DailyLog, Phase, Stage } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { Droplets, Heart, Plus } from "lucide-react";
 import { CartaHoy } from "@/components/carta-hoy";
-import { CycleRing } from "@/components/cycle-ring";
 import { QuickLog } from "@/components/quick-log";
 import { haptic } from "@/lib/haptic";
 import { maybeNotify, periodAlert } from "@/lib/notify";
@@ -179,13 +179,19 @@ export function TodayHero({
         })}
       </div>
 
-      <CycleRing
-        progress={cycleDay && cycleLength ? cycleDay / cycleLength : 0.08}
-        kicker={periHero.kicker}
-        title={periHero.title}
-        sub={chance}
-        onClick={onCal}
-      />
+      <div className="relative mt-8 text-center">
+        {periHero.kicker ? <p className="text-sm font-semibold text-muted">{periHero.kicker}</p> : null}
+        <p className="font-display text-[2.85rem] font-semibold leading-none tracking-[-0.05em] text-primary">
+          {periHero.title}
+        </p>
+        <p className="mt-3 text-sm font-semibold">{chance}</p>
+      </div>
+
+      <div className="relative mt-8 grid grid-cols-3 gap-3">
+        <HeroAct label={t.actBleed} onClick={() => (onCameToday && !onPeriod ? onCameToday() : onLog())} tone="rose" />
+        <HeroAct label={t.actBody} onClick={() => document.getElementById("anotar")?.scrollIntoView({ behavior: "smooth" })} tone="sand" />
+        <HeroAct label={t.actSex} onClick={onLog} tone="plum" />
+      </div>
 
       <QuickLog initial={log} onSaved={onLogSaved} />
 
@@ -229,5 +235,39 @@ export function TodayHero({
         </div>
       ) : null}
     </div>
+  );
+}
+
+function HeroAct({
+  label,
+  onClick,
+  tone,
+}: {
+  label: string;
+  onClick: () => void;
+  tone: "rose" | "sand" | "plum";
+}) {
+  const Icon = tone === "rose" ? Droplets : tone === "sand" ? Plus : Heart;
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        haptic(14);
+        onClick();
+      }}
+      className="press flex flex-col items-center gap-2"
+    >
+      <span
+        className={cn(
+          "flex size-16 items-center justify-center rounded-full shadow-card",
+          tone === "rose" && "bg-primary text-primary-fg",
+          tone === "sand" && "bg-surface text-ink",
+          tone === "plum" && "bg-plum text-primary-fg",
+        )}
+      >
+        <Icon className="size-7" strokeWidth={2.2} />
+      </span>
+      <span className="text-center text-[11px] font-semibold leading-tight">{label}</span>
+    </button>
   );
 }
