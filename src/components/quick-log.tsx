@@ -16,7 +16,8 @@ const FLOWS: { id: Flow; ring: string }[] = [
   { id: "heavy", ring: "bg-plum" },
 ];
 
-const BODY = ["cramps", "bloating", "headache", "breast", "acne", "fatigue", "craving", "nausea", "backache", "constipation"];
+const FEEL = ["fatigue", "low_mood", "craving", "acne", "irritable"];
+const BODY = ["cramps", "bloating", "headache", "breast", "backache", "nausea", "constipation"];
 
 export function QuickLog({
   initial,
@@ -67,9 +68,16 @@ export function QuickLog({
     watery: t.mucusWatery,
   };
 
+  function tapSym(id: string) {
+    haptic(14);
+    const next = symptoms.includes(id) ? symptoms.filter((s) => s !== id) : [...symptoms, id].slice(0, 16);
+    setSymptoms(next);
+    void persist(flow, next, mucus);
+  }
+
   return (
-    <section className="relative mt-8">
-      <p className="text-sm font-semibold">{t.quickLog}</p>
+    <section className="relative mt-6 rounded-[1.75rem] bg-surface p-5 shadow-card">
+      <p className="font-display text-xl font-semibold">{t.quickLog}</p>
       <div className="mt-4 flex justify-between">
         {FLOWS.map((f) => (
           <button
@@ -96,6 +104,24 @@ export function QuickLog({
         ))}
       </div>
 
+      <p className="mt-6 text-sm font-semibold">{t.howMorning}</p>
+      <div className="mt-3 flex flex-wrap gap-2">
+        {FEEL.map((id) => (
+          <button
+            key={id}
+            type="button"
+            disabled={busy}
+            onClick={() => tapSym(id)}
+            className={cn(
+              "press h-11 rounded-full px-4 text-sm font-semibold",
+              symptoms.includes(id) ? "bg-primary text-primary-fg" : "bg-bg text-fg",
+            )}
+          >
+            {pick(symptomLabel[id]!, lang)}
+          </button>
+        ))}
+      </div>
+
       <p className="mt-6 text-sm font-semibold">{t.logBody}</p>
       <div className="mt-3 flex flex-wrap gap-2">
         {BODY.map((id) => (
@@ -103,15 +129,10 @@ export function QuickLog({
             key={id}
             type="button"
             disabled={busy}
-            onClick={() => {
-              haptic(14);
-              const next = symptoms.includes(id) ? symptoms.filter((s) => s !== id) : [...symptoms, id].slice(0, 16);
-              setSymptoms(next);
-              void persist(flow, next, mucus);
-            }}
+            onClick={() => tapSym(id)}
             className={cn(
               "press h-11 rounded-full px-4 text-sm font-semibold",
-              symptoms.includes(id) ? "bg-primary text-primary-fg" : "bg-surface text-fg shadow-card",
+              symptoms.includes(id) ? "bg-primary text-primary-fg" : "bg-bg text-fg",
             )}
           >
             {pick(symptomLabel[id]!, lang)}
@@ -133,7 +154,7 @@ export function QuickLog({
             }}
             className={cn(
               "press h-11 rounded-full px-4 text-sm font-semibold",
-              mucus === m ? "bg-accent text-ink" : "bg-surface text-fg shadow-card",
+              mucus === m ? "bg-accent text-ink" : "bg-bg text-fg",
             )}
           >
             {mucusLabel[m]}
@@ -143,7 +164,7 @@ export function QuickLog({
 
       <Link
         to="/app/registro"
-        className="press mt-6 flex min-h-12 items-center justify-center rounded-full bg-surface text-sm font-semibold shadow-card"
+        className="press mt-6 flex min-h-12 items-center justify-center rounded-full bg-bg text-sm font-semibold"
       >
         {t.logMore}
       </Link>

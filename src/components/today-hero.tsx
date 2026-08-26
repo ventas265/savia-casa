@@ -186,11 +186,10 @@ export function TodayHero({
         sub={chance}
         onClick={onCal}
       />
-      <p className="relative mt-3 text-center text-sm text-muted">{t.comeBack}</p>
-
-      <CartaHoy name={name} stage={stage} phase={phase} onAsk={onAsk} />
 
       <QuickLog initial={log} onSaved={onLogSaved} />
+
+      <CartaHoy name={name} stage={stage} phase={phase} onAsk={onAsk} />
 
       {!onPeriod && onCameToday ? (
         <button
