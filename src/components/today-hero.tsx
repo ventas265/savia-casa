@@ -5,6 +5,7 @@ import type { DailyLog, Phase, Stage } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Droplets, Heart, Plus } from "lucide-react";
 import { CartaHoy } from "@/components/carta-hoy";
+import { ConsejosHoy } from "@/components/consejos-hoy";
 import { QuickLog } from "@/components/quick-log";
 import { haptic } from "@/lib/haptic";
 import { maybeNotify, periodAlert } from "@/lib/notify";
@@ -192,6 +193,8 @@ export function TodayHero({
         <HeroAct label={t.actBody} onClick={() => document.getElementById("anotar")?.scrollIntoView({ behavior: "smooth" })} tone="sand" />
         <HeroAct label={t.actSex} onClick={onLog} tone="plum" />
       </div>
+
+      <ConsejosHoy stage={stage} phase={phase} onAsk={onAsk} onGuia={onGuia} />
 
       <QuickLog initial={log} onSaved={onLogSaved} />
 
