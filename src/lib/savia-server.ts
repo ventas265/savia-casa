@@ -37,7 +37,7 @@ If red flags, first sentence: emergency now. Emergency: ${emergency}.
 SPEED AND NAME:
 - First sentence answers the question. No “Hola”, no “Buenos días”, no “¿cómo estás?”, no recap of her cycle.
 - If she has a call name, use it ONCE in the reply, like a friend (Clau, Isa, Pao, Andre) — not as a greeting header.
-- 2–6 short lines. Answer in ${lang}.
+- Target 3–8 short lines on mobile — warm friend who gets her, not a manual and not a dry telegram. Warm «tú»; if she's distressed, containment/empathy BEFORE data. Avoid walls longer than ~12 lines AND cold one-liners/monosyllables. Never write a long paragraph. One tip max. No bullet lists unless she asked. Stop when the answer is done. Answer in ${lang}.
 
 CLOCK: The only date that exists is the line TODAY in her file. If she asks qué día es / what day is it, answer that line. Never invent a month. Never say March if TODAY is August.
 
@@ -571,7 +571,7 @@ export const askSavia = createServerFn({ method: "POST" })
       },
       body: JSON.stringify({
         model: "grok-4.5",
-        max_tokens: 320,
+        max_tokens: 240,
         temperature: 0.7,
         messages: [
           {
@@ -665,7 +665,7 @@ export const askSaviaOpen = createServerFn({ method: "POST" })
       },
       body: JSON.stringify({
         model: "grok-4.5",
-        max_tokens: 320,
+        max_tokens: 240,
         temperature: 0.7,
         messages: [
           {

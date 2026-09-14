@@ -59,3 +59,7 @@ Orden: hormonas → tés → comida → peri → meno → **embarazo → pospart
 - `getPay` sin auth: con settings en DB, datos de cobro siguen visibles en rutas de pago/Más. Mitigación mínima hecha (sin defaults en cliente); endurecer con auth si se quiere cerrar del todo.
 - Contenido de guía / términos / cartas sigue mencionando embarazo (educativo, no hero). Disclaimers médicos intactos.
 - Toggle de fertilidad usa `intention: avoid|track`; modo TTC (`ttc`) no tiene UI dedicada en Más (sigue existiendo en tipos/informe).
+
+## Ops
+
+- Migrate `XAI_API_KEY` from build-time Vite inject to Vercel Environment Variables (Production + Preview). Current `vite` define breaks on deploys without the env at build time; chat may fail until the key is set as a runtime/build env or Grok Build redeploys with it.
