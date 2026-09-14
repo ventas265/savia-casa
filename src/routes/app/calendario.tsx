@@ -53,8 +53,23 @@ function CalendarTab() {
     });
   }
 
-  if (!data && !err) return <Skeleton className="h-96 w-full" />;
-  if (!data) return <p className="text-muted">{t.errorGeneric}</p>;
+  if (!data && !err) {
+    return (
+      <div className="space-y-4" aria-busy="true" aria-live="polite">
+        <Skeleton className="h-9 w-40 rounded-lg" />
+        <Skeleton className="h-24 w-full rounded-[1.5rem]" />
+        <Skeleton className="h-72 w-full rounded-[1.5rem]" />
+      </div>
+    );
+  }
+  if (!data) {
+    return (
+      <div className="pb-8 pt-2">
+        <p className="font-display text-3xl font-semibold tracking-[-0.03em]">{t.navCal}</p>
+        <p className="mt-4 text-base leading-relaxed text-muted">{t.emptyLog}</p>
+      </div>
+    );
+  }
 
   const paid = betaPaid() || data.profile.plan === "serena" || data.profile.plan === "year";
   const learned = weightedCycle(data.periodStarts, data.profile.cycleLength);

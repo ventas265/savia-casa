@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { PageTitle } from "@/components/color-blobs";
 import { LogForm } from "@/components/log-form";
@@ -11,19 +11,59 @@ import type { TodaySnapshot } from "@/lib/types";
 
 export const Route = createFileRoute("/app/registro")({ component: Registro });
 
+function RegistroSkeleton() {
+  return (
+    <div className="space-y-4" aria-busy="true" aria-live="polite">
+      <Skeleton className="h-4 w-28 rounded-full" />
+      <Skeleton className="h-9 w-48 rounded-lg" />
+      <Skeleton className="mt-4 h-24 w-full rounded-[1.5rem]" />
+      <Skeleton className="h-16 w-full rounded-[1.25rem]" />
+      <Skeleton className="h-16 w-full rounded-[1.25rem]" />
+      <Skeleton className="h-40 w-full rounded-[1.5rem]" />
+    </div>
+  );
+}
+
+function RegistroEmpty() {
+  const { t } = useI18n();
+  return (
+    <div className="pb-8 pt-2">
+      <p className="font-display text-3xl font-semibold tracking-[-0.03em]">{t.logToday}</p>
+      <p className="mt-4 text-base leading-relaxed text-muted">{t.emptyLog}</p>
+      <Link
+        to="/app/hoy"
+        className="mt-8 flex h-14 w-full items-center justify-center rounded-full bg-primary text-base font-semibold text-primary-fg shadow-card"
+      >
+        {t.today}
+      </Link>
+    </div>
+  );
+}
+
 function Registro() {
   const { t } = useI18n();
   const [data, setData] = useState<TodaySnapshot | null>(() => (SAVIA_BETA ? localToday() : null));
+  const [ready, setReady] = useState(() => Boolean(SAVIA_BETA));
 
   useEffect(() => {
+    let alive = true;
     loadToday()
-      .then(setData)
+      .then((snap) => {
+        if (alive) setData(snap);
+      })
       .catch(() => {
-        if (!SAVIA_BETA) setData(null);
+        if (alive && !SAVIA_BETA) setData(null);
+      })
+      .finally(() => {
+        if (alive) setReady(true);
       });
+    return () => {
+      alive = false;
+    };
   }, []);
 
-  if (!data) return <Skeleton className="h-96 w-full" />;
+  if (!ready) return <RegistroSkeleton />;
+  if (!data) return <RegistroEmpty />;
 
   return (
     <>

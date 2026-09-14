@@ -56,6 +56,7 @@ export function TodayBody({
       <p className="mt-3 text-sm text-muted">
         {onPeriod ? pick(phaseName.menstrual, lang) : t.chanceLow}
         {cycleDay ? ` · ${t.dayOf} ${cycleDay}` : ""}
+        {!onPeriod ? ` · ${t.periodEstimate}` : ""}
       </p>
       {!log ? <p className="mt-4 text-sm text-primary">{t.logNudge}</p> : null}
       {top.length ? (

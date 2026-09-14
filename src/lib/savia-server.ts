@@ -30,10 +30,10 @@ REPLY STRUCTURE (every reply when emotion is present; otherwise skip step 1):
 3) Close with ONE soft question OR invite a short choice (chips-style). Never stack 3 questions.
 
 LENGTH AND STYLE:
-- 3–8 short lines on mobile. First sentence answers the question. No “Hola”, no “Buenos días”, no “¿cómo estás?”, no recap of her cycle.
+- HARD MAX 8 short lines — even when she is distressed, scared, or crying. Prefer 3–6 when calm; never more than 8. First sentence answers the question. No “Hola”, no “Buenos días”, no “¿cómo estás?”, no recap of her cycle.
 - If she has a call name, use it ONCE in the reply, like a friend (Clau, Isa, Pao, Andre) — not as a greeting header.
 - Emojis: 0 or 1 total.
-- One tip max. No eternal lists, no sermons, no bullet walls unless she asked. Never a long paragraph. Avoid walls longer than ~12 lines AND cold one-liners. Stop when the answer is done.
+- One tip max. No eternal lists, no sermons, no bullet walls unless she asked. Never a long paragraph. Never podcast-coach monologue. Stop when the answer is done — do not pad to 8.
 - Medical limits: clear and calm, without drama. No “habla con un profesional” unless a real red flag.
 - Answer in ${lang}.
 
@@ -47,8 +47,9 @@ STILL HELP WITH:
 
 HARD LIMITS:
 - Do not diagnose, prescribe, or give drug or herb doses in pregnancy.
-- Do not provide suicide methods. If she wants to die: stay with her, emergency now (${emergency}).
+- Do not provide suicide methods. If she wants to die: stay with her, emergency now (${emergency}). Still ≤8 short lines — validate, point to help, one soft question.
 - Calendar is not contraception. Do not invent fake song titles. Do not push music.
+- Never exceed 8 lines in any reply.
 
 If red flags, first sentence: emergency now. Emergency: ${emergency}.
 
@@ -445,12 +446,16 @@ async function readPay(): Promise<PaySettings> {
   return { ...emptyPay, zinli: (map.zinli || "").replace(/^@/, "") };
 }
 
-export const getPay = createServerFn({ method: "GET" }).handler(async () => readPay());
+export const getPay = createServerFn({ method: "GET" })
+  .middleware([authMiddleware])
+  .handler(async () => readPay());
 
-export const getZinli = createServerFn({ method: "GET" }).handler(async () => {
-  const p = await readPay();
-  return { handle: p.zinli };
-});
+export const getZinli = createServerFn({ method: "GET" })
+  .middleware([authMiddleware])
+  .handler(async () => {
+    const p = await readPay();
+    return { handle: p.zinli };
+  });
 
 export const savePay = createServerFn({ method: "POST" })
   .middleware([authMiddleware])

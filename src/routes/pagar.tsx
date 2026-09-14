@@ -5,7 +5,7 @@ import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SiteHeader } from "@/components/site-header";
-import { claimSerena, getAskStatus, getPay, type PaySettings } from "@/lib/savia-server";
+import { claimSerena, emptyPay, getAskStatus, getPay, type PaySettings } from "@/lib/savia-server";
 import { Disclaimer } from "@/components/disclaimer";
 import { whopFor } from "@/lib/pay-links";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
@@ -27,10 +27,15 @@ function Pagar() {
   const amount = plan === "year" ? "$39" : "$4.99";
 
   useEffect(() => {
+    if (isPending) return;
+    if (!user) {
+      setPay({ ...emptyPay });
+      return;
+    }
     getPay()
       .then(setPay)
-      .catch(() => setPay(null));
-  }, []);
+      .catch(() => setPay({ ...emptyPay }));
+  }, [user, isPending]);
 
   useEffect(() => {
     if (user?.primaryEmail && !email) setEmail(user.primaryEmail);

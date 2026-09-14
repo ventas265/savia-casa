@@ -84,6 +84,14 @@ export function LogForm({
 
   return (
     <div className="space-y-8">
+      {!initial ? (
+        <p className="text-sm leading-relaxed text-muted">{t.emptyLog}</p>
+      ) : null}
+      {busy ? (
+        <p className="text-xs font-medium text-muted" aria-live="polite">
+          {t.loading}
+        </p>
+      ) : null}
       <section>
         <p className="text-sm font-semibold">{t.flow}</p>
         <div className="mt-4 flex justify-between">

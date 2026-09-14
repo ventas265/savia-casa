@@ -190,6 +190,9 @@ export function TodayHero({
           {periHero.title}
         </p>
         <p className="mt-3 text-sm font-semibold">{chance}</p>
+        {!onPeriod ? (
+          <p className="mt-2 text-xs font-medium text-muted">{t.periodEstimate}</p>
+        ) : null}
       </div>
 
       <div className="relative mt-10 grid grid-cols-3 gap-4">

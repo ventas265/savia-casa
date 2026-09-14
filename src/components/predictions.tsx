@@ -49,6 +49,8 @@ export function Predictions({
       <p className="mt-3 text-xs leading-relaxed text-muted">
         {pred.n < 2 ? t.predFew : pred.irregular ? t.predWide : t.predHow}
         {showFertile ? ` ${intention === "ttc" ? t.fertileTry : t.fertileCare}` : ""}
+        {" "}
+        {t.periodEstimate}
       </p>
     </div>
   );
