@@ -64,6 +64,7 @@ function HoyTab() {
         void setCycleLength(n).then(setData);
       }}
       notify
+      showFertile={data.profile.intention !== "track"}
       log={data.log}
       onLogSaved={() => {
         void loadToday().then(setData);

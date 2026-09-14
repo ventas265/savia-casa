@@ -28,9 +28,9 @@ export function LogForm({
 }) {
   const { t, lang } = useI18n();
   const [flow, setFlow] = useState<Flow>(initial?.flow || "none");
-  const [mood, setMood] = useState(initial?.mood ?? 3);
-  const [energy, setEnergy] = useState(initial?.energy ?? 3);
-  const [sleepHours, setSleepHours] = useState(initial?.sleepHours ?? 7);
+  const [mood, setMood] = useState<number | null>(initial?.mood ?? null);
+  const [energy, setEnergy] = useState<number | null>(initial?.energy ?? null);
+  const [sleepHours, setSleepHours] = useState<number | null>(initial?.sleepHours ?? null);
   const [notes, setNotes] = useState(initial?.notes || "");
   const [symptoms, setSymptoms] = useState<string[]>(initial?.symptoms || []);
   const [mucus, setMucus] = useState<Mucus>(initial?.mucus || "none");

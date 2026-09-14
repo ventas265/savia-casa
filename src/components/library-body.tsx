@@ -23,10 +23,10 @@ export function LibraryBody({ start = "hormonas" }: { start?: Tab }) {
     { id: "hormonas", label: t.hormones },
     { id: "tes", label: t.teas },
     { id: "comida", label: t.food },
-    { id: "embarazo", label: t.pregnancy },
-    { id: "posparto", label: t.postpartum },
     { id: "peri", label: t.peri },
     { id: "meno", label: t.meno },
+    { id: "embarazo", label: t.pregnancy },
+    { id: "posparto", label: t.postpartum },
   ];
 
   return (

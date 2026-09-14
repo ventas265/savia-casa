@@ -31,6 +31,7 @@ export function TodayHero({
   onCameToday,
   onCycleChange,
   notify = false,
+  showFertile = false,
   log = null,
   onLogSaved,
 }: {
@@ -50,6 +51,7 @@ export function TodayHero({
   onCameToday?: () => void;
   onCycleChange?: (n: number) => void;
   notify?: boolean;
+  showFertile?: boolean;
   log?: DailyLog | null;
   onLogSaved?: () => void;
 }) {
@@ -59,7 +61,7 @@ export function TodayHero({
   const days = weekStrip(today);
   const left = daysUntil(nextPeriod ?? null);
   const onPeriod = phase === "menstrual";
-  const fertile = phase === "ovulatory";
+  const fertile = showFertile && phase === "ovulatory";
   const dow = lang === "es" ? DOW_ES : DOW_EN;
   const kind = periodAlert(left, onPeriod, phase);
 
@@ -168,8 +170,10 @@ export function TodayHero({
                 className={cn(
                   "flex size-10 items-center justify-center rounded-full text-base font-semibold",
                   mark === "period" && "bg-cal-period text-primary-fg",
-                  (mark === "fertile" || mark === "peak") && "bg-cal-fertile text-ink",
-                  !mark || mark === "quiet" ? "bg-surface text-fg" : "",
+                  showFertile && (mark === "fertile" || mark === "peak") && "bg-cal-fertile text-ink",
+                  !mark || mark === "quiet" || (!showFertile && (mark === "fertile" || mark === "peak"))
+                    ? "bg-surface text-fg"
+                    : "",
                   isToday && "pulse-today ring-2 ring-ink/30",
                 )}
               >

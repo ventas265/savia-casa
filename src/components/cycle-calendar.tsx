@@ -53,6 +53,7 @@ export function CycleCalendar({
   sexMarks = [],
   logs = [],
   paid = false,
+  showFertile = false,
   onSelect,
   onSetSex,
 }: {
@@ -65,6 +66,7 @@ export function CycleCalendar({
   sexMarks?: { day: string; kind: string }[];
   logs?: { day: string; flow: string; symptoms: string[] }[];
   paid?: boolean;
+  showFertile?: boolean;
   onSelect?: (iso: string) => void;
   onSetSex?: (iso: string, kind: "protected" | "unprotected" | "withdrawal") => void;
 }) {
@@ -78,7 +80,9 @@ export function CycleCalendar({
   const cells = useMemo(() => monthCells(cursor.y, cursor.m), [cursor.y, cursor.m]);
 
   function mark(iso: string): DayMark | null {
-    return markForDate(iso, { lastStart, cycleLength, periodLength, periodStarts, periodDays });
+    const m = markForDate(iso, { lastStart, cycleLength, periodLength, periodStarts, periodDays });
+    if (!showFertile && (m === "fertile" || m === "peak")) return "quiet";
+    return m;
   }
 
   function choose(iso: string) {
@@ -199,12 +203,16 @@ export function CycleCalendar({
         <li className="inline-flex items-center gap-1.5">
           <span className="size-2.5 rounded-full bg-cal-period" /> {t.legendPeriod}
         </li>
-        <li className="inline-flex items-center gap-1.5">
-          <span className="size-2.5 rounded-full bg-cal-fertile" /> {t.legendFertile}
-        </li>
-        <li className="inline-flex items-center gap-1.5">
-          <span className="size-2.5 rounded-full bg-cal-peak" /> {t.legendPeak}
-        </li>
+        {showFertile ? (
+          <>
+            <li className="inline-flex items-center gap-1.5">
+              <span className="size-2.5 rounded-full bg-cal-fertile" /> {t.legendFertile}
+            </li>
+            <li className="inline-flex items-center gap-1.5">
+              <span className="size-2.5 rounded-full bg-cal-peak" /> {t.legendPeak}
+            </li>
+          </>
+        ) : null}
         <li className="inline-flex items-center gap-1.5">
           <span className="size-1.5 rounded-full bg-ink/70" /> {t.calDot}
         </li>

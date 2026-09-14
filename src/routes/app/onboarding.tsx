@@ -12,13 +12,8 @@ import { haptic } from "@/lib/haptic";
 
 export const Route = createFileRoute("/app/onboarding")({ component: Onboarding });
 
-const STAGES: { id: Stage; es: string; feel: string; tone: string }[] = [
-  { id: "cycle", es: "Tengo el ciclo", feel: "Quiero entender mi periodo", tone: "bg-primary text-primary-fg" },
-  { id: "pregnancy", es: "Estoy esperando", feel: "Un bebé en camino", tone: "bg-sand text-ink" },
-  { id: "postpartum", es: "Estoy en posparto", feel: "Después del nacimiento", tone: "bg-accent text-ink" },
-  { id: "peri", es: "Ya no es el ciclo de antes", feel: "39–45. Sofoco, niebla, el mes que no cuadra", tone: "bg-plum text-primary-fg" },
-  { id: "meno", es: "Ya no me viene", feel: "Menopausia", tone: "bg-ink text-primary-fg" },
-];
+const PRIMARY: Stage = "cycle";
+const OTHER_STAGES: Stage[] = ["pregnancy", "postpartum", "peri", "meno"];
 
 function Onboarding() {
   const { t, lang } = useI18n();
@@ -26,6 +21,7 @@ function Onboarding() {
   const [step, setStep] = useState(0);
   const [displayName, setDisplayName] = useState("");
   const [stage, setStage] = useState<Stage>("cycle");
+  const [showOtherStages, setShowOtherStages] = useState(false);
   const [cycleLength, setCycleLength] = useState(28);
   const [periodLength] = useState(5);
   const [lastPeriodStart, setLastPeriodStart] = useState("");
@@ -34,11 +30,22 @@ function Onboarding() {
   const [intention] = useState<Intention>("track");
   const [busy, setBusy] = useState(false);
 
+  const stageCopy: Record<Stage, { title: string; feel: string; tone: string }> = {
+    cycle: { title: t.stageCycle, feel: t.stageCycleFeel, tone: "bg-primary text-primary-fg" },
+    pregnancy: { title: t.stagePregnancy, feel: t.stagePregnancyFeel, tone: "bg-sand text-ink" },
+    postpartum: { title: t.stagePostpartum, feel: t.stagePostpartumFeel, tone: "bg-accent text-ink" },
+    peri: { title: t.stagePeri, feel: t.stagePeriFeel, tone: "bg-plum text-primary-fg" },
+    meno: { title: t.stageMeno, feel: t.stageMenoFeel, tone: "bg-ink text-primary-fg" },
+  };
+
   useEffect(() => {
     void loadToday().then((snap) => {
       const p = snap.profile;
       if (p.displayName) setDisplayName(p.displayName);
-      if (p.stage) setStage(p.stage);
+      if (p.stage) {
+        setStage(p.stage);
+        if (p.stage !== "cycle") setShowOtherStages(true);
+      }
       if (p.cycleLength) setCycleLength(p.cycleLength);
       if (p.lastPeriodStart) setLastPeriodStart(p.lastPeriodStart);
       if (p.dueDate) setDueDate(p.dueDate);
@@ -56,6 +63,12 @@ function Onboarding() {
   function go(n: number) {
     haptic();
     setStep(n);
+  }
+
+  function pickStage(id: Stage) {
+    haptic();
+    setStage(id);
+    go(2);
   }
 
   async function save() {
@@ -101,6 +114,20 @@ function Onboarding() {
               : Boolean(lastPeriodStart)
           : true;
 
+  function StageButton({ id }: { id: Stage }) {
+    const s = stageCopy[id];
+    return (
+      <button
+        type="button"
+        onClick={() => pickStage(id)}
+        className={cn("press w-full rounded-[1.5rem] p-5 text-left shadow-card", s.tone)}
+      >
+        <p className="font-display text-xl font-semibold">{s.title}</p>
+        <p className="mt-1 text-sm opacity-80">{s.feel}</p>
+      </button>
+    );
+  }
+
   return (
     <div className="flex min-h-[70vh] flex-col">
       <div className="flex gap-1.5">
@@ -128,21 +155,21 @@ function Onboarding() {
           <p className="font-display text-3xl font-semibold tracking-[-0.03em]">{t.askBody}</p>
           <p className="mt-2 text-sm text-muted">{displayName}, {t.askBodyHint}</p>
           <div className="mt-6 space-y-3">
-            {STAGES.map((s) => (
+            <StageButton id={PRIMARY} />
+            {!showOtherStages ? (
               <button
-                key={s.id}
                 type="button"
+                className="press w-full py-3 text-center text-sm font-semibold text-muted underline-offset-4 hover:underline"
                 onClick={() => {
                   haptic();
-                  setStage(s.id);
-                  go(2);
+                  setShowOtherStages(true);
                 }}
-                className={cn("press w-full rounded-[1.5rem] p-5 text-left shadow-card", s.tone)}
               >
-                <p className="font-display text-xl font-semibold">{s.es}</p>
-                <p className="mt-1 text-sm opacity-80">{s.feel}</p>
+                {t.stageOther}
               </button>
-            ))}
+            ) : (
+              OTHER_STAGES.map((id) => <StageButton key={id} id={id} />)
+            )}
           </div>
         </div>
       ) : null}

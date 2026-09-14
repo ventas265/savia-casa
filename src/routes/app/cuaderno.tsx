@@ -6,28 +6,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useI18n } from "@/lib/i18n";
 import { Disclaimer } from "@/components/disclaimer";
-import { getPay, savePay, type PaySettings } from "@/lib/savia-server";
+import { emptyPay, getPay, savePay, type PaySettings } from "@/lib/savia-server";
 
 export const Route = createFileRoute("/app/cuaderno")({ component: Cuaderno });
 
-const empty: PaySettings = {
-  zinli: "",
-  pmPhone: "04141647902",
-  pmBank: "BNC",
-  pmId: "V-16.919.161",
-  usdt: "",
-  cardUrl: "",
-  paypalUrl: "",
-  paypalEmail: "Claufaria85@gmail.com",
-  binance: "claufaria_14@hotmail.com",
-  bankName: "Banplus",
-  bankAccount: "",
-  bankHolder: "",
-};
+const empty: PaySettings = { ...emptyPay };
 
 function Cuaderno() {
   const { t } = useI18n();
-  const [pay, setPay] = useState<PaySettings>(empty);
+  const [pay, setPay] = useState<PaySettings>({ ...emptyPay });
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {

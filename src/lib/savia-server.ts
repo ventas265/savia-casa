@@ -393,15 +393,15 @@ export type PaySettings = {
 
 export const emptyPay: PaySettings = {
   zinli: "",
-  pmPhone: "04141647902",
-  pmBank: "BNC",
-  pmId: "V-16.919.161",
+  pmPhone: "",
+  pmBank: "",
+  pmId: "",
   usdt: "",
   cardUrl: WHOP_MONTH,
   paypalUrl: "",
-  paypalEmail: "Claufaria85@gmail.com",
-  binance: "claufaria_14@hotmail.com",
-  bankName: "Banplus",
+  paypalEmail: "",
+  binance: "",
+  bankName: "",
   bankAccount: "",
   bankHolder: "",
 };

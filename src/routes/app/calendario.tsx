@@ -83,6 +83,7 @@ function CalendarTab() {
               sexDays={sexMarks.map((s) => s.day)}
               sexMarks={sexMarks}
               paid={paid}
+              showFertile={data.profile.intention !== "track"}
               onSetSex={(iso, kind) => void onHeart(iso, kind)}
             />
             {data.periodStarts.length ? (
