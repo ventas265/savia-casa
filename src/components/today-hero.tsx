@@ -136,17 +136,17 @@ export function TodayHero({
   }, [notify, kind, fertile, notifyTitle, notifyBody, nextPeriod, onPeriod, t]);
 
   return (
-    <div className="relative -mx-4 overflow-hidden px-4 pb-4">
+    <div className="relative -mx-4 overflow-hidden px-4 pb-6">
       {name ? (
-        <p className="relative font-display text-2xl font-semibold tracking-[-0.03em]">
+        <p className="relative font-display text-3xl font-semibold tracking-[-0.03em]">
           {t.goodMorning}, {name}
         </p>
       ) : (
-        <p className="relative font-display text-2xl font-semibold tracking-[-0.03em]">{t.goodMorning}</p>
+        <p className="relative font-display text-3xl font-semibold tracking-[-0.03em]">{t.goodMorning}</p>
       )}
       <p className="relative mt-1 text-center text-sm font-semibold text-muted">{formatLong(today, lang)}</p>
 
-      <div className="relative mt-4 grid grid-cols-7 text-center">
+      <div className="relative mt-6 grid grid-cols-7 text-center">
         {days.map((d) => {
           const isToday = d.iso === today;
           const mark = markForDate(d.iso, {
@@ -184,7 +184,7 @@ export function TodayHero({
         })}
       </div>
 
-      <div className="relative mt-8 text-center">
+      <div className="relative mt-10 text-center">
         {periHero.kicker ? <p className="text-sm font-semibold text-muted">{periHero.kicker}</p> : null}
         <p className="font-display text-[2.85rem] font-semibold leading-none tracking-[-0.05em] text-primary">
           {periHero.title}
@@ -192,7 +192,7 @@ export function TodayHero({
         <p className="mt-3 text-sm font-semibold">{chance}</p>
       </div>
 
-      <div className="relative mt-8 grid grid-cols-3 gap-3">
+      <div className="relative mt-10 grid grid-cols-3 gap-4">
         <HeroAct label={t.actBleed} onClick={() => (onCameToday && !onPeriod ? onCameToday() : onLog())} tone="rose" />
         <HeroAct label={t.actBody} onClick={() => document.getElementById("anotar")?.scrollIntoView({ behavior: "smooth" })} tone="sand" />
         <HeroAct label={t.actSex} onClick={onLog} tone="plum" />
@@ -262,11 +262,11 @@ function HeroAct({
         haptic(14);
         onClick();
       }}
-      className="press flex flex-col items-center gap-2"
+      className="press flex min-h-11 flex-col items-center gap-2.5 py-1"
     >
       <span
         className={cn(
-          "flex size-16 items-center justify-center rounded-full shadow-card",
+          "flex size-[4.25rem] min-h-11 min-w-11 items-center justify-center rounded-full shadow-card",
           tone === "rose" && "bg-primary text-primary-fg",
           tone === "sand" && "bg-surface text-ink",
           tone === "plum" && "bg-plum text-primary-fg",

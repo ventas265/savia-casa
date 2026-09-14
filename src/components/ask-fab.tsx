@@ -26,7 +26,7 @@ export function AskFab() {
   const path = useRouterState({ select: (s) => s.location.pathname });
   if (path.startsWith("/app/preguntar")) return null;
   return (
-    <div className="pointer-events-none fixed bottom-0 left-1/2 z-30 w-full max-w-lg -translate-x-1/2">
+    <div className="pointer-events-none fixed bottom-0 left-1/2 z-30 w-full max-w-lg -translate-x-1/2 md:max-w-[28rem]">
       <Link
         to="/app/preguntar"
         aria-label={t.askTalk}

@@ -36,51 +36,50 @@ export function TodayBody({
   const top = [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3);
   const left = daysUntil(nextPeriod ?? null);
   const onPeriod = phase === "menstrual";
-  const fertile = phase === "ovulatory";
 
   return (
-    <div>
+    <div className="space-y-1">
       <p className="text-xs font-medium tracking-[0.16em] text-muted uppercase">{pick(stageName[stage], lang)}</p>
       {stage === "pregnancy" && pregnancyWeek ? (
-        <h1 className="mt-2 font-display text-4xl font-medium">
+        <h1 className="mt-3 font-display text-4xl font-medium">
           {t.weekOf} {pregnancyWeek}
         </h1>
       ) : onPeriod ? (
-        <h1 className="mt-2 font-display text-4xl font-medium">{t.periodToday}</h1>
+        <h1 className="mt-3 font-display text-4xl font-medium">{t.periodToday}</h1>
       ) : left != null && left >= 0 ? (
-        <h1 className="mt-2 font-display text-4xl font-medium">
+        <h1 className="mt-3 font-display text-4xl font-medium">
           {t.periodIn} {left} {left === 1 ? t.dayLeft : t.daysLeft}
         </h1>
       ) : (
-        <h1 className="mt-2 font-display text-4xl font-medium">{name || t.today}</h1>
+        <h1 className="mt-3 font-display text-4xl font-medium">{name || t.today}</h1>
       )}
-      <p className="mt-2 text-sm text-muted">
-        {fertile ? t.chanceHigh : onPeriod ? pick(phaseName.menstrual, lang) : t.chanceLow}
+      <p className="mt-3 text-sm text-muted">
+        {onPeriod ? pick(phaseName.menstrual, lang) : t.chanceLow}
         {cycleDay ? ` · ${t.dayOf} ${cycleDay}` : ""}
       </p>
-      {!log ? <p className="mt-3 text-sm text-primary">{t.logNudge}</p> : null}
+      {!log ? <p className="mt-4 text-sm text-primary">{t.logNudge}</p> : null}
       {top.length ? (
-        <p className="mt-2 text-sm text-muted">
+        <p className="mt-3 text-sm text-muted">
           {t.insightTop}: {top.map(([id, n]) => `${pick(symptomLabel[id] || { es: id, en: id }, lang)} (${n})`).join(" · ")}
         </p>
       ) : null}
       {phaseCopy ? (
-        <Card className="mt-6">
+        <Card className="mt-8">
           <p className="text-xs tracking-wide text-muted uppercase">{t.hormoneToday}</p>
           <h2 className="mt-1 font-display text-2xl font-medium">{pick(phaseName[phase], lang)}</h2>
-          <p className="mt-2 text-sm leading-relaxed text-muted">{pick(phaseCopy.do, lang)}</p>
+          <p className="mt-3 text-sm leading-relaxed text-muted">{pick(phaseCopy.do, lang)}</p>
         </Card>
       ) : null}
       {stage === "pregnancy" ? (
-        <Card className="mt-4">
+        <Card className="mt-5">
           <p className="text-xs tracking-wide text-muted uppercase">
             {t.weekOf} {preg.week}
           </p>
           <h2 className="mt-1 font-display text-2xl font-medium">{pick(preg.title, lang)}</h2>
-          <p className="mt-2 text-sm leading-relaxed">{pick(preg.body, lang)}</p>
+          <p className="mt-3 text-sm leading-relaxed">{pick(preg.body, lang)}</p>
         </Card>
       ) : null}
-      <div className="mt-4 grid gap-3">
+      <div className="mt-5 grid gap-4">
         <Card>
           <p className="text-xs tracking-wide text-muted uppercase">{t.foodToday}</p>
           <p className="mt-2 font-medium">{pick(food[0]!.title, lang)}</p>
@@ -95,7 +94,7 @@ export function TodayBody({
           </p>
         </Card>
       </div>
-      <div className="mt-8">
+      <div className="mt-10">
         <Disclaimer compact />
       </div>
     </div>

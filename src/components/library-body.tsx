@@ -31,15 +31,22 @@ export function LibraryBody({ start = "hormonas" }: { start?: Tab }) {
 
   return (
     <div>
-      <nav className="-mx-4 overflow-x-auto px-4">
-        <div className="flex gap-2 pb-1">
+      <nav
+        className="-mx-4 overflow-x-auto overscroll-x-contain px-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+        style={{
+          maskImage: "linear-gradient(90deg, #000 0%, #000 calc(100% - 1.25rem), transparent)",
+          WebkitMaskImage: "linear-gradient(90deg, #000 0%, #000 calc(100% - 1.25rem), transparent)",
+        }}
+        aria-label={t.library}
+      >
+        <div className="flex w-max min-w-full flex-nowrap snap-x snap-mandatory gap-2 pe-8 pb-1">
           {jumps.map((j) => (
             <button
               key={j.id}
               type="button"
               onClick={() => setTab(j.id)}
               className={cn(
-                "press h-11 shrink-0 rounded-full px-4 text-sm font-semibold",
+                "press h-11 shrink-0 snap-start whitespace-nowrap rounded-full px-4 text-sm font-semibold",
                 tab === j.id ? "bg-primary text-primary-fg" : "bg-surface text-fg shadow-card",
               )}
             >

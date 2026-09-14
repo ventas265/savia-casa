@@ -16,41 +16,35 @@ export function ConsejosHoy({
 }) {
   const { t, lang } = useI18n();
   const note = localNoteToday(stage, phase, lang);
-  const body = phase !== "none" ? pick(phases[phase].do, lang) : t.periSub;
+  const body = phase !== "none" ? pick(phases[phase].do, lang) : note.body;
 
   return (
-    <section className="relative mt-8">
-      <p className="text-sm font-semibold">{t.tipsToday}</p>
-      <div className="-mx-4 mt-3 flex gap-3 overflow-x-auto px-4 pb-1">
-        <TipCard title={note.title} body={note.body} onClick={onAsk} tone="rose" />
-        <TipCard title={t.hormoneToday} body={body} onClick={onGuia} tone="sage" />
-        <TipCard title={t.askTitle} body={t.askEmpty} onClick={onAsk} tone="plum" />
+    <section className="relative mt-10">
+      <p className="text-sm font-semibold tracking-wide text-muted">{t.tipsToday}</p>
+      <button
+        type="button"
+        onClick={onAsk}
+        className="press mt-3 w-full rounded-[1.5rem] bg-primary/12 p-5 text-left shadow-card"
+      >
+        <p className="font-display text-xl font-semibold leading-tight tracking-[-0.03em]">{note.title}</p>
+        <p className="mt-2 text-sm leading-relaxed text-fg/90 line-clamp-3">{body}</p>
+      </button>
+      <div className="mt-3 flex gap-3">
+        <button
+          type="button"
+          onClick={onGuia}
+          className="press min-h-11 flex-1 rounded-full bg-surface px-4 text-sm font-semibold text-fg shadow-card"
+        >
+          {t.library}
+        </button>
+        <button
+          type="button"
+          onClick={onAsk}
+          className="press min-h-11 flex-1 rounded-full bg-plum/15 px-4 text-sm font-semibold text-fg"
+        >
+          {t.askTitle}
+        </button>
       </div>
     </section>
-  );
-}
-
-function TipCard({
-  title,
-  body,
-  onClick,
-  tone,
-}: {
-  title: string;
-  body: string;
-  onClick: () => void;
-  tone: "rose" | "sage" | "plum";
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`press min-h-36 w-[15.5rem] shrink-0 rounded-[1.5rem] p-4 text-left shadow-card ${
-        tone === "rose" ? "bg-primary/12" : tone === "sage" ? "bg-accent/40" : "bg-plum/15"
-      }`}
-    >
-      <p className="font-display text-lg font-semibold leading-tight tracking-[-0.03em]">{title}</p>
-      <p className="mt-2 line-clamp-4 text-sm leading-relaxed">{body}</p>
-    </button>
   );
 }

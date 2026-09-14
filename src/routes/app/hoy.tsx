@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TodayHero } from "@/components/today-hero";
@@ -8,26 +8,82 @@ import { loadToday, markCameToday, setCycleLength } from "@/lib/savia-api";
 import { SAVIA_BETA } from "@/lib/beta";
 import { localToday } from "@/lib/savia-local";
 import { isCycling, nextPeriodDate, weightedCycle } from "@/lib/cycle";
+import { useI18n } from "@/lib/i18n";
 import type { TodaySnapshot } from "@/lib/types";
 
 export const Route = createFileRoute("/app/hoy")({ component: HoyTab });
 
+function HoySkeleton() {
+  return (
+    <div className="space-y-6" aria-busy="true" aria-live="polite">
+      <Skeleton className="h-9 w-52 rounded-lg" />
+      <Skeleton className="mx-auto h-4 w-36 rounded-full" />
+      <div className="grid grid-cols-7 gap-2 pt-2">
+        {Array.from({ length: 7 }).map((_, i) => (
+          <div key={i} className="flex flex-col items-center gap-2">
+            <Skeleton className="h-3 w-6 rounded" />
+            <Skeleton className="size-10 rounded-full" />
+          </div>
+        ))}
+      </div>
+      <div className="space-y-3 pt-4 text-center">
+        <Skeleton className="mx-auto h-12 w-56 rounded-lg" />
+        <Skeleton className="mx-auto h-4 w-40 rounded-full" />
+      </div>
+      <div className="grid grid-cols-3 gap-4 pt-4">
+        <Skeleton className="mx-auto size-[4.25rem] rounded-full" />
+        <Skeleton className="mx-auto size-[4.25rem] rounded-full" />
+        <Skeleton className="mx-auto size-[4.25rem] rounded-full" />
+      </div>
+      <Skeleton className="mt-4 h-28 w-full rounded-[1.5rem]" />
+    </div>
+  );
+}
+
+function HoyEmpty() {
+  const { t } = useI18n();
+  return (
+    <div className="pb-8 pt-4">
+      <p className="font-display text-3xl font-semibold tracking-[-0.03em]">{t.today}</p>
+      <p className="mt-4 text-base leading-relaxed text-muted">{t.emptyLog}</p>
+      <Link
+        to="/app/onboarding"
+        className="mt-8 flex h-14 w-full items-center justify-center rounded-full bg-primary text-base font-semibold text-primary-fg shadow-card"
+      >
+        {t.welcomeCta}
+      </Link>
+    </div>
+  );
+}
+
 function HoyTab() {
   const navigate = useNavigate();
   const [data, setData] = useState<TodaySnapshot | null>(() => (SAVIA_BETA ? localToday() : null));
+  const [ready, setReady] = useState(() => Boolean(SAVIA_BETA));
 
   useEffect(() => {
+    let alive = true;
     loadToday()
       .then((snap) => {
-        setData(snap);
+        if (alive) setData(snap);
       })
       .catch(() => {
-        if (!SAVIA_BETA) setData(null);
+        if (alive && !SAVIA_BETA) setData(null);
+      })
+      .finally(() => {
+        if (alive) setReady(true);
       });
+    return () => {
+      alive = false;
+    };
   }, []);
 
+  if (!ready) {
+    return <HoySkeleton />;
+  }
+
   if (!data) {
-    return <Skeleton className="h-64 w-full" />;
+    return <HoyEmpty />;
   }
 
   const needsNotebook =
@@ -41,35 +97,35 @@ function HoyTab() {
     <>
       <RecoveryCard />
       <TodayHero
-      name={data.profile.displayName}
-      stage={data.profile.stage}
-      phase={data.phase}
-      cycleLength={data.profile.cycleLength}
-      cycleDay={data.cycleDay}
-      lastStart={data.profile.lastPeriodStart}
-      periodLength={data.profile.periodLength}
-      periodStarts={data.periodStarts}
-      nextPeriod={nextPeriodDate(
-        data.profile.lastPeriodStart,
-        weightedCycle(data.periodStarts, data.profile.cycleLength),
-      )}
-      onCal={() => void navigate({ to: "/app/calendario" })}
-      onLog={() => void navigate({ to: "/app/registro" })}
-      onGuia={() => void navigate({ to: "/app/guia" })}
-      onAsk={() => void navigate({ to: "/app/preguntar" })}
-      onCameToday={() => {
-        void markCameToday().then(setData);
-      }}
-      onCycleChange={(n) => {
-        void setCycleLength(n).then(setData);
-      }}
-      notify
-      showFertile={data.profile.intention !== "track"}
-      log={data.log}
-      onLogSaved={() => {
-        void loadToday().then(setData);
-      }}
-    />
+        name={data.profile.displayName}
+        stage={data.profile.stage}
+        phase={data.phase}
+        cycleLength={data.profile.cycleLength}
+        cycleDay={data.cycleDay}
+        lastStart={data.profile.lastPeriodStart}
+        periodLength={data.profile.periodLength}
+        periodStarts={data.periodStarts}
+        nextPeriod={nextPeriodDate(
+          data.profile.lastPeriodStart,
+          weightedCycle(data.periodStarts, data.profile.cycleLength),
+        )}
+        onCal={() => void navigate({ to: "/app/calendario" })}
+        onLog={() => void navigate({ to: "/app/registro" })}
+        onGuia={() => void navigate({ to: "/app/guia" })}
+        onAsk={() => void navigate({ to: "/app/preguntar" })}
+        onCameToday={() => {
+          void markCameToday().then(setData);
+        }}
+        onCycleChange={(n) => {
+          void setCycleLength(n).then(setData);
+        }}
+        notify
+        showFertile={data.profile.intention !== "track"}
+        log={data.log}
+        onLogSaved={() => {
+          void loadToday().then(setData);
+        }}
+      />
     </>
   );
 }

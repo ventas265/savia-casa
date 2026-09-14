@@ -32,7 +32,7 @@ export function TabBar({
           const active = current === item.key;
           const plus = "plus" in item && item.plus;
           const className = cn(
-            "relative z-10 flex min-h-16 flex-col items-center justify-end gap-0.5 pb-2 text-[10px] font-semibold",
+            "relative z-10 flex min-h-16 flex-col items-center justify-end gap-0.5 pb-2 text-[10px] font-semibold leading-tight",
             plus && "z-20",
             active && !plus ? "text-primary" : "text-muted",
           );
@@ -45,18 +45,37 @@ export function TabBar({
               <Icon className="size-[22px]" />
             </span>
           );
+          const label = plus ? (
+            <span className="sr-only">{item.label}</span>
+          ) : (
+            item.label
+          );
           if (onPick) {
             return (
-              <button key={item.key} type="button" className={className} onClick={() => onPick(item.key)}>
+              <button
+                key={item.key}
+                type="button"
+                className={className}
+                onClick={() => onPick(item.key)}
+                aria-label={plus ? item.label : undefined}
+                title={plus ? item.label : undefined}
+              >
                 {icon}
-                {plus ? "" : item.label}
+                {label}
               </button>
             );
           }
           return (
-            <Link key={item.key} to={item.to} preload="intent" className={className}>
+            <Link
+              key={item.key}
+              to={item.to}
+              preload="intent"
+              className={className}
+              aria-label={plus ? item.label : undefined}
+              title={plus ? item.label : undefined}
+            >
               {icon}
-              {plus ? "" : item.label}
+              {label}
             </Link>
           );
         })}
