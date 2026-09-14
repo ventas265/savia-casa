@@ -478,6 +478,7 @@ const copy = {
     fertilityToggle: "Mostrar ventana fértil",
     fertilityToggleHint: "Un dato de tu ciclo. No es una meta ni un consejo para concebir.",
     tipsShort: "Consejos",
+    stepOf: "{current}/{total}",
   },
   en: {
     brand: "Savia",
@@ -953,6 +954,7 @@ const copy = {
     fertilityToggle: "Show fertile window",
     fertilityToggleHint: "A fact about your cycle. Not a goal or advice to conceive.",
     tipsShort: "Insights",
+    stepOf: "{current}/{total}",
   },
 } as const;
 
