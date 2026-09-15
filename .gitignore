@@ -13,3 +13,13 @@ artifacts
 *.log
 .DS_Store
 attachments/
+
+# Capacitor / Android local builds (keep android/ project source tracked)
+android/app/build/
+android/.gradle/
+android/local.properties
+android/captures/
+android/*.iml
+android/.idea/
+*.keystore
+*.jks
