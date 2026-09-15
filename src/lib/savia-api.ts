@@ -1,4 +1,4 @@
-import { todayISO } from "@/lib/cycle";
+import { asIsoDay, todayISO } from "@/lib/cycle";
 import { SAVIA_BETA } from "@/lib/beta";
 import {
   localAskFile,
@@ -121,9 +121,11 @@ export async function writeLog(data: {
   sex?: boolean;
   sexKind?: SexKind;
 }) {
-  if (!SAVIA_BETA) return saveLog({ data });
-  const saved = localSaveLog(data);
-  void pushLog(data);
+  const day = asIsoDay(data.day) || data.day.slice(0, 10);
+  const payload = { ...data, day };
+  if (!SAVIA_BETA) return saveLog({ data: payload });
+  const saved = localSaveLog(payload);
+  void pushLog(payload);
   return saved;
 }
 
@@ -144,7 +146,8 @@ async function pushLog(data: {
   if (c) void saveLogDevice({ data: { ...c, ...data } }).catch(() => {});
 }
 
-export async function writeSex(day: string, kind: SexKind) {
+export async function writeSex(dayRaw: string, kind: SexKind) {
+  const day = asIsoDay(dayRaw) || dayRaw.slice(0, 10);
   if (!SAVIA_BETA) return toggleSex({ data: { day, kind } });
   const saved = localSetSex(day, kind);
   const c = await creds();

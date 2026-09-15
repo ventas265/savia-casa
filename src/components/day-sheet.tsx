@@ -5,13 +5,14 @@ import { LogForm } from "@/components/log-form";
 import { useI18n } from "@/lib/i18n";
 import { formatDay, type DayMark } from "@/lib/cycle";
 import { setSelectedDay } from "@/lib/selected-day";
-import type { DailyLog } from "@/lib/types";
+import type { DailyLog, Phase } from "@/lib/types";
 
 export function DaySheet({
   day,
   log,
   paid = false,
   dayMark = null,
+  phase = "none",
   onClose,
   onSaved,
 }: {
@@ -19,6 +20,7 @@ export function DaySheet({
   log: DailyLog | null;
   paid?: boolean;
   dayMark?: DayMark | null;
+  phase?: Phase;
   onClose: () => void;
   onSaved?: (log: DailyLog) => void;
 }) {
@@ -94,6 +96,7 @@ export function DaySheet({
             day={day}
             initial={activeLog}
             paid={paid}
+            phase={phase}
             onSaved={(saved) => {
               setActiveLog(saved);
               onSaved?.(saved);

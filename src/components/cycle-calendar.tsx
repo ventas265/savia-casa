@@ -88,6 +88,7 @@ export function CycleCalendar({
   const now = fromISO(today);
   const [cursor, setCursor] = useState({ y: now.getFullYear(), m: now.getMonth() });
   const [picked, setPicked] = useState(today);
+  const [legendOpen, setLegendOpen] = useState(false);
   const weekdays = lang === "es" ? ["Lu", "Ma", "Mi", "Ju", "Vi", "Sa", "Do"] : ["M", "T", "W", "T", "F", "S", "S"];
   const months = lang === "es" ? MONTHS_ES : MONTHS_EN;
   const cells = useMemo(() => monthCells(cursor.y, cursor.m), [cursor.y, cursor.m]);
@@ -141,7 +142,12 @@ export function CycleCalendar({
     return set;
   }, [periodDays, periodStarts, periodLength, lastStart]);
 
-  const sexSet = useMemo(() => new Set(sexDays.length ? sexDays : sexMarks.map((s) => s.day)), [sexDays, sexMarks]);
+  // Prefer union so a mark never depends on which prop arrived first.
+  const sexSet = useMemo(() => {
+    const s = new Set<string>(sexDays);
+    for (const m of sexMarks) s.add(m.day);
+    return s;
+  }, [sexDays, sexMarks]);
   const sexKindByDay = useMemo(
     () => Object.fromEntries(sexMarks.map((s) => [s.day, s.kind])),
     [sexMarks],
@@ -304,7 +310,7 @@ export function CycleCalendar({
                 {hasSex ? (
                   <Heart
                     className={cn(
-                      "size-2.5 text-primary",
+                      "size-3 text-primary",
                       sexKind === "protected" && "fill-none",
                       sexKind === "withdrawal" && "fill-current opacity-70",
                       (sexKind === "unprotected" || sexKind === "none") && "fill-current",
@@ -317,39 +323,53 @@ export function CycleCalendar({
           );
         })}
       </div>
-      <ul className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-xs text-muted">
-        <li className="inline-flex items-center gap-1.5">
-          <span className="size-2.5 rounded-full bg-cal-period" /> {t.legendPeriod}
-        </li>
-        <li className="inline-flex items-center gap-1.5">
-          <span className="size-2.5 rounded-full border-2 border-dashed border-cal-period bg-transparent" />{" "}
-          {t.legendPredicted}
-        </li>
-        <li className="inline-flex items-center gap-1.5">
-          <span className="relative flex size-2.5 items-center justify-center rounded-full bg-sand/80">
-            <span className="absolute top-0 size-1 rounded-full bg-ink/55" />
-          </span>{" "}
-          {t.legendToday}
-        </li>
-        <li className="inline-flex items-center gap-1.5">
-          <span className="size-2.5 rounded-full bg-cal-fertile" /> {t.legendFertile}
-        </li>
-        <li className="inline-flex items-center gap-1.5">
-          <span className="size-2.5 rounded-full bg-cal-peak" /> {t.legendPeak}
-        </li>
-        <li className="inline-flex items-center gap-1.5">
-          <span className="size-1.5 rounded-full bg-cal-period" /> {t.calMarkFlow}
-        </li>
-        <li className="inline-flex items-center gap-1.5">
-          <span className="size-1.5 rounded-full bg-ink/65" /> {t.calMarkMood}
-        </li>
-        <li className="inline-flex items-center gap-1.5">
-          <Heart className="size-3 fill-current text-primary" /> {t.legendSex}
-        </li>
-        <li className="inline-flex items-center gap-1.5">
-          <Heart className="size-3 text-primary" /> {t.legendSexProtected}
-        </li>
-      </ul>
+      <div className="mt-3">
+        <ul className="flex flex-wrap gap-x-4 gap-y-2 text-xs text-muted">
+          <li className="inline-flex items-center gap-1.5">
+            <span className="size-2.5 rounded-full bg-cal-period" /> {t.legendPeriod}
+          </li>
+          <li className="inline-flex items-center gap-1.5">
+            <span className="size-2.5 rounded-full bg-cal-fertile" /> {t.legendFertile}
+          </li>
+          <li className="inline-flex items-center gap-1.5">
+            <Heart className="size-3 fill-current text-primary" /> {t.legendSex}
+          </li>
+        </ul>
+        <button
+          type="button"
+          className="mt-2 text-xs font-semibold text-primary"
+          aria-expanded={legendOpen}
+          onClick={() => setLegendOpen((v) => !v)}
+        >
+          {legendOpen ? t.hideSymbols : t.showSymbols}
+        </button>
+        {legendOpen ? (
+          <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-2 text-xs text-muted">
+            <li className="inline-flex items-center gap-1.5">
+              <span className="size-2.5 rounded-full border-2 border-dashed border-cal-period bg-transparent" />{" "}
+              {t.legendPredicted}
+            </li>
+            <li className="inline-flex items-center gap-1.5">
+              <span className="relative flex size-2.5 items-center justify-center rounded-full bg-sand/80">
+                <span className="absolute top-0 size-1 rounded-full bg-ink/55" />
+              </span>{" "}
+              {t.legendToday}
+            </li>
+            <li className="inline-flex items-center gap-1.5">
+              <span className="size-2.5 rounded-full bg-cal-peak" /> {t.legendPeak}
+            </li>
+            <li className="inline-flex items-center gap-1.5">
+              <span className="size-1.5 rounded-full bg-cal-period" /> {t.calMarkFlow}
+            </li>
+            <li className="inline-flex items-center gap-1.5">
+              <span className="size-1.5 rounded-full bg-ink/65" /> {t.calMarkMood}
+            </li>
+            <li className="inline-flex items-center gap-1.5">
+              <Heart className="size-3 text-primary" /> {t.legendSexProtected}
+            </li>
+          </ul>
+        ) : null}
+      </div>
       <div className="mt-4 border-t border-border pt-3">
         <p className="font-medium">
           {formatDay(picked, lang)}
@@ -357,7 +377,55 @@ export function CycleCalendar({
           {phase !== "none" ? ` · ${pick(phaseName[phase], lang)}` : ""}
         </p>
         <p className="mt-1 text-sm text-muted">{caption}</p>
-        <p className="mt-2 text-xs text-muted">{t.daySheet}</p>
+        {(() => {
+          const kind = sexKindByDay[picked] || (pickedLog?.sex ? "unprotected" : "none");
+          const lines: string[] = [];
+          if (pickedFlow && pickedFlow !== "none") {
+            lines.push(
+              pickedFlow === "spotting"
+                ? t.flowSpot
+                : pickedFlow === "light"
+                  ? t.flowLight
+                  : pickedFlow === "medium"
+                    ? t.flowMed
+                    : pickedFlow === "heavy"
+                      ? t.flowHeavy
+                      : t.flow,
+            );
+          }
+          if (pickedLog && ((pickedLog.mood != null && pickedLog.mood > 0) || pickedLog.symptoms.length > 0)) {
+            lines.push(t.calMarkMood);
+          }
+          if (sexSet.has(picked) || pickedLog?.sex) {
+            lines.push(
+              kind === "protected"
+                ? t.relationsProtected
+                : kind === "withdrawal"
+                  ? t.relationsWithdrawal
+                  : t.relationsUnprotected,
+            );
+          }
+          if (!lines.length) {
+            return <p className="mt-2 text-xs text-muted">{t.daySheetEmpty}</p>;
+          }
+          return (
+            <div className="mt-3 rounded-[1.1rem] bg-surface-2/80 p-3">
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted">{t.dayLoggedHeading}</p>
+              <ul className="mt-1.5 space-y-1 text-sm">
+                {lines.map((line) => (
+                  <li key={line}>{line}</li>
+                ))}
+              </ul>
+            </div>
+          );
+        })()}
+        <button
+          type="button"
+          className="press mt-3 flex min-h-11 w-full items-center justify-center rounded-full bg-surface text-sm font-semibold shadow-card"
+          onClick={() => onSelect?.(picked)}
+        >
+          {t.editDayCta}
+        </button>
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import { averageCycle, cyclePattern, daysUntil, fertileWindow, learnedCycle, nextPeriodDate, periodDaysFromLogs, snapshotMeta, symptomByPhase, todayISO, weightedCycle } from "@/lib/cycle";
+import { asIsoDay, averageCycle, cyclePattern, daysUntil, fertileWindow, learnedCycle, nextPeriodDate, periodDaysFromLogs, snapshotMeta, symptomByPhase, todayISO, weightedCycle } from "@/lib/cycle";
 import { callName } from "@/lib/names";
 import { songToday } from "@/lib/songs";
 import { dailyLetters, pickDailyLetter, yesterdayISO } from "@/lib/carta";
@@ -135,7 +135,8 @@ export function localSaveLog(data: {
   sexKind?: SexKind;
 }) {
   const store = read();
-  const existing = store.logs.find((l) => l.day === data.day);
+  const day = asIsoDay(data.day) || data.day.slice(0, 10);
+  const existing = store.logs.find((l) => l.day === day);
   let sex = existing?.sex || false;
   let sexKind: SexKind = existing?.sexKind || "none";
   if (data.sexKind !== undefined) {
@@ -150,7 +151,7 @@ export function localSaveLog(data: {
   const log: DailyLog = {
     id: existing?.id || Date.now(),
     userId: "beta",
-    day: data.day,
+    day,
     flow: data.flow,
     mood: data.mood,
     energy: data.energy,
@@ -162,19 +163,20 @@ export function localSaveLog(data: {
     sex,
     sexKind,
   };
-  store.logs = [log, ...store.logs.filter((l) => l.day !== data.day)].slice(0, 180);
+  store.logs = [log, ...store.logs.filter((l) => l.day !== day)].slice(0, 180);
   if (data.periodStarted) {
     const prev = store.profile.lastPeriodStart;
-    store.profile.cycleLength = learnedCycle(prev, data.day, store.profile.cycleLength);
-    store.starts = Array.from(new Set([data.day, ...store.starts])).sort().reverse().slice(0, 12);
-    store.profile.lastPeriodStart = data.day;
+    store.profile.cycleLength = learnedCycle(prev, day, store.profile.cycleLength);
+    store.starts = Array.from(new Set([day, ...store.starts])).sort().reverse().slice(0, 12);
+    store.profile.lastPeriodStart = day;
   }
   write(store);
   return { ok: true as const, log };
 }
 
-export function localSetSex(day: string, kind: SexKind) {
+export function localSetSex(dayRaw: string, kind: SexKind) {
   const store = read();
+  const day = asIsoDay(dayRaw) || dayRaw.slice(0, 10);
   const existing = store.logs.find((l) => l.day === day);
   const current = existing?.sexKind || "none";
   const next: SexKind = kind === current ? "none" : kind;

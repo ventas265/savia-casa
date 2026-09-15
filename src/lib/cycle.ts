@@ -9,6 +9,23 @@ export function todayISO(d = new Date()) {
   return `${y}-${m}-${day}`;
 }
 
+const ISO_DAY = /^\d{4}-\d{2}-\d{2}$/;
+
+/** Normalize any day-ish value to local-calendar YYYY-MM-DD (or null). */
+export function asIsoDay(value: string | Date | null | undefined): string | null {
+  if (value == null) return null;
+  if (value instanceof Date && !Number.isNaN(value.getTime())) {
+    // Prefer ISO date part when the instant is UTC midnight (DB date drivers);
+    // otherwise use local Y-M-D so wall-clock dates stay sticky.
+    const iso = value.toISOString();
+    if (iso.endsWith("T00:00:00.000Z")) return iso.slice(0, 10);
+    return todayISO(value);
+  }
+  const raw = String(value).trim();
+  const sliced = raw.slice(0, 10);
+  return ISO_DAY.test(sliced) ? sliced : null;
+}
+
 /** Parse YYYY-MM-DD as a local calendar date (not UTC midnight). */
 export function fromISO(iso: string) {
   const day = String(iso).slice(0, 10);

@@ -7,7 +7,7 @@ import { loadToday, betaPaid } from "@/lib/savia-api";
 import { SAVIA_BETA } from "@/lib/beta";
 import { localToday } from "@/lib/savia-local";
 import { useI18n } from "@/lib/i18n";
-import { todayISO } from "@/lib/cycle";
+import { todayISO, cycleDay, phaseForDay } from "@/lib/cycle";
 import { isIsoDay, resolveRegistroDay, setSelectedDay } from "@/lib/selected-day";
 import type { TodaySnapshot } from "@/lib/types";
 
@@ -104,6 +104,7 @@ function Registro() {
           day={focusDay}
           initial={initial}
           paid={betaPaid() || data.profile.plan === "serena" || data.profile.plan === "year"}
+          phase={phaseForDay(cycleDay(data.profile.lastPeriodStart, data.profile.cycleLength, focusDay), data.profile.periodLength, data.profile.cycleLength)}
           onSaved={(log) =>
             setData({
               ...data,

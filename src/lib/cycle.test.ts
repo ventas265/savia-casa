@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { cycleDay, formatDay, fromISO, nextPeriodDate, phaseForDay, predictPeriod, todayISO, weightedCycle } from "./cycle.ts";
+import { asIsoDay, cycleDay, formatDay, fromISO, nextPeriodDate, phaseForDay, predictPeriod, todayISO, weightedCycle } from "./cycle.ts";
 
 test("cycle day 1 is the start", () => {
   assert.equal(cycleDay("2026-01-01", 28, "2026-01-01"), 1);
@@ -41,4 +41,15 @@ test("fromISO keeps calendar day (no UTC midnight parse)", () => {
 test("fromISO strips time suffix without shifting the day", () => {
   const d = fromISO("2026-09-15T23:00:00.000Z");
   assert.equal(todayISO(d), "2026-09-15");
+});
+
+test("asIsoDay keeps YYYY-MM-DD strings", () => {
+  assert.equal(asIsoDay("2026-09-15"), "2026-09-15");
+  assert.equal(asIsoDay("2026-09-15T12:00:00.000Z"), "2026-09-15");
+  assert.equal(asIsoDay("nope"), null);
+});
+
+test("asIsoDay UTC-midnight Date stays on that calendar day", () => {
+  const d = new Date("2026-09-15T00:00:00.000Z");
+  assert.equal(asIsoDay(d), "2026-09-15");
 });

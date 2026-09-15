@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { authMiddleware } from "@/lib/auth/middleware";
 import { getSql } from "@/lib/db";
-import { cyclePattern, fertileWindow, nextPeriodDate, averageCycle, snapshotMeta, symptomByPhase, todayISO, learnedCycle } from "@/lib/cycle";
+import { asIsoDay, cyclePattern, fertileWindow, nextPeriodDate, averageCycle, snapshotMeta, symptomByPhase, todayISO, learnedCycle } from "@/lib/cycle";
 import type { DailyLog, Flow, Intention, Mucus, SaviaProfile, SexKind, Stage, TodaySnapshot } from "@/lib/types";
 import { moneyToNumber } from "@/lib/utils";
 import { WHOP_MONTH } from "@/lib/pay-links";
@@ -135,7 +135,7 @@ function mapLog(row: LogRow): DailyLog {
   return {
     id: row.id,
     userId: row.user_id,
-    day: String(row.day).slice(0, 10),
+    day: asIsoDay(row.day) || String(row.day).slice(0, 10),
     flow: (row.flow as Flow) || "none",
     mood: row.mood,
     energy: row.energy,
@@ -184,7 +184,7 @@ export async function snapshotFor(userId: string): Promise<TodaySnapshot> {
   `;
   const meta = snapshotMeta(profile, day);
   const sexMarks = sexRows.map((s) => ({
-    day: String(s.day).slice(0, 10),
+    day: asIsoDay(s.day) || String(s.day).slice(0, 10),
     kind: ((s.sex_kind as SexKind) || "unprotected") as SexKind,
   }));
   return {
@@ -193,7 +193,7 @@ export async function snapshotFor(userId: string): Promise<TodaySnapshot> {
     ...meta,
     log: logRows[0] ? mapLog(logRows[0]!) : null,
     recentLogs: recent.map(mapLog),
-    periodStarts: starts.map((s) => String(s.start_date).slice(0, 10)),
+    periodStarts: starts.map((s) => asIsoDay(s.start_date) || String(s.start_date).slice(0, 10)),
     sexDays: sexMarks.map((s) => s.day),
     sexMarks,
   };
