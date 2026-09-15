@@ -43,6 +43,14 @@ const MONTHS_EN = [
   "December",
 ];
 
+type CellLog = {
+  day: string;
+  flow: string;
+  symptoms: string[];
+  mood?: number | null;
+  sex?: boolean;
+};
+
 export function CycleCalendar({
   lastStart,
   cycleLength = 28,
@@ -52,10 +60,8 @@ export function CycleCalendar({
   sexDays = [],
   sexMarks = [],
   logs = [],
-  paid = false,
   showFertile = false,
   onSelect,
-  onSetSex,
 }: {
   lastStart: string | null;
   cycleLength?: number;
@@ -64,7 +70,7 @@ export function CycleCalendar({
   periodDays?: string[];
   sexDays?: string[];
   sexMarks?: { day: string; kind: string }[];
-  logs?: { day: string; flow: string; symptoms: string[] }[];
+  logs?: CellLog[];
   paid?: boolean;
   showFertile?: boolean;
   onSelect?: (iso: string) => void;
@@ -106,7 +112,6 @@ export function CycleCalendar({
             : t.calEmpty;
 
   const sexSet = useMemo(() => new Set(sexDays.length ? sexDays : sexMarks.map((s) => s.day)), [sexDays, sexMarks]);
-  const kindByDay = useMemo(() => Object.fromEntries(sexMarks.map((s) => [s.day, s.kind])), [sexMarks]);
   const logByDay = useMemo(() => Object.fromEntries(logs.map((l) => [l.day, l])), [logs]);
   const marks = cells.map((c) => mark(c.iso));
 
@@ -163,8 +168,10 @@ export function CycleCalendar({
                       : m === "peak" || m === "fertile"
                         ? "bg-cal-fertile text-ink"
                         : "text-fg";
-          const hasSex = sexSet.has(cell.iso);
-          const hasDot = Boolean(logged && (logged.symptoms.length || flow && flow !== "none"));
+          const hasFlow = Boolean(flow && flow !== "none");
+          const hasMood = Boolean(logged && ((logged.mood != null && logged.mood > 0) || logged.symptoms.length > 0));
+          const hasSex = sexSet.has(cell.iso) || Boolean(logged?.sex);
+          const onDark = m === "period" || flow === "heavy" || flow === "medium";
           return (
             <button
               key={cell.iso}
@@ -184,15 +191,29 @@ export function CycleCalendar({
                 )}
               >
                 {cell.date}
-                {hasSex ? (
-                  <Heart
-                    className={cn(
-                      "absolute bottom-0.5 size-2.5 fill-current",
-                      m === "period" || flow === "heavy" || flow === "medium" ? "text-primary-fg" : "text-primary",
-                    )}
-                  />
-                ) : hasDot ? (
-                  <span className="absolute bottom-1 size-1.5 rounded-full bg-ink/70" />
+                {hasFlow || hasMood || hasSex ? (
+                  <span className="absolute bottom-0.5 flex items-center gap-0.5">
+                    {hasFlow ? (
+                      <span
+                        className={cn("size-1.5 rounded-full", onDark ? "bg-primary-fg" : "bg-primary")}
+                        title={t.calMarkFlow}
+                      />
+                    ) : null}
+                    {hasMood ? (
+                      <span
+                        className={cn("size-1.5 rounded-full", onDark ? "bg-sand" : "bg-ink/70")}
+                        title={t.calMarkMood}
+                      />
+                    ) : null}
+                    {hasSex ? (
+                      <Heart
+                        className={cn(
+                          "size-2.5 fill-current",
+                          onDark ? "text-primary-fg" : "text-primary",
+                        )}
+                      />
+                    ) : null}
+                  </span>
                 ) : null}
               </span>
             </button>
@@ -214,7 +235,13 @@ export function CycleCalendar({
           </>
         ) : null}
         <li className="inline-flex items-center gap-1.5">
-          <span className="size-1.5 rounded-full bg-ink/70" /> {t.calDot}
+          <span className="size-1.5 rounded-full bg-primary" /> {t.calMarkFlow}
+        </li>
+        <li className="inline-flex items-center gap-1.5">
+          <span className="size-1.5 rounded-full bg-ink/70" /> {t.calMarkMood}
+        </li>
+        <li className="inline-flex items-center gap-1.5">
+          <Heart className="size-3 fill-current text-primary" /> {t.legendSex}
         </li>
       </ul>
       <div className="mt-4 border-t border-border pt-3">
@@ -224,32 +251,7 @@ export function CycleCalendar({
           {phase !== "none" ? ` · ${pick(phaseName[phase], lang)}` : ""}
         </p>
         <p className="mt-1 text-sm text-muted">{caption}</p>
-        <div className="mt-3 flex flex-wrap gap-2">
-          {(
-            [
-              ["protected", t.sexProtected],
-              ["unprotected", t.sexUnprotected],
-              ["withdrawal", t.sexWithdrawal],
-            ] as const
-          ).map(([kind, label]) => {
-            const on = kindByDay[picked] === kind;
-            return (
-              <button
-                key={kind}
-                type="button"
-                onClick={() => onSetSex?.(picked, kind)}
-                className={cn(
-                  "inline-flex min-h-11 items-center gap-1.5 rounded-full px-3 text-xs font-medium",
-                  on ? "bg-primary text-primary-fg" : "bg-bg text-fg",
-                )}
-              >
-                <Heart className={cn("size-3.5", on && "fill-current")} />
-                {label}
-              </button>
-            );
-          })}
-        </div>
-        {paid ? null : <p className="mt-2 text-xs text-muted">{t.sexPay}</p>}
+        <p className="mt-2 text-xs text-muted">{t.daySheet}</p>
       </div>
     </div>
   );

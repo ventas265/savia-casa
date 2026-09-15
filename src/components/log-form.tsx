@@ -103,6 +103,7 @@ export function LogForm({
       if (res.ok) {
         applyLog(res.log);
         onSaved?.(res.log);
+        toast.success(t.saved);
       }
     } catch {
       toast.error(t.errorGeneric);

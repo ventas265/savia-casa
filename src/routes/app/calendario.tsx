@@ -1,73 +1,50 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PageTitle } from "@/components/color-blobs";
 import { CycleCalendar } from "@/components/cycle-calendar";
+import { DaySheet } from "@/components/day-sheet";
 import { Predictions } from "@/components/predictions";
-import { loadToday, writeSex, betaPaid } from "@/lib/savia-api";
+import { loadToday, betaPaid } from "@/lib/savia-api";
 import { SAVIA_BETA } from "@/lib/beta";
 import { localToday } from "@/lib/savia-local";
 import { useI18n } from "@/lib/i18n";
 import { isCycling, periodDaysFromLogs, formatDay, weightedCycle } from "@/lib/cycle";
-import type { SexKind, TodaySnapshot } from "@/lib/types";
+import type { DailyLog, TodaySnapshot } from "@/lib/types";
 
 export const Route = createFileRoute("/app/calendario")({ component: CalendarTab });
 
 function CalendarTab() {
   const { t, lang } = useI18n();
-  const navigate = useNavigate();
   const [data, setData] = useState<TodaySnapshot | null>(() => (SAVIA_BETA ? localToday() : null));
   const [err, setErr] = useState(false);
-  const [sexMarks, setSexMarks] = useState<{ day: string; kind: SexKind }[]>(() =>
-    SAVIA_BETA ? localToday().sexMarks : [],
-  );
+  const [sheetDay, setSheetDay] = useState<string | null>(null);
 
   useEffect(() => {
     loadToday()
       .then((snap) => {
         setData(snap);
-        setSexMarks(snap.sexMarks);
       })
       .catch(() => {
         if (!SAVIA_BETA) setErr(true);
       });
   }, []);
 
-  async function onHeart(iso: string, kind: SexKind) {
-    const paid = betaPaid() || data?.profile.plan === "serena" || data?.profile.plan === "year";
-    if (!paid) {
-      toast.error(t.sexPay);
-      void navigate({ to: "/pagar" });
-      return;
-    }
-    const res = await writeSex(iso, kind);
-    if (!res.ok) {
-      toast.error(t.sexPay);
-      void navigate({ to: "/pagar" });
-      return;
-    }
-    setSexMarks((prev) => {
-      const rest = prev.filter((s) => s.day !== iso);
-      return res.sex ? [...rest, { day: iso, kind: res.kind }] : rest;
+  function applyLog(log: DailyLog) {
+    setData((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        log: prev.day === log.day ? log : prev.log,
+        recentLogs: [log, ...prev.recentLogs.filter((l) => l.day !== log.day)].slice(0, 90),
+        sexDays: log.sex
+          ? Array.from(new Set([log.day, ...prev.sexDays]))
+          : prev.sexDays.filter((d) => d !== log.day),
+        sexMarks: log.sex
+          ? [...prev.sexMarks.filter((s) => s.day !== log.day), { day: log.day, kind: log.sexKind }]
+          : prev.sexMarks.filter((s) => s.day !== log.day),
+      };
     });
-    if (res.log) {
-      setData((prev) => {
-        if (!prev) return prev;
-        const log = res.log;
-        return {
-          ...prev,
-          log: prev.day === log.day ? log : prev.log,
-          recentLogs: [log, ...prev.recentLogs.filter((l) => l.day !== log.day)].slice(0, 90),
-          sexDays: res.sex
-            ? Array.from(new Set([iso, ...prev.sexDays]))
-            : prev.sexDays.filter((d) => d !== iso),
-          sexMarks: res.sex
-            ? [...prev.sexMarks.filter((s) => s.day !== iso), { day: iso, kind: res.kind }]
-            : prev.sexMarks.filter((s) => s.day !== iso),
-        };
-      });
-    }
   }
 
   if (!data && !err) {
@@ -90,6 +67,7 @@ function CalendarTab() {
 
   const paid = betaPaid() || data.profile.plan === "serena" || data.profile.plan === "year";
   const learned = weightedCycle(data.periodStarts, data.profile.cycleLength);
+  const sheetLog = sheetDay ? (data.recentLogs.find((l) => l.day === sheetDay) ?? null) : null;
 
   return (
     <div>
@@ -111,12 +89,18 @@ function CalendarTab() {
               periodLength={data.profile.periodLength}
               periodStarts={data.periodStarts}
               periodDays={periodDaysFromLogs(data.recentLogs)}
-              logs={data.recentLogs.map((l) => ({ day: l.day, flow: l.flow, symptoms: l.symptoms }))}
-              sexDays={sexMarks.map((s) => s.day)}
-              sexMarks={sexMarks}
+              logs={data.recentLogs.map((l) => ({
+                day: l.day,
+                flow: l.flow,
+                symptoms: l.symptoms,
+                mood: l.mood,
+                sex: l.sex,
+              }))}
+              sexDays={data.sexMarks.map((s) => s.day)}
+              sexMarks={data.sexMarks}
               paid={paid}
               showFertile={data.profile.intention !== "track"}
-              onSetSex={(iso, kind) => void onHeart(iso, kind)}
+              onSelect={(iso) => setSheetDay(iso)}
             />
             {data.periodStarts.length ? (
               <div className="mt-6">
@@ -139,6 +123,15 @@ function CalendarTab() {
           <p className="text-sm leading-relaxed text-muted">{t.calNote}</p>
         )}
       </div>
+      {sheetDay ? (
+        <DaySheet
+          day={sheetDay}
+          log={sheetLog}
+          paid={paid}
+          onClose={() => setSheetDay(null)}
+          onSaved={(log) => applyLog(log)}
+        />
+      ) : null}
     </div>
   );
 }
