@@ -51,7 +51,7 @@ export function CartaHoy({
             onClick={() => pickFeel(c.id)}
             className={cn(
               "press h-11 rounded-full px-4 text-sm font-semibold",
-              feeling === c.id ? "bg-primary text-primary-fg" : "bg-bg text-fg",
+              feeling === c.id ? "bg-select text-select-fg" : "bg-bg text-fg",
             )}
           >
             {c.label}

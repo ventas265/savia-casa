@@ -21,6 +21,10 @@
   --color-cal-peak: #6b3a46;
   --color-cal-fertile: #d5e0cc;
   --color-cal-quiet: #fffcfb;
+  /* Selection affordance — distinct from period/primary rose */
+  --color-select: #6b3a46;
+  --color-select-fg: #fffcfb;
+  --color-select-ring: #2b181c;
   --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Fraunces", "Times New Roman", serif;
   --radius-sm: 10px;

@@ -47,7 +47,7 @@ export function LibraryBody({ start = "hormonas" }: { start?: Tab }) {
               onClick={() => setTab(j.id)}
               className={cn(
                 "press h-11 shrink-0 snap-start whitespace-nowrap rounded-full px-4 text-sm font-semibold",
-                tab === j.id ? "bg-primary text-primary-fg" : "bg-surface text-fg shadow-card",
+                tab === j.id ? "bg-select text-select-fg" : "bg-surface text-fg shadow-card",
               )}
             >
               {j.label}

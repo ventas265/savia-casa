@@ -139,7 +139,7 @@ function Pagar() {
           <button
             type="button"
             onClick={() => setPlan("serena")}
-            className={`flex-1 rounded-3xl p-4 text-left ${plan === "serena" ? "bg-surface ring-2 ring-primary" : "bg-surface"}`}
+            className={`flex-1 rounded-3xl p-4 text-left ${plan === "serena" ? "bg-surface ring-2 ring-select-ring" : "bg-surface"}`}
           >
             <p className="text-sm text-muted">{t.proName}</p>
             <p className="mt-1 text-3xl font-bold">{t.proPrice}</p>
@@ -148,7 +148,7 @@ function Pagar() {
           <button
             type="button"
             onClick={() => setPlan("year")}
-            className={`flex-1 rounded-3xl p-4 text-left ${plan === "year" ? "bg-surface ring-2 ring-primary" : "bg-surface"}`}
+            className={`flex-1 rounded-3xl p-4 text-left ${plan === "year" ? "bg-surface ring-2 ring-select-ring" : "bg-surface"}`}
           >
             <p className="text-sm text-muted">{t.yearName}</p>
             <p className="mt-1 text-3xl font-bold">{t.yearPrice}</p>
@@ -186,7 +186,7 @@ function Pagar() {
               key={key}
               type="button"
               onClick={() => setMethod(key)}
-              className={`min-h-14 rounded-2xl px-2 text-xs font-medium ${method === key ? "bg-primary text-primary-fg" : "bg-surface text-fg"}`}
+              className={`min-h-14 rounded-2xl px-2 text-xs font-medium ${method === key ? "bg-select text-select-fg" : "bg-surface text-fg"}`}
             >
               {label}
             </button>

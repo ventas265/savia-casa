@@ -234,7 +234,7 @@ export function TodayHero({
                   onClick={() => onCycleChange(n)}
                   className={cn(
                     "h-10 min-w-10 rounded-full px-2 text-sm font-semibold",
-                    cycleLength === n ? "bg-primary text-primary-fg shadow-card" : "bg-surface text-fg",
+                    cycleLength === n ? "bg-select text-select-fg shadow-card" : "bg-surface text-fg",
                   )}
                 >
                   {n}

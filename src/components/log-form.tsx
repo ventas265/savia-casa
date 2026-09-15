@@ -136,7 +136,7 @@ export function LogForm({
                 void persist({ flow: next });
               }}
             >
-              <span className={cn("size-14 rounded-full", f.cls, flow === f.id && "ring-4 ring-ink/20")} />
+              <span className={cn("size-14 rounded-full", f.cls, flow === f.id && "ring-4 ring-select-ring")} />
               <span className="text-[11px] font-semibold">{flowLabel[f.id]}</span>
             </button>
           ))}
@@ -179,7 +179,7 @@ export function LogForm({
               }}
               className={cn(
                 "press h-11 rounded-full px-3 text-sm font-semibold",
-                symptoms.includes(id) ? "bg-primary text-primary-fg" : "bg-surface text-fg shadow-card",
+                symptoms.includes(id) ? "bg-select text-select-fg" : "bg-surface text-fg shadow-card",
               )}
             >
               {pick(symptomLabel[id]!, lang)}
@@ -199,7 +199,7 @@ export function LogForm({
               }}
               className={cn(
                 "press h-11 rounded-full px-3 text-sm font-semibold",
-                symptoms.includes(id) ? "bg-primary text-primary-fg" : "bg-surface text-fg shadow-card",
+                symptoms.includes(id) ? "bg-select text-select-fg" : "bg-surface text-fg shadow-card",
               )}
             >
               {pick(symptomLabel[id]!, lang)}
@@ -224,7 +224,7 @@ export function LogForm({
               <span
                 className={cn(
                   "size-10 rounded-full bg-sand",
-                  mood === n ? "ring-4 ring-ink/20" : "opacity-50",
+                  mood === n ? "ring-4 ring-select-ring" : "opacity-50",
                 )}
                 style={{ transform: `scale(${0.7 + n * 0.08})` }}
               />
@@ -246,7 +246,7 @@ export function LogForm({
               <span
                 className={cn(
                   "size-10 rounded-full bg-accent",
-                  energy === n ? "ring-4 ring-ink/20" : "opacity-50",
+                  energy === n ? "ring-4 ring-select-ring" : "opacity-50",
                 )}
                 style={{ transform: `scale(${0.7 + n * 0.08})` }}
               />
@@ -265,7 +265,7 @@ export function LogForm({
               }}
               className={cn(
                 "press h-11 min-w-12 rounded-full px-3 text-sm font-semibold",
-                sleepHours === h ? "bg-plum text-primary-fg" : "bg-surface text-fg shadow-card",
+                sleepHours === h ? "bg-select text-select-fg" : "bg-surface text-fg shadow-card",
               )}
             >
               {h} h
@@ -301,7 +301,7 @@ export function LogForm({
                 }}
                 className={cn(
                   "press inline-flex min-h-11 items-center gap-1.5 rounded-full px-3 text-xs font-semibold",
-                  on ? "bg-primary text-primary-fg" : "bg-surface text-fg shadow-card",
+                  on ? "bg-select text-select-fg" : "bg-surface text-fg shadow-card",
                 )}
               >
                 <Heart className={cn("size-3.5", on && "fill-current")} />

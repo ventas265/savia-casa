@@ -260,7 +260,7 @@ export function CycleCalendar({
                     "bg-sand/55 font-semibold text-ink",
                   isToday && (isConfirmed || isPredicted || isFertile) && "font-semibold",
                   // Selected — strong outline (always)
-                  isPicked && "ring-[3px] ring-primary ring-offset-2 ring-offset-surface",
+                  isPicked && "ring-[3px] ring-select-ring ring-offset-2 ring-offset-surface",
                   !isConfirmed &&
                     !isPredicted &&
                     !isFertile &&

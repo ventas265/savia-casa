@@ -98,7 +98,7 @@ export function QuickLog({
                 className={cn(
                   "flex size-12 items-center justify-center rounded-full",
                   f.ring,
-                  flow === f.id ? "ring-4 ring-ink/20" : "opacity-80",
+                  flow === f.id ? "ring-4 ring-select-ring" : "opacity-80",
                 )}
               />
               <span className="text-[11px] font-semibold">{flowLabel[f.id]}</span>
@@ -201,7 +201,7 @@ function Chips({
           onClick={() => onTap(id)}
           className={cn(
             "press h-11 rounded-full px-4 text-sm font-semibold",
-            selected.includes(id) ? "bg-primary text-primary-fg" : "bg-surface text-fg",
+            selected.includes(id) ? "bg-select text-select-fg" : "bg-surface text-fg",
           )}
         >
           {pick(symptomLabel[id]!, lang)}

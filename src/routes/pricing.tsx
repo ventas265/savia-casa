@@ -69,7 +69,7 @@ function Pricing() {
             <div
               key={card.name}
               className={`flex flex-col rounded-3xl p-5 ${
-                card.action === "serena" ? "bg-surface ring-2 ring-primary" : "bg-surface"
+                card.action === "serena" ? "bg-surface ring-2 ring-select-ring" : "bg-surface"
               }`}
             >
               <p className="text-sm font-medium text-muted">{card.name}</p>
