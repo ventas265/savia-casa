@@ -3,9 +3,22 @@ import type { Flow, Intention, Phase, SexKind } from "@/lib/types";
 export type TipResult = {
   title: string;
   conclusion: string;
-  /** 1 primary + optional secondary (max 2). */
+  /** Primary tip(s); full depth may include a soft second/third. */
   recommendations: string[];
 };
+
+export type TipDepth = "full" | "teaser";
+
+/** Split tip lines for free (teaser) vs Serena (full). Templates stay the same. */
+export function tipVisibleRecs(tip: TipResult, depth: TipDepth): { visible: string[]; locked: string[] } {
+  if (depth === "full") {
+    return { visible: tip.recommendations.slice(0, 3), locked: [] };
+  }
+  return {
+    visible: tip.recommendations.slice(0, 1),
+    locked: tip.recommendations.slice(1, 2),
+  };
+}
 
 type TipInput = {
   phase: Phase;
@@ -62,14 +75,14 @@ export function tipAfterSave(input: TipInput): TipResult {
   if (ttc) {
     const conclusion = buildTtcConclusion({ lang, phase, onPeriod, hasBody, lowMood, fertileish, hasSex });
     const recommendations = buildTtcRecs({ lang, phase, fertileish, cramps, lowEnergy });
-    return { title, conclusion, recommendations: recommendations.slice(0, 2) };
+    return { title, conclusion, recommendations: recommendations.slice(0, 3) };
   }
 
   // ——— Pregnancy-risk signal (unprotected / withdrawal) ———
   if (pregnancySignal && risky) {
     const conclusion = buildRiskConclusion({ lang, phase, fertileish, onPeriod, lowMood, hasBody, sexKind });
     const recommendations = buildRiskRecs({ lang, fertileish, cramps, lowEnergy, sleepish });
-    return { title, conclusion, recommendations: recommendations.slice(0, 2) };
+    return { title, conclusion, recommendations: recommendations.slice(0, 3) };
   }
 
   // ——— Default: cycle + wellbeing ———
@@ -95,7 +108,7 @@ export function tipAfterSave(input: TipInput): TipResult {
     sleepish,
     symptoms,
   });
-  return { title, conclusion, recommendations: recommendations.slice(0, 2) };
+  return { title, conclusion, recommendations: recommendations.slice(0, 3) };
 }
 
 function buildTtcConclusion(p: {

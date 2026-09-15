@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Heart } from "lucide-react";
+import { Heart, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n";
@@ -8,7 +8,7 @@ import { writeLog } from "@/lib/savia-api";
 import { haptic } from "@/lib/haptic";
 import { pick, symptomLabel } from "@/lib/savia-content";
 import { asIsoDay, formatDay } from "@/lib/cycle";
-import { tipAfterSave, type TipResult } from "@/lib/savia-tip";
+import { tipAfterSave, tipVisibleRecs, type TipResult } from "@/lib/savia-tip";
 import { setSelectedDay } from "@/lib/selected-day";
 import { MUCUS, SEX_KINDS, type DailyLog, type Flow, type Intention, type Mucus, type Phase, type SexKind } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -48,7 +48,7 @@ export function LogForm({
 }) {
   const { t, lang } = useI18n();
   const navigate = useNavigate();
-  void paid; // calendar sex marks are free; Serena depth lives elsewhere
+  const depth = paid ? "full" : "teaser";
   const dayIso = asIsoDay(day) || day.slice(0, 10);
 
   const [flow, setFlow] = useState<Flow>(initial?.flow || "none");
@@ -180,32 +180,6 @@ export function LogForm({
         <p className="text-xs font-medium text-muted" aria-live="polite">
           {t.loading}
         </p>
-      ) : null}
-      {tip ? (
-        <section
-          className="rounded-[1.25rem] bg-primary/12 p-4 shadow-card ring-1 ring-primary/15"
-          aria-live="polite"
-        >
-          <p className="text-xs font-semibold uppercase tracking-wide text-muted">{t.saviaTipLabel}</p>
-          <p className="mt-2 text-sm leading-relaxed text-fg">{tip.conclusion}</p>
-          {tip.recommendations.length > 0 ? (
-            <ul className="mt-3 space-y-2">
-              {tip.recommendations.map((rec) => (
-                <li key={rec} className="flex gap-2 text-sm leading-snug text-fg">
-                  <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-primary" aria-hidden />
-                  <span>{rec}</span>
-                </li>
-              ))}
-            </ul>
-          ) : null}
-          <p className="mt-3 text-[11px] leading-relaxed text-muted">{t.saviaTipDisclaimer}</p>
-          <Link
-            to="/app/preguntar"
-            className="press mt-3 inline-flex min-h-11 items-center justify-center rounded-full bg-surface px-4 text-sm font-semibold shadow-card"
-          >
-            {t.saviaTipAsk}
-          </Link>
-        </section>
       ) : null}
       <section>
         <p className="text-sm font-semibold">{t.flow}</p>
@@ -399,6 +373,82 @@ export function LogForm({
       <Button type="button" className="w-full" onClick={() => persist({ notes: live.current.notes })} disabled={busy}>
         {t.save}
       </Button>
+
+      {tip ? <WrapUpCard tip={tip} paid={paid} depth={depth} /> : null}
     </div>
+  );
+}
+
+function WrapUpCard({
+  tip,
+  paid,
+  depth,
+}: {
+  tip: TipResult;
+  paid: boolean;
+  depth: "full" | "teaser";
+}) {
+  const { t } = useI18n();
+  const { visible, locked } = tipVisibleRecs(tip, depth);
+
+  return (
+    <section
+      className="rounded-[1.25rem] bg-primary/12 p-4 shadow-card ring-1 ring-primary/15"
+      aria-live="polite"
+    >
+      <p className="text-xs font-semibold uppercase tracking-wide text-muted">{t.saviaTipLabel}</p>
+      <p className="mt-2 text-sm leading-relaxed text-fg">{tip.conclusion}</p>
+
+      {visible.length > 0 ? (
+        <ul className="mt-3 space-y-2">
+          {visible.map((rec) => (
+            <li key={rec} className="flex gap-2 text-sm leading-snug text-fg">
+              <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-primary" aria-hidden />
+              <span>{rec}</span>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+
+      {!paid && locked.length > 0 ? (
+        <div className="relative mt-3 overflow-hidden rounded-2xl bg-surface/60 px-3 py-3">
+          <ul className="space-y-2 blur-[3px] select-none" aria-hidden>
+            {locked.map((rec) => (
+              <li key={rec} className="flex gap-2 text-sm leading-snug text-fg">
+                <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-primary" />
+                <span>{rec}</span>
+              </li>
+            ))}
+          </ul>
+          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-t from-primary/20 via-primary/10 to-transparent px-3">
+            <p className="inline-flex items-center gap-1.5 rounded-full bg-surface px-3 py-1.5 text-xs font-semibold text-fg shadow-card">
+              <Lock className="size-3.5 shrink-0" aria-hidden />
+              {t.saviaTipSerenaLock}
+            </p>
+          </div>
+        </div>
+      ) : null}
+
+      {!paid ? (
+        <div className="mt-4 rounded-2xl bg-ink/5 px-3 py-3">
+          <p className="text-sm leading-snug text-fg">{t.saviaTipSerenaTeaser}</p>
+          <Link
+            to="/pagar"
+            className="press mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-ink px-4 text-sm font-semibold text-primary-fg"
+          >
+            {t.saviaTipSerenaCta}
+          </Link>
+        </div>
+      ) : null}
+
+      <p className="mt-3 text-[11px] leading-relaxed text-muted">{t.saviaTipDisclaimer}</p>
+
+      <Link
+        to="/app/preguntar"
+        className="press mt-3 inline-flex min-h-11 items-center justify-center rounded-full bg-surface px-4 text-sm font-semibold shadow-card"
+      >
+        {t.saviaTipAsk}
+      </Link>
+    </section>
   );
 }
