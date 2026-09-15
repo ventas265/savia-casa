@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Bell, ChevronRight, Copy, FileText, MessageCircle, UserRound } from "lucide-react";
+import { Bell, BookOpen, ChevronRight, Copy, FileText, MessageCircle, UserRound } from "lucide-react";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
 import { PageTitle } from "@/components/color-blobs";
@@ -139,6 +139,7 @@ function MasTab() {
         <h2 className="text-lg font-bold">{t.moreTools}</h2>
         <ul className="mt-3 space-y-2">
           <Tool to="/app/preguntar" label={t.askTalk} icon={MessageCircle} />
+          <Tool to="/app/guia" label={t.library} icon={BookOpen} />
           <Tool to="/app/pareja" label={t.partnerTitle} icon={UserRound} />
           <Tool to="/app/informe" label={t.reportTitle} icon={FileText} />
           <Tool to="/app/onboarding" label={t.profile} icon={UserRound} />
@@ -223,7 +224,7 @@ function Tool({
   label,
   icon: Icon,
 }: {
-  to: "/app/preguntar" | "/app/informe" | "/app/onboarding" | "/app/pareja";
+  to: "/app/preguntar" | "/app/guia" | "/app/informe" | "/app/onboarding" | "/app/pareja";
   label: string;
   icon: typeof UserRound;
 }) {

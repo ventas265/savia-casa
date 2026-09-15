@@ -2,16 +2,16 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { getSelectedDay } from "@/lib/selected-day";
-import { IconCal, IconGuia, IconHoy, IconMas, IconPlus } from "@/components/savia-icons";
+import { IconCal, IconHoy, IconMas, IconPlus, IconSexo } from "@/components/savia-icons";
 
-export type TabKey = "cal" | "hoy" | "log" | "guia" | "mas";
+export type TabKey = "cal" | "hoy" | "log" | "sexo" | "mas";
 
 export function tabItems(t: ReturnType<typeof useI18n>["t"]) {
   return [
     { key: "hoy" as const, to: "/app/hoy" as const, label: t.today, icon: IconHoy },
     { key: "cal" as const, to: "/app/calendario" as const, label: t.navCal, icon: IconCal },
     { key: "log" as const, to: "/app/registro" as const, label: t.log, icon: IconPlus, plus: true },
-    { key: "guia" as const, to: "/app/guia" as const, label: t.library, icon: IconGuia },
+    { key: "sexo" as const, to: "/app/sexo" as const, label: t.navSex, icon: IconSexo },
     { key: "mas" as const, to: "/app/mas" as const, label: t.more, icon: IconMas },
   ];
 }

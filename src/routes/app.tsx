@@ -12,7 +12,7 @@ function tabFromPath(path: string): TabKey {
   if (path.startsWith("/app/hoy")) return "hoy";
   if (path.startsWith("/app/calendario") || path.startsWith("/app/ciclo")) return "cal";
   if (path.startsWith("/app/registro")) return "log";
-  if (path.startsWith("/app/guia")) return "guia";
+  if (path.startsWith("/app/sexo")) return "sexo";
   return "mas";
 }
 

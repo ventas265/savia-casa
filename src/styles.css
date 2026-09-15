@@ -17,9 +17,10 @@
   --color-border: #e6d6d0;
   --color-danger: #b42318;
   --color-ring: #c4455c;
+  /* Flo-like: pink period vs teal fertile/ovulation (estimate, not contraception) */
   --color-cal-period: #c4455c;
-  --color-cal-peak: #6b3a46;
-  --color-cal-fertile: #d5e0cc;
+  --color-cal-peak: #2f8f85;
+  --color-cal-fertile: #c5e4df;
   --color-cal-quiet: #fffcfb;
   /* Selection affordance — distinct from period/primary rose */
   --color-select: #6b3a46;

@@ -47,3 +47,18 @@ export function IconMas({ className }: { className?: string }) {
     </svg>
   );
 }
+
+export function IconSexo({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" aria-hidden>
+      <path
+        d="M12 19.2c-3.6-2.4-6.2-4.9-6.2-8.1A3.7 3.7 0 0 1 12 8.2a3.7 3.7 0 0 1 6.2 2.9c0 3.2-2.6 5.7-6.2 8.1Z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinejoin="round"
+      />
+      <path d="M12 8.2V5.4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      <path d="M9.8 6.4h4.4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  );
+}

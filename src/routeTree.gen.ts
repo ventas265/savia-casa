@@ -32,6 +32,7 @@ import { Route as AppParejaRouteImport } from './routes/app/pareja'
 import { Route as AppPreguntarRouteImport } from './routes/app/preguntar'
 import { Route as AppRecuperarRouteImport } from './routes/app/recuperar'
 import { Route as AppRegistroRouteImport } from './routes/app/registro'
+import { Route as AppSexoRouteImport } from './routes/app/sexo'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
 const IndexRoute = IndexRouteImport.update({
@@ -149,6 +150,11 @@ const AppRegistroRoute = AppRegistroRouteImport.update({
   path: '/registro',
   getParentRoute: () => AppRoute,
 } as any)
+const AppSexoRoute = AppSexoRouteImport.update({
+  id: '/sexo',
+  path: '/sexo',
+  getParentRoute: () => AppRoute,
+} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
@@ -178,6 +184,7 @@ export interface FileRoutesByFullPath {
   '/app/preguntar': typeof AppPreguntarRoute
   '/app/recuperar': typeof AppRecuperarRoute
   '/app/registro': typeof AppRegistroRoute
+  '/app/sexo': typeof AppSexoRoute
   '/app/': typeof AppIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
@@ -203,6 +210,7 @@ export interface FileRoutesByTo {
   '/app/preguntar': typeof AppPreguntarRoute
   '/app/recuperar': typeof AppRecuperarRoute
   '/app/registro': typeof AppRegistroRoute
+  '/app/sexo': typeof AppSexoRoute
   '/app': typeof AppIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
@@ -230,6 +238,7 @@ export interface FileRoutesById {
   '/app/preguntar': typeof AppPreguntarRoute
   '/app/recuperar': typeof AppRecuperarRoute
   '/app/registro': typeof AppRegistroRoute
+  '/app/sexo': typeof AppSexoRoute
   '/app/': typeof AppIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
@@ -258,6 +267,7 @@ export interface FileRouteTypes {
     | '/app/preguntar'
     | '/app/recuperar'
     | '/app/registro'
+    | '/app/sexo'
     | '/app/'
     | '/api/auth/$'
   fileRoutesByTo: FileRoutesByTo
@@ -283,6 +293,7 @@ export interface FileRouteTypes {
     | '/app/preguntar'
     | '/app/recuperar'
     | '/app/registro'
+    | '/app/sexo'
     | '/app'
     | '/api/auth/$'
   id:
@@ -309,6 +320,7 @@ export interface FileRouteTypes {
     | '/app/preguntar'
     | '/app/recuperar'
     | '/app/registro'
+    | '/app/sexo'
     | '/app/'
     | '/api/auth/$'
   fileRoutesById: FileRoutesById
@@ -489,6 +501,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRegistroRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/sexo': {
+      id: '/app/sexo'
+      path: '/sexo'
+      fullPath: '/app/sexo'
+      preLoaderRoute: typeof AppSexoRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
@@ -513,6 +532,7 @@ interface AppRouteChildren {
   AppPreguntarRoute: typeof AppPreguntarRoute
   AppRecuperarRoute: typeof AppRecuperarRoute
   AppRegistroRoute: typeof AppRegistroRoute
+  AppSexoRoute: typeof AppSexoRoute
   AppIndexRoute: typeof AppIndexRoute
 }
 
@@ -530,6 +550,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppPreguntarRoute: AppPreguntarRoute,
   AppRecuperarRoute: AppRecuperarRoute,
   AppRegistroRoute: AppRegistroRoute,
+  AppSexoRoute: AppSexoRoute,
   AppIndexRoute: AppIndexRoute,
 }
 
@@ -550,12 +571,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}
