@@ -19,7 +19,10 @@ function tabFromPath(path: string): TabKey {
 function AppLayout() {
   const { user, isPending } = useCurrentUserState();
   const path = useRouterState({ select: (s) => s.location.pathname });
-  const current = path.startsWith("/app/onboarding") ? "other" : tabFromPath(path);
+  const current =
+    path.startsWith("/app/onboarding") || path.startsWith("/app/preguntar")
+      ? "other"
+      : tabFromPath(path);
 
   if (!SAVIA_BETA) {
     if (isPending) {

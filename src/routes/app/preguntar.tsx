@@ -26,6 +26,8 @@ function Preguntar() {
   const [turns, setTurns] = useState<ChatTurn[]>([]);
   const [busy, setBusy] = useState(false);
   const end = useRef<HTMLDivElement>(null);
+  const box = useRef<HTMLTextAreaElement>(null);
+  const canSend = q.trim().length > 0 && !busy;
 
   useEffect(() => {
     end.current?.scrollIntoView({ behavior: "smooth" });
@@ -36,6 +38,7 @@ function Preguntar() {
     if (question.length < 1 || busy) return;
     const history = turns.slice(-8);
     setQ("");
+    if (box.current) box.current.style.height = "56px";
     setTurns((prev) => [...prev, { role: "user", content: question }]);
     setBusy(true);
     try {
@@ -49,20 +52,28 @@ function Preguntar() {
       toast.error(t.aiMissing);
     } finally {
       setBusy(false);
+      box.current?.focus();
     }
   }
 
   return (
-    <div className="flex min-h-[70vh] flex-col">
+    <div className="flex min-h-[calc(100dvh-4.5rem)] flex-col">
       <div className="flex items-center gap-3">
-        <Face className="size-14" />
-        <div>
+        <Link
+          to="/app/hoy"
+          className="flex size-11 shrink-0 items-center justify-center rounded-full bg-surface text-lg font-semibold text-fg"
+          aria-label={t.today}
+        >
+          ←
+        </Link>
+        <Face className="size-12" />
+        <div className="min-w-0">
           <p className="font-display text-xl font-semibold leading-none">{t.askTitle}</p>
           <p className="mt-1 text-sm text-muted">{t.askHere}</p>
         </div>
       </div>
 
-      <div className="relative mt-4 flex-1">
+      <div className="relative mt-4 flex-1 pb-28">
         {turns.length === 0 ? (
           <div className="relative overflow-hidden rounded-[1.6rem]">
             <img
@@ -118,21 +129,40 @@ function Preguntar() {
           </Link>
         </p>
       )}
+
       <form
-        className="sticky bottom-0 mt-4 flex gap-2 bg-bg py-3"
+        className="fixed bottom-0 left-1/2 z-30 flex w-full max-w-lg -translate-x-1/2 gap-2 bg-bg px-4 pt-2 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:max-w-[28rem]"
         onSubmit={(e) => {
           e.preventDefault();
           void ask();
         }}
       >
-        <input
-          className="min-h-14 flex-1 rounded-full border-0 bg-surface px-5 text-base outline-none ring-primary focus:ring-2"
+        <textarea
+          ref={box}
+          rows={1}
+          enterKeyHint="send"
+          className="max-h-32 min-h-14 flex-1 resize-none rounded-[1.4rem] border-0 bg-surface px-5 py-4 text-base outline-none ring-primary focus:ring-2"
           placeholder={t.askHint}
           value={q}
           autoFocus
-          onChange={(e) => setQ(e.target.value)}
+          onChange={(e) => {
+            setQ(e.target.value);
+            e.target.style.height = "56px";
+            e.target.style.height = `${Math.min(e.target.scrollHeight, 128)}px`;
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              void ask();
+            }
+          }}
         />
-        <Button type="submit" className="h-14 rounded-full px-6" disabled={busy || q.trim().length < 1}>
+        <Button
+          type="submit"
+          className="h-14 min-w-14 shrink-0 rounded-full px-5"
+          disabled={!canSend}
+          aria-label={t.askCta}
+        >
           {busy ? "…" : t.askCta}
         </Button>
       </form>
