@@ -129,12 +129,9 @@ function authPopupPlugin(): Plugin {
 // The dev server starts once `src/router.tsx` and `src/routes/` exist — see
 // AGENTS.md § "First scaffold".
 export default defineConfig(({ command }) => ({
-  define:
-    command === "build"
-      ? {
-          "process.env.XAI_API_KEY": JSON.stringify(process.env.XAI_API_KEY ?? ""),
-        }
-      : {},
+  // Do NOT vite-define XAI_API_KEY: bake would stick "" into the server
+  // bundle when the key is missing at build time. Read at runtime via
+  // process.env (Vercel Env Vars) in savia-server.ts.
   server: {
     host: "0.0.0.0",
     port: 8080,

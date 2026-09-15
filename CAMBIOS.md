@@ -62,4 +62,4 @@ Orden: hormonas → tés → comida → peri → meno → **embarazo → pospart
 
 ## Ops
 
-- Migrate `XAI_API_KEY` from build-time Vite inject to Vercel Environment Variables (Production + Preview). Current `vite` define breaks on deploys without the env at build time; chat may fail until the key is set as a runtime/build env or Grok Build redeploys with it.
+- Prefer Vercel Environment Variables for `XAI_API_KEY` (Production + Preview). Do **not** bake the key via Vite `define` — that inlines at build time and leaves the server bundle stuck with `""` if the key was missing/wrong during build. `savia-server.ts` reads `process.env.XAI_API_KEY` at runtime. Removed the build-time define from `vite.config.ts` (2026-09-15).
