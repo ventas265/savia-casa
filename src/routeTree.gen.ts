@@ -34,6 +34,7 @@ import { Route as AppRecuperarRouteImport } from './routes/app/recuperar'
 import { Route as AppRegistroRouteImport } from './routes/app/registro'
 import { Route as AppSexoRouteImport } from './routes/app/sexo'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as ApiWebhooksWhopRouteImport } from './routes/api/webhooks/whop'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -160,6 +161,11 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiWebhooksWhopRoute = ApiWebhooksWhopRouteImport.update({
+  id: '/api/webhooks/whop',
+  path: '/api/webhooks/whop',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -187,6 +193,7 @@ export interface FileRoutesByFullPath {
   '/app/sexo': typeof AppSexoRoute
   '/app/': typeof AppIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/webhooks/whop': typeof ApiWebhooksWhopRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -213,6 +220,7 @@ export interface FileRoutesByTo {
   '/app/sexo': typeof AppSexoRoute
   '/app': typeof AppIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/webhooks/whop': typeof ApiWebhooksWhopRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -241,6 +249,7 @@ export interface FileRoutesById {
   '/app/sexo': typeof AppSexoRoute
   '/app/': typeof AppIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/webhooks/whop': typeof ApiWebhooksWhopRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -270,6 +279,7 @@ export interface FileRouteTypes {
     | '/app/sexo'
     | '/app/'
     | '/api/auth/$'
+    | '/api/webhooks/whop'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -296,6 +306,7 @@ export interface FileRouteTypes {
     | '/app/sexo'
     | '/app'
     | '/api/auth/$'
+    | '/api/webhooks/whop'
   id:
     | '__root__'
     | '/'
@@ -323,6 +334,7 @@ export interface FileRouteTypes {
     | '/app/sexo'
     | '/app/'
     | '/api/auth/$'
+    | '/api/webhooks/whop'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -336,6 +348,7 @@ export interface RootRouteChildren {
   PrivacidadRoute: typeof PrivacidadRoute
   TerminosRoute: typeof TerminosRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  ApiWebhooksWhopRoute: typeof ApiWebhooksWhopRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -515,6 +528,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/webhooks/whop': {
+      id: '/api/webhooks/whop'
+      path: '/api/webhooks/whop'
+      fullPath: '/api/webhooks/whop'
+      preLoaderRoute: typeof ApiWebhooksWhopRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -567,6 +587,7 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacidadRoute: PrivacidadRoute,
   TerminosRoute: TerminosRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  ApiWebhooksWhopRoute: ApiWebhooksWhopRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import { Heart } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -6,6 +7,8 @@ import { useI18n } from "@/lib/i18n";
 import { writeLog } from "@/lib/savia-api";
 import { haptic } from "@/lib/haptic";
 import { pick, symptomLabel } from "@/lib/savia-content";
+import { formatDay } from "@/lib/cycle";
+import { setSelectedDay } from "@/lib/selected-day";
 import { MUCUS, SEX_KINDS, type DailyLog, type Flow, type Mucus, type SexKind } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -28,6 +31,8 @@ export function LogForm({
   onSaved?: (log: DailyLog) => void;
 }) {
   const { t, lang } = useI18n();
+  const navigate = useNavigate();
+  void paid; // calendar sex marks are free; Serena depth lives elsewhere
   const [flow, setFlow] = useState<Flow>(initial?.flow || "none");
   const [mood, setMood] = useState<number | null>(initial?.mood ?? null);
   const [energy, setEnergy] = useState<number | null>(initial?.energy ?? null);
@@ -61,6 +66,19 @@ export function LogForm({
     setSymptoms(log.symptoms);
     setMucus(log.mucus);
     setSexKind(log.sexKind || (log.sex ? "unprotected" : "none"));
+  }
+
+  function toastSaved() {
+    const msg = t.savedInMonth.replace("{date}", formatDay(day, lang));
+    toast.success(msg, {
+      action: {
+        label: t.viewInCalendar,
+        onClick: () => {
+          setSelectedDay(day);
+          void navigate({ to: "/app/calendario" });
+        },
+      },
+    });
   }
 
   async function persist(patch: Partial<{
@@ -97,13 +115,14 @@ export function LogForm({
         symptoms: next.symptoms,
         mucus: next.mucus,
         periodStarted: next.flow === "light" || next.flow === "medium" || next.flow === "heavy",
-        // Notebook persistence: unlock sex marks when paid/beta; omit when gated so server keep existing.
-        ...(paid ? { sex, sexKind: next.sexKind } : {}),
+        // Free calendar marks: always persist sex/sexKind for every plan.
+        sex,
+        sexKind: next.sexKind,
       });
       if (res.ok) {
         applyLog(res.log);
         onSaved?.(res.log);
-        toast.success(t.saved);
+        toastSaved();
       }
     } catch {
       toast.error(t.errorGeneric);
@@ -291,10 +310,6 @@ export function LogForm({
                 key={kind}
                 type="button"
                 onClick={() => {
-                  if (!paid) {
-                    toast.error(t.sexPay);
-                    return;
-                  }
                   const next: SexKind = on ? "none" : kind;
                   setSexKind(next);
                   void persist({ sexKind: next });
@@ -310,7 +325,6 @@ export function LogForm({
             );
           })}
         </div>
-        {paid ? null : <p className="mt-2 text-xs text-muted">{t.sexPay}</p>}
       </section>
 
       <Button type="button" className="w-full" onClick={() => void persist({ notes })} disabled={busy}>

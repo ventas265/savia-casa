@@ -77,6 +77,7 @@ export const saveLogDevice = createServerFn({ method: "POST" })
       periodStarted: boolean;
       mucus?: Mucus;
       sex?: boolean;
+      sexKind?: SexKind;
     }) => input,
   )
   .handler(async ({ data }) => {
@@ -86,12 +87,25 @@ export const saveLogDevice = createServerFn({ method: "POST" })
     const profile = await getOrCreateProfile(userId);
     const symptomsJson = JSON.stringify(data.symptoms);
     const mucus = data.mucus || "none";
+    const existing = await sql<{ sex?: boolean; sex_kind?: string }>`
+      select sex, sex_kind from daily_logs where user_id = ${userId} and day = ${data.day} limit 1
+    `;
+    let sex = Boolean(existing[0]?.sex);
+    let sexKind: SexKind = (existing[0]?.sex_kind as SexKind) || "none";
+    if (data.sexKind !== undefined) {
+      sexKind = data.sexKind;
+      sex = sexKind !== "none";
+    } else if (data.sex !== undefined) {
+      sex = Boolean(data.sex);
+      if (!sex) sexKind = "none";
+      else if (sexKind === "none") sexKind = "unprotected";
+    }
     await sql`
       insert into daily_logs (
-        user_id, day, flow, mood, energy, sleep_hours, notes, symptoms, period_started, mucus, sex, updated_at
+        user_id, day, flow, mood, energy, sleep_hours, notes, symptoms, period_started, mucus, sex, sex_kind, updated_at
       ) values (
         ${userId}, ${data.day}, ${data.flow}, ${data.mood}, ${data.energy},
-        ${data.sleepHours}, ${data.notes.trim()}, ${symptomsJson}::jsonb, ${data.periodStarted}, ${mucus}, ${Boolean(data.sex)}, now()
+        ${data.sleepHours}, ${data.notes.trim()}, ${symptomsJson}::jsonb, ${data.periodStarted}, ${mucus}, ${sex}, ${sexKind}, now()
       )
       on conflict (user_id, day) do update set
         flow = excluded.flow,
@@ -103,6 +117,7 @@ export const saveLogDevice = createServerFn({ method: "POST" })
         period_started = excluded.period_started,
         mucus = excluded.mucus,
         sex = excluded.sex,
+        sex_kind = excluded.sex_kind,
         updated_at = now()
     `;
     if (data.periodStarted) {

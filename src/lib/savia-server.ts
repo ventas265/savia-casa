@@ -265,6 +265,7 @@ export const saveLog = createServerFn({ method: "POST" })
       periodStarted: boolean;
       mucus?: Mucus;
       sex?: boolean;
+      sexKind?: SexKind;
     }) => input,
   )
   .handler(async ({ context, data }) => {
@@ -272,14 +273,25 @@ export const saveLog = createServerFn({ method: "POST" })
     const profile = await getOrCreateProfile(context.userId);
     const symptomsJson = JSON.stringify(data.symptoms);
     const mucus = data.mucus || "none";
-    const paid = profile.plan === "serena" || profile.plan === "year";
-    const sex = paid ? Boolean(data.sex) : false;
+    const existing = await sql<LogRow>`
+      select * from daily_logs where user_id = ${context.userId} and day = ${data.day} limit 1
+    `;
+    let sex = Boolean(existing[0]?.sex);
+    let sexKind: SexKind = (existing[0]?.sex_kind as SexKind) || "none";
+    if (data.sexKind !== undefined) {
+      sexKind = data.sexKind;
+      sex = sexKind !== "none";
+    } else if (data.sex !== undefined) {
+      sex = Boolean(data.sex);
+      if (!sex) sexKind = "none";
+      else if (sexKind === "none") sexKind = "unprotected";
+    }
     const rows = await sql<LogRow>`
       insert into daily_logs (
-        user_id, day, flow, mood, energy, sleep_hours, notes, symptoms, period_started, mucus, sex, updated_at
+        user_id, day, flow, mood, energy, sleep_hours, notes, symptoms, period_started, mucus, sex, sex_kind, updated_at
       ) values (
         ${context.userId}, ${data.day}, ${data.flow}, ${data.mood}, ${data.energy},
-        ${data.sleepHours}, ${data.notes.trim()}, ${symptomsJson}::jsonb, ${data.periodStarted}, ${mucus}, ${sex}, now()
+        ${data.sleepHours}, ${data.notes.trim()}, ${symptomsJson}::jsonb, ${data.periodStarted}, ${mucus}, ${sex}, ${sexKind}, now()
       )
       on conflict (user_id, day) do update set
         flow = excluded.flow,
@@ -290,7 +302,8 @@ export const saveLog = createServerFn({ method: "POST" })
         symptoms = excluded.symptoms,
         period_started = excluded.period_started,
         mucus = excluded.mucus,
-        sex = case when ${paid} then excluded.sex else daily_logs.sex end,
+        sex = excluded.sex,
+        sex_kind = excluded.sex_kind,
         updated_at = now()
       returning *
     `;
@@ -314,10 +327,7 @@ export const toggleSex = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
   .validator((input: { day: string; kind?: SexKind }) => input)
   .handler(async ({ context, data }) => {
-    const profile = await getOrCreateProfile(context.userId);
-    if (profile.plan !== "serena" && profile.plan !== "year") {
-      return { ok: false as const, error: "pay" as const };
-    }
+    await getOrCreateProfile(context.userId);
     const sql = await getSql();
     const existing = await sql<LogRow>`
       select * from daily_logs where user_id = ${context.userId} and day = ${data.day} limit 1

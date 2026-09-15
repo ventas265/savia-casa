@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { X } from "lucide-react";
 import { LogForm } from "@/components/log-form";
@@ -23,6 +23,11 @@ export function DaySheet({
   onSaved?: (log: DailyLog) => void;
 }) {
   const { t, lang } = useI18n();
+  const [activeLog, setActiveLog] = useState(log);
+
+  useEffect(() => {
+    setActiveLog(log);
+  }, [log, day]);
 
   useEffect(() => {
     const prev = document.body.style.overflow;
@@ -37,12 +42,24 @@ export function DaySheet({
     };
   }, [onClose]);
 
-  const chance =
-    dayMark === "fertile" || dayMark === "peak"
-      ? t.daySheetChanceHigh
-      : dayMark === "quiet" || dayMark === "period"
-        ? t.daySheetChanceLow
-        : null;
+  const hasSex = Boolean(activeLog?.sex);
+  const kind = activeLog?.sexKind || "none";
+  const risky = kind === "unprotected" || kind === "withdrawal";
+  const highWindow = dayMark === "fertile" || dayMark === "peak";
+  const lowWindow = dayMark === "quiet" || dayMark === "period";
+
+  let chance: string | null = null;
+  if (highWindow && hasSex && risky) {
+    chance = t.daySheetChanceHighSex;
+  } else if (highWindow && hasSex) {
+    chance = t.daySheetChanceHighSexProtected;
+  } else if (highWindow) {
+    chance = t.daySheetChanceHigh;
+  } else if (lowWindow && hasSex && risky) {
+    chance = t.daySheetChanceLowSex;
+  } else if (lowWindow) {
+    chance = t.daySheetChanceLow;
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center" role="dialog" aria-modal="true" aria-label={t.daySheet}>
@@ -71,8 +88,17 @@ export function DaySheet({
           ) : (
             <p className="mb-4 text-xs leading-relaxed text-muted">{t.daySheetCalDisclaimer}</p>
           )}
-          {!log ? <p className="mb-4 text-sm leading-relaxed text-muted">{t.daySheetEmpty}</p> : null}
-          <LogForm key={day} day={day} initial={log} paid={paid} onSaved={onSaved} />
+          {!activeLog ? <p className="mb-4 text-sm leading-relaxed text-muted">{t.daySheetEmpty}</p> : null}
+          <LogForm
+            key={day}
+            day={day}
+            initial={activeLog}
+            paid={paid}
+            onSaved={(saved) => {
+              setActiveLog(saved);
+              onSaved?.(saved);
+            }}
+          />
           <Link
             to="/app/registro"
             search={{ day }}

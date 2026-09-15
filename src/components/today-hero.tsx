@@ -82,6 +82,24 @@ export function TodayHero({
 
   const chance = stage === "peri" ? t.periSub : onPeriod ? t.periodSub : fertile ? t.ovToday : t.chanceLow;
 
+  const todayMark = markForDate(today, {
+    lastStart: lastStart ?? null,
+    cycleLength,
+    periodLength,
+    periodStarts,
+  });
+  const fertileEst = todayMark === "fertile" || todayMark === "peak";
+  const hasSexToday = Boolean(log?.sex);
+  const sexRisky = log?.sexKind === "unprotected" || log?.sexKind === "withdrawal";
+  const hoySexLine =
+    hasSexToday && fertileEst
+      ? sexRisky
+        ? t.hoySexFertile
+        : t.hoySexFertileProtected
+      : hasSexToday && (todayMark === "quiet" || todayMark === "period")
+        ? t.hoySexQuiet
+        : null;
+
   const periHero =
     stage === "peri"
       ? { kicker: t.periKicker, title: hero.title }
@@ -190,6 +208,12 @@ export function TodayHero({
           {periHero.title}
         </p>
         <p className="mt-3 text-sm font-semibold">{chance}</p>
+        {hoySexLine ? (
+          <div className="mx-auto mt-3 max-w-sm rounded-[1.25rem] bg-surface px-4 py-3 text-left shadow-card">
+            <p className="text-sm font-semibold leading-snug">{hoySexLine}</p>
+            <p className="mt-1.5 text-xs leading-relaxed text-muted">{t.daySheetCalDisclaimer}</p>
+          </div>
+        ) : null}
         {!onPeriod ? (
           <p className="mt-2 text-xs font-medium text-muted">{t.periodEstimate}</p>
         ) : null}

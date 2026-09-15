@@ -10,7 +10,7 @@ import { Predictions } from "@/components/predictions";
 import { loadToday, writeProfile, betaPaid } from "@/lib/savia-api";
 import { SAVIA_BETA } from "@/lib/beta";
 import { localToday } from "@/lib/savia-local";
-import { setSelectedDay } from "@/lib/selected-day";
+import { getSelectedDay, setSelectedDay } from "@/lib/selected-day";
 import { useI18n } from "@/lib/i18n";
 import { isCycling, markForDate, periodDaysFromLogs, formatDay, weightedCycle } from "@/lib/cycle";
 import type { DailyLog, TodaySnapshot } from "@/lib/types";
@@ -53,6 +53,12 @@ function CalendarTab() {
     return () => {
       alive = false;
     };
+  }, []);
+
+  // Toast / registro handoff: open day sheet once for the selected ISO day.
+  useEffect(() => {
+    const focus = getSelectedDay();
+    if (focus) setSheetDay(focus);
   }, []);
 
   function applyLog(log: DailyLog) {
@@ -204,6 +210,7 @@ function CalendarTab() {
                   sexMarks={data.sexMarks}
                   paid={paid}
                   showFertile
+                  focusDay={sheetDay}
                   onSelect={(iso) => {
                     setSelectedDay(iso);
                     setSheetDay(iso);
@@ -257,7 +264,9 @@ function CalendarTab() {
             periodStarts: data.periodStarts,
             periodDays: periodDaysFromLogs(data.recentLogs),
           })}
-          onClose={() => setSheetDay(null)}
+          onClose={() => {
+            setSheetDay(null);
+          }}
           onSaved={(log) => applyLog(log)}
         />
       ) : null}

@@ -63,6 +63,7 @@ export function CycleCalendar({
   sexMarks = [],
   logs = [],
   showFertile = true,
+  focusDay = null,
   onSelect,
   onMonthChange,
 }: {
@@ -76,6 +77,7 @@ export function CycleCalendar({
   logs?: CellLog[];
   paid?: boolean;
   showFertile?: boolean;
+  focusDay?: string | null;
   onSelect?: (iso: string) => void;
   onMonthChange?: () => void;
   onSetSex?: (iso: string, kind: "protected" | "unprotected" | "withdrawal") => void;
@@ -91,12 +93,14 @@ export function CycleCalendar({
   const cells = useMemo(() => monthCells(cursor.y, cursor.m), [cursor.y, cursor.m]);
 
   // After mount, snap to browser-local today (SSR may have used UTC).
+  // Prefer focusDay (toast / handoff) when present.
   useEffect(() => {
-    if (!clientToday) return;
-    const n = fromISO(clientToday);
+    const target = focusDay || clientToday;
+    if (!target) return;
+    const n = fromISO(target);
     setCursor({ y: n.getFullYear(), m: n.getMonth() });
-    setPicked(clientToday);
-  }, [clientToday]);
+    setPicked(target);
+  }, [clientToday, focusDay]);
 
   void showFertile; // always-on; prop kept for callers
   function mark(iso: string): DayMark | null {
@@ -138,6 +142,10 @@ export function CycleCalendar({
   }, [periodDays, periodStarts, periodLength, lastStart]);
 
   const sexSet = useMemo(() => new Set(sexDays.length ? sexDays : sexMarks.map((s) => s.day)), [sexDays, sexMarks]);
+  const sexKindByDay = useMemo(
+    () => Object.fromEntries(sexMarks.map((s) => [s.day, s.kind])),
+    [sexMarks],
+  );
   const logByDay = useMemo(() => Object.fromEntries(logs.map((l) => [l.day, l])), [logs]);
   const marks = cells.map((c) => mark(c.iso));
 
@@ -215,6 +223,7 @@ export function CycleCalendar({
             logged && ((logged.mood != null && logged.mood > 0) || logged.symptoms.length > 0),
           );
           const hasSex = sexSet.has(cell.iso) || Boolean(logged?.sex);
+          const sexKind = sexKindByDay[cell.iso] || (logged?.sex ? "unprotected" : "none");
           const onDark =
             flow === "heavy" ||
             flow === "medium" ||
@@ -292,7 +301,17 @@ export function CycleCalendar({
                 {hasMood ? (
                   <span className="size-1.5 rounded-full bg-ink/65" title={t.calMarkMood} />
                 ) : null}
-                {hasSex ? <Heart className="size-2.5 fill-current text-primary" aria-label={t.legendSex} /> : null}
+                {hasSex ? (
+                  <Heart
+                    className={cn(
+                      "size-2.5 text-primary",
+                      sexKind === "protected" && "fill-none",
+                      sexKind === "withdrawal" && "fill-current opacity-70",
+                      (sexKind === "unprotected" || sexKind === "none") && "fill-current",
+                    )}
+                    aria-label={t.legendSex}
+                  />
+                ) : null}
               </span>
             </button>
           );
@@ -326,6 +345,9 @@ export function CycleCalendar({
         </li>
         <li className="inline-flex items-center gap-1.5">
           <Heart className="size-3 fill-current text-primary" /> {t.legendSex}
+        </li>
+        <li className="inline-flex items-center gap-1.5">
+          <Heart className="size-3 text-primary" /> {t.legendSexProtected}
         </li>
       </ul>
       <div className="mt-4 border-t border-border pt-3">
