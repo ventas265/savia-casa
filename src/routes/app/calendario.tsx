@@ -7,7 +7,7 @@ import { PageTitle } from "@/components/color-blobs";
 import { CycleCalendar } from "@/components/cycle-calendar";
 import { DaySheet } from "@/components/day-sheet";
 import { Predictions } from "@/components/predictions";
-import { loadToday, writeProfile, betaPaid } from "@/lib/savia-api";
+import { loadToday, writeProfile } from "@/lib/savia-api";
 import { SAVIA_BETA } from "@/lib/beta";
 import { localToday } from "@/lib/savia-local";
 import { getSelectedDay, setSelectedDay } from "@/lib/selected-day";
@@ -129,7 +129,7 @@ function CalendarTab() {
     );
   }
 
-  const paid = betaPaid() || data.profile.plan === "serena" || data.profile.plan === "year";
+  const wrapUpPaid = data.profile.plan === "serena" || data.profile.plan === "year";
   const learned = weightedCycle(data.periodStarts, data.profile.cycleLength);
   const sheetLog = sheetDay ? (data.recentLogs.find((l) => l.day === sheetDay) ?? null) : null;
   const cycling = isCycling(data.profile.stage);
@@ -208,7 +208,6 @@ function CalendarTab() {
                   }))}
                   sexDays={data.sexMarks.map((s) => s.day)}
                   sexMarks={data.sexMarks}
-                  paid={paid}
                   showFertile
                   focusDay={sheetDay}
                   onSelect={(iso) => {
@@ -256,7 +255,7 @@ function CalendarTab() {
         <DaySheet
           day={sheetDay}
           log={sheetLog}
-          paid={paid}
+          wrapUpPaid={wrapUpPaid}
           dayMark={markForDate(sheetDay, {
             lastStart: data.profile.lastPeriodStart,
             cycleLength: learned,

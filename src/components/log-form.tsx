@@ -34,21 +34,22 @@ type LiveFields = {
 export function LogForm({
   day,
   initial,
-  paid = false,
+  wrapUpPaid = false,
   phase = "none",
   intention = null,
   onSaved,
 }: {
   day: string;
   initial: DailyLog | null;
-  paid?: boolean;
+  /** Full wrap-up only for real Serena/year plan — not betaPaid. */
+  wrapUpPaid?: boolean;
   phase?: Phase;
   intention?: Intention | null;
   onSaved?: (log: DailyLog) => void;
 }) {
   const { t, lang } = useI18n();
   const navigate = useNavigate();
-  const depth = paid ? "full" : "teaser";
+  const depth = wrapUpPaid ? "full" : "teaser";
   const dayIso = asIsoDay(day) || day.slice(0, 10);
 
   const [flow, setFlow] = useState<Flow>(initial?.flow || "none");
@@ -374,18 +375,18 @@ export function LogForm({
         {t.save}
       </Button>
 
-      {tip ? <WrapUpCard tip={tip} paid={paid} depth={depth} /> : null}
+      {tip ? <WrapUpCard tip={tip} wrapUpPaid={wrapUpPaid} depth={depth} /> : null}
     </div>
   );
 }
 
 function WrapUpCard({
   tip,
-  paid,
+  wrapUpPaid,
   depth,
 }: {
   tip: TipResult;
-  paid: boolean;
+  wrapUpPaid: boolean;
   depth: "full" | "teaser";
 }) {
   const { t } = useI18n();
@@ -410,7 +411,7 @@ function WrapUpCard({
         </ul>
       ) : null}
 
-      {!paid && locked.length > 0 ? (
+      {!wrapUpPaid && locked.length > 0 ? (
         <div className="relative mt-3 overflow-hidden rounded-2xl bg-surface/60 px-3 py-3">
           <ul className="space-y-2 blur-[3px] select-none" aria-hidden>
             {locked.map((rec) => (
@@ -429,7 +430,7 @@ function WrapUpCard({
         </div>
       ) : null}
 
-      {!paid ? (
+      {!wrapUpPaid ? (
         <div className="mt-4 rounded-2xl bg-ink/5 px-3 py-3">
           <p className="text-sm leading-snug text-fg">{t.saviaTipSerenaTeaser}</p>
           <Link

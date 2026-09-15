@@ -10,7 +10,7 @@ import type { DailyLog, Intention, Phase } from "@/lib/types";
 export function DaySheet({
   day,
   log,
-  paid = false,
+  wrapUpPaid = false,
   dayMark = null,
   phase = "none",
   intention = null,
@@ -19,7 +19,8 @@ export function DaySheet({
 }: {
   day: string;
   log: DailyLog | null;
-  paid?: boolean;
+  /** Full wrap-up only for real Serena/year plan — not betaPaid. */
+  wrapUpPaid?: boolean;
   dayMark?: DayMark | null;
   phase?: Phase;
   intention?: Intention | null;
@@ -97,7 +98,7 @@ export function DaySheet({
             key={day}
             day={day}
             initial={activeLog}
-            paid={paid}
+            wrapUpPaid={wrapUpPaid}
             phase={phase}
             intention={intention}
             onSaved={(saved) => {

@@ -533,9 +533,9 @@ const copy = {
     saviaTipAsk: "Preguntar a Savia",
     saviaTipDisclaimer: "Estimaciones de ciclo. No es diagnóstico ni anticonceptivo.",
     saviaTipSerenaTeaser:
-      "Con Serena, Savia te arma el plan completo: ciclo, ánimo y sexo.",
-    saviaTipSerenaLock: "Serena te da el cierre completo de experta",
-    saviaTipSerenaCta: "Conocer Serena",
+      "Suscríbete a Serena para más recomendaciones y el cierre completo de experta.",
+    saviaTipSerenaLock: "Más consejos se desbloquean con Serena",
+    saviaTipSerenaCta: "Suscribirme para más recomendaciones",
   },
   en: {
     brand: "Savia",
@@ -1066,9 +1066,9 @@ const copy = {
     saviaTipAsk: "Ask Savia",
     saviaTipDisclaimer: "Cycle estimates. Not a diagnosis and not birth control.",
     saviaTipSerenaTeaser:
-      "With Serena, Savia builds your full plan: cycle, mood, and sex.",
-    saviaTipSerenaLock: "Serena gives you the full expert wrap-up",
-    saviaTipSerenaCta: "Meet Serena",
+      "Subscribe to Serena for more recommendations and the full expert wrap-up.",
+    saviaTipSerenaLock: "More tips unlock with Serena",
+    saviaTipSerenaCta: "Subscribe for more recommendations",
   },
 } as const;
 

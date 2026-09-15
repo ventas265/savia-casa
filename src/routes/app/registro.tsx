@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { PageTitle } from "@/components/color-blobs";
 import { LogForm } from "@/components/log-form";
 import { Skeleton } from "@/components/ui/skeleton";
-import { loadToday, betaPaid } from "@/lib/savia-api";
+import { loadToday } from "@/lib/savia-api";
 import { SAVIA_BETA } from "@/lib/beta";
 import { localToday } from "@/lib/savia-local";
 import { useI18n } from "@/lib/i18n";
@@ -103,7 +103,7 @@ function Registro() {
           key={focusDay}
           day={focusDay}
           initial={initial}
-          paid={betaPaid() || data.profile.plan === "serena" || data.profile.plan === "year"}
+          wrapUpPaid={data.profile.plan === "serena" || data.profile.plan === "year"}
           phase={phaseForDay(cycleDay(data.profile.lastPeriodStart, data.profile.cycleLength, focusDay), data.profile.periodLength, data.profile.cycleLength)}
           intention={data.profile.intention}
           onSaved={(log) =>
