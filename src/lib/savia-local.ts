@@ -131,9 +131,22 @@ export function localSaveLog(data: {
   symptoms: string[];
   periodStarted: boolean;
   mucus?: Mucus;
+  sex?: boolean;
+  sexKind?: SexKind;
 }) {
   const store = read();
   const existing = store.logs.find((l) => l.day === data.day);
+  let sex = existing?.sex || false;
+  let sexKind: SexKind = existing?.sexKind || "none";
+  if (data.sexKind !== undefined) {
+    sexKind = data.sexKind;
+    sex = sexKind !== "none";
+  } else if (data.sex !== undefined) {
+    sex = Boolean(data.sex);
+    if (!sex) sexKind = "none";
+    else if (sexKind === "none") sexKind = "unprotected";
+  }
+  const symptoms = Array.from(new Set(data.symptoms)).slice(0, 24);
   const log: DailyLog = {
     id: existing?.id || Date.now(),
     userId: "beta",
@@ -143,11 +156,11 @@ export function localSaveLog(data: {
     energy: data.energy,
     sleepHours: data.sleepHours,
     notes: data.notes.slice(0, 500),
-    symptoms: data.symptoms.slice(0, 12),
+    symptoms,
     periodStarted: data.periodStarted,
     mucus: data.mucus || "none",
-    sex: existing?.sex || false,
-    sexKind: existing?.sexKind || "none",
+    sex,
+    sexKind,
   };
   store.logs = [log, ...store.logs.filter((l) => l.day !== data.day)].slice(0, 180);
   if (data.periodStarted) {

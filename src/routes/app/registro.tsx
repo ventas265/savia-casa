@@ -73,7 +73,19 @@ function Registro() {
           day={data.day}
           initial={data.log}
           paid={betaPaid() || data.profile.plan === "serena" || data.profile.plan === "year"}
-          onSaved={(log) => setData({ ...data, log })}
+          onSaved={(log) =>
+            setData({
+              ...data,
+              log,
+              recentLogs: [log, ...data.recentLogs.filter((l) => l.day !== log.day)].slice(0, 90),
+              sexDays: log.sex
+                ? Array.from(new Set([log.day, ...data.sexDays]))
+                : data.sexDays.filter((d) => d !== log.day),
+              sexMarks: log.sex
+                ? [...data.sexMarks.filter((s) => s.day !== log.day), { day: log.day, kind: log.sexKind }]
+                : data.sexMarks.filter((s) => s.day !== log.day),
+            })
+          }
         />
       </div>
     </>

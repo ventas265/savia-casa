@@ -119,6 +119,7 @@ export async function writeLog(data: {
   periodStarted: boolean;
   mucus?: Mucus;
   sex?: boolean;
+  sexKind?: SexKind;
 }) {
   if (!SAVIA_BETA) return saveLog({ data });
   const saved = localSaveLog(data);
@@ -137,6 +138,7 @@ async function pushLog(data: {
   periodStarted: boolean;
   mucus?: Mucus;
   sex?: boolean;
+  sexKind?: SexKind;
 }) {
   const c = await creds();
   if (c) void saveLogDevice({ data: { ...c, ...data } }).catch(() => {});

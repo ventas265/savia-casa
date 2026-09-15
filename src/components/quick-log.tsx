@@ -44,6 +44,14 @@ export function QuickLog({
       symptoms: nextSym,
       periodStarted: nextFlow === "light" || nextFlow === "medium" || nextFlow === "heavy",
       mucus: nextMucus,
+      // Omit sex: localSaveLog keeps existing sex/sexKind when updating feelings.
+    }).then((res) => {
+      if (res.ok) {
+        setSymptoms(res.log.symptoms);
+        setFlow(res.log.flow && res.log.flow !== "none" ? res.log.flow : "none");
+        setMucus(res.log.mucus || "none");
+        onSaved?.();
+      }
     });
   }
 
@@ -65,7 +73,7 @@ export function QuickLog({
 
   function tapSym(id: string) {
     haptic(14);
-    const next = symptoms.includes(id) ? symptoms.filter((s) => s !== id) : [...symptoms, id].slice(0, 16);
+    const next = symptoms.includes(id) ? symptoms.filter((s) => s !== id) : [...symptoms, id].slice(0, 24);
     setSymptoms(next);
     persist(flow, next, mucus);
   }

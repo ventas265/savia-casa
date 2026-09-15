@@ -1,11 +1,12 @@
 import { useState } from "react";
+import { Heart } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n";
 import { writeLog } from "@/lib/savia-api";
 import { haptic } from "@/lib/haptic";
 import { pick, symptomLabel } from "@/lib/savia-content";
-import { MUCUS, type DailyLog, type Flow, type Mucus } from "@/lib/types";
+import { MUCUS, SEX_KINDS, type DailyLog, type Flow, type Mucus, type SexKind } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 const FLOW_DOT: { id: Flow; cls: string }[] = [
@@ -34,7 +35,7 @@ export function LogForm({
   const [notes, setNotes] = useState(initial?.notes || "");
   const [symptoms, setSymptoms] = useState<string[]>(initial?.symptoms || []);
   const [mucus, setMucus] = useState<Mucus>(initial?.mucus || "none");
-  const [sex, setSex] = useState(Boolean(initial?.sex));
+  const [sexKind, setSexKind] = useState<SexKind>(initial?.sexKind || (initial?.sex ? "unprotected" : "none"));
   const [busy, setBusy] = useState(false);
 
   const flowLabel: Record<Flow, string> = {
@@ -45,6 +46,23 @@ export function LogForm({
     heavy: t.flowHeavy,
   };
 
+  const sexLabels: Record<Exclude<SexKind, "none">, string> = {
+    protected: t.sexProtected,
+    unprotected: t.sexUnprotected,
+    withdrawal: t.sexWithdrawal,
+  };
+
+  function applyLog(log: DailyLog) {
+    setFlow(log.flow);
+    setMood(log.mood);
+    setEnergy(log.energy);
+    setSleepHours(log.sleepHours);
+    setNotes(log.notes);
+    setSymptoms(log.symptoms);
+    setMucus(log.mucus);
+    setSexKind(log.sexKind || (log.sex ? "unprotected" : "none"));
+  }
+
   async function persist(patch: Partial<{
     flow: Flow;
     mood: number;
@@ -53,7 +71,7 @@ export function LogForm({
     notes: string;
     symptoms: string[];
     mucus: Mucus;
-    sex: boolean;
+    sexKind: SexKind;
   }>) {
     const next = {
       flow: patch.flow ?? flow,
@@ -63,18 +81,29 @@ export function LogForm({
       notes: patch.notes ?? notes,
       symptoms: patch.symptoms ?? symptoms,
       mucus: patch.mucus ?? mucus,
-      sex: patch.sex ?? sex,
+      sexKind: patch.sexKind ?? sexKind,
     };
+    const sex = next.sexKind !== "none";
     haptic(12);
     setBusy(true);
     try {
       const res = await writeLog({
         day,
-        ...next,
+        flow: next.flow,
+        mood: next.mood,
+        energy: next.energy,
+        sleepHours: next.sleepHours,
+        notes: next.notes,
+        symptoms: next.symptoms,
+        mucus: next.mucus,
         periodStarted: next.flow === "light" || next.flow === "medium" || next.flow === "heavy",
-        sex: paid ? next.sex : undefined,
+        // Notebook persistence: unlock sex marks when paid/beta; omit when gated so server keep existing.
+        ...(paid ? { sex, sexKind: next.sexKind } : {}),
       });
-      if (res.ok) onSaved?.(res.log);
+      if (res.ok) {
+        applyLog(res.log);
+        onSaved?.(res.log);
+      }
     } catch {
       toast.error(t.errorGeneric);
     } finally {
@@ -252,24 +281,35 @@ export function LogForm({
           onChange={(e) => setNotes(e.target.value)}
           onBlur={() => void persist({ notes })}
         />
-        {paid ? (
-          <button
-            type="button"
-            onClick={() => {
-              const next = !sex;
-              setSex(next);
-              void persist({ sex: next });
-            }}
-            className={cn(
-              "press mt-4 inline-flex min-h-12 items-center rounded-full px-5 text-sm font-semibold",
-              sex ? "bg-primary text-primary-fg" : "bg-surface text-fg shadow-card",
-            )}
-          >
-            {sex ? t.sexOn : t.sexOff}
-          </button>
-        ) : (
-          <p className="mt-3 text-xs text-muted">{t.sexPay}</p>
-        )}
+        <p className="mt-4 text-sm font-semibold">{sexKind !== "none" ? t.sexOn : t.sexOff}</p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {SEX_KINDS.map((kind) => {
+            const on = sexKind === kind;
+            return (
+              <button
+                key={kind}
+                type="button"
+                onClick={() => {
+                  if (!paid) {
+                    toast.error(t.sexPay);
+                    return;
+                  }
+                  const next: SexKind = on ? "none" : kind;
+                  setSexKind(next);
+                  void persist({ sexKind: next });
+                }}
+                className={cn(
+                  "press inline-flex min-h-11 items-center gap-1.5 rounded-full px-3 text-xs font-semibold",
+                  on ? "bg-primary text-primary-fg" : "bg-surface text-fg shadow-card",
+                )}
+              >
+                <Heart className={cn("size-3.5", on && "fill-current")} />
+                {sexLabels[kind as Exclude<SexKind, "none">]}
+              </button>
+            );
+          })}
+        </div>
+        {paid ? null : <p className="mt-2 text-xs text-muted">{t.sexPay}</p>}
       </section>
 
       <Button type="button" className="w-full" onClick={() => void persist({ notes })} disabled={busy}>

@@ -51,6 +51,23 @@ function CalendarTab() {
       const rest = prev.filter((s) => s.day !== iso);
       return res.sex ? [...rest, { day: iso, kind: res.kind }] : rest;
     });
+    if (res.log) {
+      setData((prev) => {
+        if (!prev) return prev;
+        const log = res.log;
+        return {
+          ...prev,
+          log: prev.day === log.day ? log : prev.log,
+          recentLogs: [log, ...prev.recentLogs.filter((l) => l.day !== log.day)].slice(0, 90),
+          sexDays: res.sex
+            ? Array.from(new Set([iso, ...prev.sexDays]))
+            : prev.sexDays.filter((d) => d !== iso),
+          sexMarks: res.sex
+            ? [...prev.sexMarks.filter((s) => s.day !== iso), { day: iso, kind: res.kind }]
+            : prev.sexMarks.filter((s) => s.day !== iso),
+        };
+      });
+    }
   }
 
   if (!data && !err) {
