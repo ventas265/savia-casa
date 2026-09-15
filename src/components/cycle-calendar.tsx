@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight, Heart } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import {
+  addDaysISO,
   cycleDay,
   formatDay,
   fromISO,
@@ -100,20 +101,44 @@ export function CycleCalendar({
   const dayNum = cycleDay(lastStart, cycleLength, picked);
   const phase = phaseForDay(dayNum, periodLength, cycleLength);
 
-  const caption =
-    selectedMark === "period"
-      ? t.legendPeriod
+  const confirmedPeriod = useMemo(() => {
+    const set = new Set(periodDays);
+    const plen = Math.max(periodLength, 2);
+    const starts = [...periodStarts];
+    // Last start she told us counts as confirmed (filled), not a dotted estimate.
+    if (lastStart && !starts.includes(lastStart)) starts.push(lastStart);
+    for (const start of starts) {
+      for (let i = 0; i < plen; i++) set.add(addDaysISO(start, i));
+    }
+    return set;
+  }, [periodDays, periodStarts, periodLength, lastStart]);
+
+  const sexSet = useMemo(() => new Set(sexDays.length ? sexDays : sexMarks.map((s) => s.day)), [sexDays, sexMarks]);
+  const logByDay = useMemo(() => Object.fromEntries(logs.map((l) => [l.day, l])), [logs]);
+  const marks = cells.map((c) => mark(c.iso));
+
+  const pickedLog = logByDay[picked];
+  const pickedFlow = pickedLog?.flow;
+  const pickedConfirmed =
+    confirmedPeriod.has(picked) ||
+    pickedFlow === "heavy" ||
+    pickedFlow === "medium" ||
+    pickedFlow === "light";
+  const pickedPredicted = selectedMark === "period" && !pickedConfirmed;
+
+  const caption = pickedConfirmed
+    ? t.legendPeriod
+    : pickedPredicted
+      ? t.legendPredicted
       : selectedMark === "peak"
         ? t.legendPeak
         : selectedMark === "fertile"
           ? t.legendFertile
           : selectedMark === "quiet"
             ? t.legendQuiet
-            : t.calEmpty;
-
-  const sexSet = useMemo(() => new Set(sexDays.length ? sexDays : sexMarks.map((s) => s.day)), [sexDays, sexMarks]);
-  const logByDay = useMemo(() => Object.fromEntries(logs.map((l) => [l.day, l])), [logs]);
-  const marks = cells.map((c) => mark(c.iso));
+            : selectedMark === "period"
+              ? t.legendPeriod
+              : t.calEmpty;
 
   return (
     <div>
@@ -128,7 +153,9 @@ export function CycleCalendar({
         >
           <ChevronLeft className="size-5" />
         </button>
-        <p className="font-display text-2xl font-semibold tracking-[-0.03em]">{months[cursor.m]} {cursor.y}</p>
+        <p className="font-display text-2xl font-semibold tracking-[-0.03em]">
+          {months[cursor.m]} {cursor.y}
+        </p>
         <button
           type="button"
           className="inline-flex size-11 items-center justify-center rounded-full hover:bg-surface-2"
@@ -154,67 +181,98 @@ export function CycleCalendar({
           const isPicked = cell.iso === picked;
           const logged = logByDay[cell.iso];
           const flow = logged?.flow;
-          const fill =
-            flow === "heavy"
-              ? "bg-cal-period text-primary-fg"
-              : flow === "medium"
-                ? "bg-primary/80 text-primary-fg"
-                : flow === "light"
-                  ? "bg-primary/50 text-ink"
-                  : flow === "spotting"
-                    ? "bg-primary/25 text-ink"
-                    : m === "period"
-                      ? "bg-cal-period/70 text-primary-fg"
-                      : m === "peak" || m === "fertile"
-                        ? "bg-cal-fertile text-ink"
-                        : "text-fg";
-          const hasFlow = Boolean(flow && flow !== "none");
-          const hasMood = Boolean(logged && ((logged.mood != null && logged.mood > 0) || logged.symptoms.length > 0));
+          const hasLoggedFlow =
+            flow === "heavy" || flow === "medium" || flow === "light" || flow === "spotting";
+          const isConfirmed =
+            confirmedPeriod.has(cell.iso) ||
+            flow === "heavy" ||
+            flow === "medium" ||
+            flow === "light";
+          const isPredicted = m === "period" && !isConfirmed;
+          const isFertile = showFertile && (m === "peak" || m === "fertile") && !isConfirmed && !isPredicted;
+          const hasFlowMark = hasLoggedFlow;
+          const hasMood = Boolean(
+            logged && ((logged.mood != null && logged.mood > 0) || logged.symptoms.length > 0),
+          );
           const hasSex = sexSet.has(cell.iso) || Boolean(logged?.sex);
-          const onDark = m === "period" || flow === "heavy" || flow === "medium";
+          const onDark =
+            flow === "heavy" ||
+            flow === "medium" ||
+            (isConfirmed && flow !== "light" && flow !== "spotting");
+
           return (
             <button
               key={cell.iso}
               type="button"
               onClick={() => choose(cell.iso)}
+              aria-label={cell.iso}
+              aria-current={isToday ? "date" : undefined}
+              aria-pressed={isPicked}
               className={cn(
-                "press flex aspect-square items-center justify-center",
+                "press flex min-h-11 flex-col items-center justify-center gap-0.5 py-0.5",
                 !cell.inMonth && "opacity-30",
               )}
             >
               <span
                 className={cn(
-                  "relative flex size-11 items-center justify-center rounded-full text-sm tabular-nums",
-                  fill,
-                  isToday && "font-semibold ring-2 ring-ink/20",
-                  isPicked && m !== "period" && "ring-2 ring-primary",
+                  "relative flex size-10 items-center justify-center rounded-full text-sm tabular-nums sm:size-11",
+                  // Confirmed period — filled rose (flow intensity when logged)
+                  flow === "heavy" && "bg-cal-period font-medium text-primary-fg",
+                  flow === "medium" && "bg-primary/85 font-medium text-primary-fg",
+                  flow === "light" && "bg-primary/45 font-medium text-ink",
+                  isConfirmed &&
+                    !hasLoggedFlow &&
+                    "bg-cal-period font-medium text-primary-fg",
+                  isConfirmed &&
+                    flow === "spotting" &&
+                    "bg-cal-period font-medium text-primary-fg",
+                  // Predicted period — dotted ring, never filled
+                  isPredicted &&
+                    "border-2 border-dashed border-cal-period bg-transparent font-medium text-cal-period",
+                  // Fertile (opt-in only)
+                  isFertile && m === "peak" && "bg-cal-peak/25 font-medium text-ink",
+                  isFertile && m === "fertile" && "bg-cal-fertile text-ink",
+                  // Today — soft sand wash, not rose
+                  isToday &&
+                    !isConfirmed &&
+                    !isPredicted &&
+                    !isFertile &&
+                    "bg-sand/55 font-semibold text-ink",
+                  isToday && (isConfirmed || isPredicted || isFertile) && "font-semibold",
+                  // Selected — strong outline (always)
+                  isPicked && "ring-[3px] ring-primary ring-offset-2 ring-offset-surface",
+                  !isConfirmed &&
+                    !isPredicted &&
+                    !isFertile &&
+                    !isToday &&
+                    "text-fg",
                 )}
               >
                 {cell.date}
-                {hasFlow || hasMood || hasSex ? (
-                  <span className="absolute bottom-0.5 flex items-center gap-0.5">
-                    {hasFlow ? (
-                      <span
-                        className={cn("size-1.5 rounded-full", onDark ? "bg-primary-fg" : "bg-primary")}
-                        title={t.calMarkFlow}
-                      />
-                    ) : null}
-                    {hasMood ? (
-                      <span
-                        className={cn("size-1.5 rounded-full", onDark ? "bg-sand" : "bg-ink/70")}
-                        title={t.calMarkMood}
-                      />
-                    ) : null}
-                    {hasSex ? (
-                      <Heart
-                        className={cn(
-                          "size-2.5 fill-current",
-                          onDark ? "text-primary-fg" : "text-primary",
-                        )}
-                      />
-                    ) : null}
-                  </span>
+                {isToday ? (
+                  <span
+                    className={cn(
+                      "absolute top-0.5 size-1 rounded-full",
+                      onDark ? "bg-primary-fg/90" : "bg-ink/55",
+                    )}
+                    aria-hidden
+                  />
                 ) : null}
+              </span>
+              <span className="flex h-3 min-h-[12px] items-center justify-center gap-0.5" aria-hidden>
+                {hasFlowMark ? (
+                  <span
+                    className={cn(
+                      "size-1.5 rounded-full",
+                      flow === "spotting" ? "bg-primary/60" : "bg-cal-period",
+                    )}
+                    title={t.calMarkFlow}
+                  />
+                ) : null}
+                {hasMood ? (
+                  <span className="size-1.5 rounded-full bg-ink/65" title={t.calMarkMood} />
+                ) : null}
+                {hasSex ? <Heart className="size-2.5 fill-current text-primary" aria-label={t.legendSex} /> : null}
               </span>
             </button>
           );
@@ -223,6 +281,16 @@ export function CycleCalendar({
       <ul className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-xs text-muted">
         <li className="inline-flex items-center gap-1.5">
           <span className="size-2.5 rounded-full bg-cal-period" /> {t.legendPeriod}
+        </li>
+        <li className="inline-flex items-center gap-1.5">
+          <span className="size-2.5 rounded-full border-2 border-dashed border-cal-period bg-transparent" />{" "}
+          {t.legendPredicted}
+        </li>
+        <li className="inline-flex items-center gap-1.5">
+          <span className="relative flex size-2.5 items-center justify-center rounded-full bg-sand/80">
+            <span className="absolute top-0 size-1 rounded-full bg-ink/55" />
+          </span>{" "}
+          {t.legendToday}
         </li>
         {showFertile ? (
           <>
@@ -235,10 +303,10 @@ export function CycleCalendar({
           </>
         ) : null}
         <li className="inline-flex items-center gap-1.5">
-          <span className="size-1.5 rounded-full bg-primary" /> {t.calMarkFlow}
+          <span className="size-1.5 rounded-full bg-cal-period" /> {t.calMarkFlow}
         </li>
         <li className="inline-flex items-center gap-1.5">
-          <span className="size-1.5 rounded-full bg-ink/70" /> {t.calMarkMood}
+          <span className="size-1.5 rounded-full bg-ink/65" /> {t.calMarkMood}
         </li>
         <li className="inline-flex items-center gap-1.5">
           <Heart className="size-3 fill-current text-primary" /> {t.legendSex}
