@@ -1,8 +1,10 @@
 import { useEffect } from "react";
+import { Link } from "@tanstack/react-router";
 import { X } from "lucide-react";
 import { LogForm } from "@/components/log-form";
 import { useI18n } from "@/lib/i18n";
 import { formatDay } from "@/lib/cycle";
+import { setSelectedDay } from "@/lib/selected-day";
 import type { DailyLog } from "@/lib/types";
 
 export function DaySheet({
@@ -54,6 +56,17 @@ export function DaySheet({
         <div className="overflow-y-auto px-5 py-4 pb-10">
           {!log ? <p className="mb-4 text-sm leading-relaxed text-muted">{t.daySheetEmpty}</p> : null}
           <LogForm key={day} day={day} initial={log} paid={paid} onSaved={onSaved} />
+          <Link
+            to="/app/registro"
+            search={{ day }}
+            onClick={() => {
+              setSelectedDay(day);
+              onClose();
+            }}
+            className="press mt-6 flex min-h-12 items-center justify-center rounded-full bg-surface text-sm font-semibold shadow-card"
+          >
+            {t.editInRegistro}
+          </Link>
         </div>
       </div>
     </div>

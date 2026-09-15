@@ -8,6 +8,7 @@ import { Predictions } from "@/components/predictions";
 import { loadToday, betaPaid } from "@/lib/savia-api";
 import { SAVIA_BETA } from "@/lib/beta";
 import { localToday } from "@/lib/savia-local";
+import { setSelectedDay } from "@/lib/selected-day";
 import { useI18n } from "@/lib/i18n";
 import { isCycling, periodDaysFromLogs, formatDay, weightedCycle } from "@/lib/cycle";
 import type { DailyLog, TodaySnapshot } from "@/lib/types";
@@ -100,7 +101,10 @@ function CalendarTab() {
               sexMarks={data.sexMarks}
               paid={paid}
               showFertile={data.profile.intention !== "track"}
-              onSelect={(iso) => setSheetDay(iso)}
+              onSelect={(iso) => {
+                setSelectedDay(iso);
+                setSheetDay(iso);
+              }}
             />
             {data.periodStarts.length ? (
               <div className="mt-6">

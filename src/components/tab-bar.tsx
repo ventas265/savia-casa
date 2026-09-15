@@ -1,6 +1,7 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
+import { getSelectedDay } from "@/lib/selected-day";
 import { IconCal, IconGuia, IconHoy, IconMas, IconPlus } from "@/components/savia-icons";
 
 export type TabKey = "cal" | "hoy" | "log" | "guia" | "mas";
@@ -23,6 +24,7 @@ export function TabBar({
   onPick?: (key: TabKey) => void;
 }) {
   const { t } = useI18n();
+  const navigate = useNavigate();
   const items = tabItems(t);
   return (
     <nav className="border-t border-border/70 bg-white pb-[env(safe-area-inset-bottom)]">
@@ -65,14 +67,33 @@ export function TabBar({
               </button>
             );
           }
+          if (item.key === "log") {
+            return (
+              <Link
+                key={item.key}
+                to="/app/registro"
+                preload="intent"
+                className={className}
+                aria-label={item.label}
+                title={item.label}
+                onClick={(e) => {
+                  const day = getSelectedDay();
+                  if (!day) return;
+                  e.preventDefault();
+                  void navigate({ to: "/app/registro", search: { day } });
+                }}
+              >
+                {icon}
+                {label}
+              </Link>
+            );
+          }
           return (
             <Link
               key={item.key}
               to={item.to}
               preload="intent"
               className={className}
-              aria-label={plus ? item.label : undefined}
-              title={plus ? item.label : undefined}
             >
               {icon}
               {label}

@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { PageTitle } from "@/components/color-blobs";
 import { LogForm } from "@/components/log-form";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -7,9 +7,17 @@ import { loadToday, betaPaid } from "@/lib/savia-api";
 import { SAVIA_BETA } from "@/lib/beta";
 import { localToday } from "@/lib/savia-local";
 import { useI18n } from "@/lib/i18n";
+import { isIsoDay, resolveRegistroDay, setSelectedDay } from "@/lib/selected-day";
 import type { TodaySnapshot } from "@/lib/types";
 
-export const Route = createFileRoute("/app/registro")({ component: Registro });
+export const Route = createFileRoute("/app/registro")({
+  validateSearch: (search: Record<string, unknown>): { day?: string } => {
+    const raw = search.day;
+    if (typeof raw === "string" && isIsoDay(raw)) return { day: raw };
+    return {};
+  },
+  component: Registro,
+});
 
 function RegistroSkeleton() {
   return (
@@ -42,6 +50,7 @@ function RegistroEmpty() {
 
 function Registro() {
   const { t } = useI18n();
+  const { day: searchDay } = Route.useSearch();
   const [data, setData] = useState<TodaySnapshot | null>(() => (SAVIA_BETA ? localToday() : null));
   const [ready, setReady] = useState(() => Boolean(SAVIA_BETA));
 
@@ -62,21 +71,34 @@ function Registro() {
     };
   }, []);
 
+  const focusDay = useMemo(() => {
+    if (!data) return searchDay ?? null;
+    return resolveRegistroDay(searchDay, data.day);
+  }, [data, searchDay]);
+
+  useEffect(() => {
+    if (focusDay) setSelectedDay(focusDay);
+  }, [focusDay]);
+
   if (!ready) return <RegistroSkeleton />;
-  if (!data) return <RegistroEmpty />;
+  if (!data || !focusDay) return <RegistroEmpty />;
+
+  const initial =
+    data.recentLogs.find((l) => l.day === focusDay) ?? (data.log?.day === focusDay ? data.log : null);
 
   return (
     <>
-      <PageTitle kicker={data.day} title={t.logToday} />
+      <PageTitle kicker={focusDay} title={t.logToday} />
       <div className="mt-6">
         <LogForm
-          day={data.day}
-          initial={data.log}
+          key={focusDay}
+          day={focusDay}
+          initial={initial}
           paid={betaPaid() || data.profile.plan === "serena" || data.profile.plan === "year"}
           onSaved={(log) =>
             setData({
               ...data,
-              log,
+              log: log.day === data.day ? log : data.log,
               recentLogs: [log, ...data.recentLogs.filter((l) => l.day !== log.day)].slice(0, 90),
               sexDays: log.sex
                 ? Array.from(new Set([log.day, ...data.sexDays]))
