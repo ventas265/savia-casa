@@ -529,8 +529,9 @@ const copy = {
     relationsUnprotected: "Relaciones · sin protección",
     relationsWithdrawal: "Relaciones · coito interrumpido",
     editDayCta: "Abrir / editar hoja",
-    saviaTipLabel: "Savia",
+    saviaTipLabel: "Tu cierre",
     saviaTipAsk: "Preguntar a Savia",
+    saviaTipDisclaimer: "Estimaciones de ciclo. No es diagnóstico ni anticonceptivo.",
   },
   en: {
     brand: "Savia",
@@ -1057,8 +1058,9 @@ const copy = {
     relationsUnprotected: "Sex · unprotected",
     relationsWithdrawal: "Sex · withdrawal",
     editDayCta: "Open / edit day log",
-    saviaTipLabel: "Savia",
+    saviaTipLabel: "Your wrap-up",
     saviaTipAsk: "Ask Savia",
+    saviaTipDisclaimer: "Cycle estimates. Not a diagnosis and not birth control.",
   },
 } as const;
 

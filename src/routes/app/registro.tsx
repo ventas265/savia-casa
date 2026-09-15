@@ -105,6 +105,7 @@ function Registro() {
           initial={initial}
           paid={betaPaid() || data.profile.plan === "serena" || data.profile.plan === "year"}
           phase={phaseForDay(cycleDay(data.profile.lastPeriodStart, data.profile.cycleLength, focusDay), data.profile.periodLength, data.profile.cycleLength)}
+          intention={data.profile.intention}
           onSaved={(log) =>
             setData({
               ...data,

@@ -269,6 +269,7 @@ function CalendarTab() {
             data.profile.periodLength,
             learned,
           )}
+          intention={data.profile.intention}
           onClose={() => {
             setSheetDay(null);
           }}

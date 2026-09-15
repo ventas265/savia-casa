@@ -8,9 +8,9 @@ import { writeLog } from "@/lib/savia-api";
 import { haptic } from "@/lib/haptic";
 import { pick, symptomLabel } from "@/lib/savia-content";
 import { asIsoDay, formatDay } from "@/lib/cycle";
-import { tipAfterSave } from "@/lib/savia-tip";
+import { tipAfterSave, type TipResult } from "@/lib/savia-tip";
 import { setSelectedDay } from "@/lib/selected-day";
-import { MUCUS, SEX_KINDS, type DailyLog, type Flow, type Mucus, type Phase, type SexKind } from "@/lib/types";
+import { MUCUS, SEX_KINDS, type DailyLog, type Flow, type Intention, type Mucus, type Phase, type SexKind } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 const FLOW_DOT: { id: Flow; cls: string }[] = [
@@ -36,12 +36,14 @@ export function LogForm({
   initial,
   paid = false,
   phase = "none",
+  intention = null,
   onSaved,
 }: {
   day: string;
   initial: DailyLog | null;
   paid?: boolean;
   phase?: Phase;
+  intention?: Intention | null;
   onSaved?: (log: DailyLog) => void;
 }) {
   const { t, lang } = useI18n();
@@ -58,7 +60,7 @@ export function LogForm({
   const [mucus, setMucus] = useState<Mucus>(initial?.mucus || "none");
   const [sexKind, setSexKind] = useState<SexKind>(initial?.sexKind || (initial?.sex ? "unprotected" : "none"));
   const [busy, setBusy] = useState(false);
-  const [tip, setTip] = useState<string | null>(null);
+  const [tip, setTip] = useState<TipResult | null>(null);
 
   const live = useRef<LiveFields>({
     flow: initial?.flow || "none",
@@ -151,6 +153,9 @@ export function LogForm({
                   flow: res.log.flow,
                   sexKind: res.log.sexKind || (res.log.sex ? "unprotected" : "none"),
                   symptoms: res.log.symptoms,
+                  mood: res.log.mood,
+                  energy: res.log.energy,
+                  intention,
                   lang,
                 }),
               );
@@ -182,7 +187,18 @@ export function LogForm({
           aria-live="polite"
         >
           <p className="text-xs font-semibold uppercase tracking-wide text-muted">{t.saviaTipLabel}</p>
-          <p className="mt-2 text-sm leading-relaxed text-fg">{tip}</p>
+          <p className="mt-2 text-sm leading-relaxed text-fg">{tip.conclusion}</p>
+          {tip.recommendations.length > 0 ? (
+            <ul className="mt-3 space-y-2">
+              {tip.recommendations.map((rec) => (
+                <li key={rec} className="flex gap-2 text-sm leading-snug text-fg">
+                  <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-primary" aria-hidden />
+                  <span>{rec}</span>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+          <p className="mt-3 text-[11px] leading-relaxed text-muted">{t.saviaTipDisclaimer}</p>
           <Link
             to="/app/preguntar"
             className="press mt-3 inline-flex min-h-11 items-center justify-center rounded-full bg-surface px-4 text-sm font-semibold shadow-card"
