@@ -26,11 +26,10 @@ function Preguntar() {
   const [turns, setTurns] = useState<ChatTurn[]>([]);
   const [busy, setBusy] = useState(false);
   const end = useRef<HTMLDivElement>(null);
-  const box = useRef<HTMLTextAreaElement>(null);
   const canSend = q.trim().length > 0 && !busy;
 
   useEffect(() => {
-    end.current?.scrollIntoView({ behavior: "smooth" });
+    end.current?.scrollIntoView({ block: "end" });
   }, [turns, busy]);
 
   async function ask() {
@@ -38,7 +37,6 @@ function Preguntar() {
     if (question.length < 1 || busy) return;
     const history = turns.slice(-8);
     setQ("");
-    if (box.current) box.current.style.height = "56px";
     setTurns((prev) => [...prev, { role: "user", content: question }]);
     setBusy(true);
     try {
@@ -52,13 +50,12 @@ function Preguntar() {
       toast.error(t.aiMissing);
     } finally {
       setBusy(false);
-      box.current?.focus();
     }
   }
 
   return (
-    <div className="flex min-h-[calc(100dvh-4.5rem)] flex-col">
-      <div className="flex items-center gap-3">
+    <div className="flex h-[calc(100dvh-5.5rem)] flex-col">
+      <div className="flex shrink-0 items-center gap-3">
         <Link
           to="/app/hoy"
           className="flex size-11 shrink-0 items-center justify-center rounded-full bg-surface text-lg font-semibold text-fg"
@@ -73,13 +70,13 @@ function Preguntar() {
         </div>
       </div>
 
-      <div className="relative mt-4 flex-1 pb-28">
+      <div className="mt-4 min-h-0 flex-1 overflow-y-auto">
         {turns.length === 0 ? (
           <div className="relative overflow-hidden rounded-[1.6rem]">
             <img
               src="/photos/savia-ia-hero.jpg"
               alt=""
-              className="h-56 w-full object-cover object-[center_40%]"
+              className="h-40 w-full object-cover object-[center_40%]"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-ink/70 to-transparent" />
             <p className="absolute bottom-4 left-4 right-4 font-display text-2xl font-semibold text-primary-fg">
@@ -122,7 +119,7 @@ function Preguntar() {
       </div>
 
       {SAVIA_BETA ? null : (
-        <p className="mt-2 text-xs text-muted">
+        <p className="mt-2 shrink-0 text-xs text-muted">
           {t.asksLeft}: 3 ·{" "}
           <Link to="/pagar" className="underline">
             {t.navPricing}
@@ -131,38 +128,24 @@ function Preguntar() {
       )}
 
       <form
-        className="fixed bottom-0 left-1/2 z-30 flex w-full max-w-lg -translate-x-1/2 gap-2 bg-bg px-4 pt-2 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:max-w-[28rem]"
+        className="mt-3 flex shrink-0 gap-2"
         onSubmit={(e) => {
           e.preventDefault();
           void ask();
         }}
       >
-        <textarea
-          ref={box}
-          rows={1}
+        <input
+          type="text"
+          inputMode="text"
+          autoComplete="off"
+          autoCorrect="on"
           enterKeyHint="send"
-          className="max-h-32 min-h-14 flex-1 resize-none rounded-[1.4rem] border-0 bg-surface px-5 py-4 text-base outline-none ring-primary focus:ring-2"
+          className="min-h-14 min-w-0 flex-1 rounded-full border-0 bg-surface px-5 text-base text-fg outline-none ring-primary focus:ring-2"
           placeholder={t.askHint}
           value={q}
-          autoFocus
-          onChange={(e) => {
-            setQ(e.target.value);
-            e.target.style.height = "56px";
-            e.target.style.height = `${Math.min(e.target.scrollHeight, 128)}px`;
-          }}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault();
-              void ask();
-            }
-          }}
+          onChange={(e) => setQ(e.target.value)}
         />
-        <Button
-          type="submit"
-          className="h-14 min-w-14 shrink-0 rounded-full px-5"
-          disabled={!canSend}
-          aria-label={t.askCta}
-        >
+        <Button type="submit" className="h-14 shrink-0 rounded-full px-5" disabled={!canSend}>
           {busy ? "…" : t.askCta}
         </Button>
       </form>

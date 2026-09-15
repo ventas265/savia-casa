@@ -17,7 +17,7 @@ export function Shell({
 }) {
   return (
     <div className="min-h-dvh bg-bg">
-      <div className={`relative mx-auto min-h-dvh overflow-hidden bg-transparent ${APP_COL}`}>
+      <div className={`relative mx-auto min-h-dvh overflow-x-hidden bg-transparent ${APP_COL}`}>
         <header className="sticky top-0 z-20 bg-bg/80 backdrop-blur">{header}</header>
         <main className={footer ? "relative px-4 py-4 pb-28" : "relative px-4 py-4"}>{children}</main>
         {footer ? (
