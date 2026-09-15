@@ -9,7 +9,7 @@ import { Disclaimer } from "@/components/disclaimer";
 import { notifyPermission } from "@/lib/notify";
 import { enableReminders } from "@/lib/reminders";
 import { emptyPay, getAskStatus, getPay, type PaySettings } from "@/lib/savia-server";
-import { loadToday, writeProfile } from "@/lib/savia-api";
+import { loadToday } from "@/lib/savia-api";
 import { SAVIA_BETA } from "@/lib/beta";
 import { localToday } from "@/lib/savia-local";
 import { pick, stageName } from "@/lib/savia-content";
@@ -100,47 +100,10 @@ function MasTab() {
 
       <section className="mt-4 rounded-[1.6rem] bg-surface p-5 shadow-card">
         <p className="text-xs font-semibold uppercase tracking-wide text-muted">{t.intentTitle}</p>
-        <button
-          type="button"
-          className="press mt-3 flex min-h-12 w-full items-center justify-between rounded-full bg-bg px-4 text-left text-sm font-semibold"
-          onClick={() => {
-            if (!profile) return;
-            const on = profile.intention !== "track";
-            const next = on ? "track" : "avoid";
-            void writeProfile({
-              displayName: profile.displayName,
-              stage: profile.stage,
-              birthYear: profile.birthYear,
-              cycleLength: profile.cycleLength,
-              periodLength: profile.periodLength,
-              lastPeriodStart: profile.lastPeriodStart,
-              dueDate: profile.dueDate,
-              lastPeriodYear: profile.lastPeriodYear,
-              onboardingDone: profile.onboardingDone,
-              locale: profile.locale,
-              intention: next,
-              country: profile.country,
-            }).then((res) => {
-              if (res.ok) setProfile({ ...profile, intention: next });
-              else toast.error(t.errorGeneric);
-            });
-          }}
-          disabled={!profile}
-        >
-          <span>
-            <span className="block">{t.fertilityToggle}</span>
-            <span className="mt-0.5 block text-xs font-normal text-muted">{t.fertilityToggleHint}</span>
-          </span>
-          <span
-            className={
-              profile && profile.intention !== "track"
-                ? "rounded-full bg-primary px-3 py-1 text-xs text-primary-fg"
-                : "rounded-full bg-surface-2 px-3 py-1 text-xs text-muted"
-            }
-          >
-            {profile && profile.intention !== "track" ? "ON" : "OFF"}
-          </span>
-        </button>
+        <div className="mt-3 rounded-[1.25rem] bg-bg px-4 py-3">
+          <p className="text-sm font-semibold">{t.fertilityToggle}</p>
+          <p className="mt-1 text-xs leading-relaxed text-muted">{t.fertilityToggleHint}</p>
+        </div>
       </section>
 
       <section className="mt-4 rounded-[1.6rem] bg-ink p-5 text-primary-fg shadow-card">

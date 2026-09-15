@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight, Heart } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
@@ -13,6 +13,7 @@ import {
   todayISO,
   type DayMark,
 } from "@/lib/cycle";
+import { useClientTodayISO } from "@/lib/use-today";
 import { phaseName, pick } from "@/lib/savia-content";
 
 const MONTHS_ES = [
@@ -61,8 +62,9 @@ export function CycleCalendar({
   sexDays = [],
   sexMarks = [],
   logs = [],
-  showFertile = false,
+  showFertile = true,
   onSelect,
+  onMonthChange,
 }: {
   lastStart: string | null;
   cycleLength?: number;
@@ -75,10 +77,12 @@ export function CycleCalendar({
   paid?: boolean;
   showFertile?: boolean;
   onSelect?: (iso: string) => void;
+  onMonthChange?: () => void;
   onSetSex?: (iso: string, kind: "protected" | "unprotected" | "withdrawal") => void;
 }) {
   const { t, lang } = useI18n();
-  const today = todayISO();
+  const clientToday = useClientTodayISO();
+  const today = clientToday ?? todayISO();
   const now = fromISO(today);
   const [cursor, setCursor] = useState({ y: now.getFullYear(), m: now.getMonth() });
   const [picked, setPicked] = useState(today);
@@ -86,15 +90,35 @@ export function CycleCalendar({
   const months = lang === "es" ? MONTHS_ES : MONTHS_EN;
   const cells = useMemo(() => monthCells(cursor.y, cursor.m), [cursor.y, cursor.m]);
 
+  // After mount, snap to browser-local today (SSR may have used UTC).
+  useEffect(() => {
+    if (!clientToday) return;
+    const n = fromISO(clientToday);
+    setCursor({ y: n.getFullYear(), m: n.getMonth() });
+    setPicked(clientToday);
+  }, [clientToday]);
+
+  void showFertile; // always-on; prop kept for callers
   function mark(iso: string): DayMark | null {
-    const m = markForDate(iso, { lastStart, cycleLength, periodLength, periodStarts, periodDays });
-    if (!showFertile && (m === "fertile" || m === "peak")) return "quiet";
-    return m;
+    // Fertile window always visible (avoid accidental pregnancy) — not opt-in.
+    return markForDate(iso, { lastStart, cycleLength, periodLength, periodStarts, periodDays });
   }
 
   function choose(iso: string) {
     setPicked(iso);
     onSelect?.(iso);
+  }
+
+  function moveMonth(delta: -1 | 1) {
+    const nm = cursor.m + delta;
+    const next =
+      nm < 0 ? { y: cursor.y - 1, m: 11 } : nm > 11 ? { y: cursor.y + 1, m: 0 } : { y: cursor.y, m: nm };
+    const td = fromISO(today);
+    const inMonth = td.getFullYear() === next.y && td.getMonth() === next.m;
+    const nextPick = inMonth ? today : todayISO(new Date(next.y, next.m, 1));
+    setCursor(next);
+    setPicked(nextPick);
+    onMonthChange?.();
   }
 
   const selectedMark = mark(picked);
@@ -146,9 +170,7 @@ export function CycleCalendar({
         <button
           type="button"
           className="inline-flex size-11 items-center justify-center rounded-full hover:bg-surface-2"
-          onClick={() =>
-            setCursor((c) => (c.m === 0 ? { y: c.y - 1, m: 11 } : { y: c.y, m: c.m - 1 }))
-          }
+          onClick={() => moveMonth(-1)}
           aria-label="prev"
         >
           <ChevronLeft className="size-5" />
@@ -159,9 +181,7 @@ export function CycleCalendar({
         <button
           type="button"
           className="inline-flex size-11 items-center justify-center rounded-full hover:bg-surface-2"
-          onClick={() =>
-            setCursor((c) => (c.m === 11 ? { y: c.y + 1, m: 0 } : { y: c.y, m: c.m + 1 }))
-          }
+          onClick={() => moveMonth(1)}
           aria-label="next"
         >
           <ChevronRight className="size-5" />
@@ -189,7 +209,7 @@ export function CycleCalendar({
             flow === "medium" ||
             flow === "light";
           const isPredicted = m === "period" && !isConfirmed;
-          const isFertile = showFertile && (m === "peak" || m === "fertile") && !isConfirmed && !isPredicted;
+          const isFertile = (m === "peak" || m === "fertile") && !isConfirmed && !isPredicted;
           const hasFlowMark = hasLoggedFlow;
           const hasMood = Boolean(
             logged && ((logged.mood != null && logged.mood > 0) || logged.symptoms.length > 0),
@@ -292,16 +312,12 @@ export function CycleCalendar({
           </span>{" "}
           {t.legendToday}
         </li>
-        {showFertile ? (
-          <>
-            <li className="inline-flex items-center gap-1.5">
-              <span className="size-2.5 rounded-full bg-cal-fertile" /> {t.legendFertile}
-            </li>
-            <li className="inline-flex items-center gap-1.5">
-              <span className="size-2.5 rounded-full bg-cal-peak" /> {t.legendPeak}
-            </li>
-          </>
-        ) : null}
+        <li className="inline-flex items-center gap-1.5">
+          <span className="size-2.5 rounded-full bg-cal-fertile" /> {t.legendFertile}
+        </li>
+        <li className="inline-flex items-center gap-1.5">
+          <span className="size-2.5 rounded-full bg-cal-peak" /> {t.legendPeak}
+        </li>
         <li className="inline-flex items-center gap-1.5">
           <span className="size-1.5 rounded-full bg-cal-period" /> {t.calMarkFlow}
         </li>

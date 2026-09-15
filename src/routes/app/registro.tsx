@@ -7,6 +7,7 @@ import { loadToday, betaPaid } from "@/lib/savia-api";
 import { SAVIA_BETA } from "@/lib/beta";
 import { localToday } from "@/lib/savia-local";
 import { useI18n } from "@/lib/i18n";
+import { todayISO } from "@/lib/cycle";
 import { isIsoDay, resolveRegistroDay, setSelectedDay } from "@/lib/selected-day";
 import type { TodaySnapshot } from "@/lib/types";
 
@@ -51,11 +52,18 @@ function RegistroEmpty() {
 function Registro() {
   const { t } = useI18n();
   const { day: searchDay } = Route.useSearch();
-  const [data, setData] = useState<TodaySnapshot | null>(() => (SAVIA_BETA ? localToday() : null));
-  const [ready, setReady] = useState(() => Boolean(SAVIA_BETA));
+  const [data, setData] = useState<TodaySnapshot | null>(null);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     let alive = true;
+    if (SAVIA_BETA) {
+      const local = localToday();
+      if (alive) {
+        setData(local);
+        setReady(true);
+      }
+    }
     loadToday()
       .then((snap) => {
         if (alive) setData(snap);
@@ -73,7 +81,8 @@ function Registro() {
 
   const focusDay = useMemo(() => {
     if (!data) return searchDay ?? null;
-    return resolveRegistroDay(searchDay, data.day);
+    // Prefer browser-local today — snapshot.day may be server UTC.
+    return resolveRegistroDay(searchDay, todayISO());
   }, [data, searchDay]);
 
   useEffect(() => {
@@ -98,7 +107,7 @@ function Registro() {
           onSaved={(log) =>
             setData({
               ...data,
-              log: log.day === data.day ? log : data.log,
+              log: log.day === todayISO() ? log : data.log,
               recentLogs: [log, ...data.recentLogs.filter((l) => l.day !== log.day)].slice(0, 90),
               sexDays: log.sex
                 ? Array.from(new Set([log.day, ...data.sexDays]))

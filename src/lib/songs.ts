@@ -1,4 +1,5 @@
 import type { Phase, Stage } from "@/lib/types";
+import { todayISO } from "@/lib/cycle";
 
 export type Song = { artist: string; title: string; why: string };
 
@@ -59,7 +60,7 @@ function pool(stage: Stage, phase: Phase): Song[] {
   return follicular;
 }
 
-export function songToday(stage: Stage, phase: Phase, day = new Date().toISOString().slice(0, 10)): Song {
+export function songToday(stage: Stage, phase: Phase, day = todayISO()): Song {
   const list = pool(stage, phase);
   const n = [...day].reduce((a, c) => a + c.charCodeAt(0), 0);
   return list[n % list.length]!;

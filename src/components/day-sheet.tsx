@@ -3,7 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { X } from "lucide-react";
 import { LogForm } from "@/components/log-form";
 import { useI18n } from "@/lib/i18n";
-import { formatDay } from "@/lib/cycle";
+import { formatDay, type DayMark } from "@/lib/cycle";
 import { setSelectedDay } from "@/lib/selected-day";
 import type { DailyLog } from "@/lib/types";
 
@@ -11,12 +11,14 @@ export function DaySheet({
   day,
   log,
   paid = false,
+  dayMark = null,
   onClose,
   onSaved,
 }: {
   day: string;
   log: DailyLog | null;
   paid?: boolean;
+  dayMark?: DayMark | null;
   onClose: () => void;
   onSaved?: (log: DailyLog) => void;
 }) {
@@ -34,6 +36,13 @@ export function DaySheet({
       window.removeEventListener("keydown", onKey);
     };
   }, [onClose]);
+
+  const chance =
+    dayMark === "fertile" || dayMark === "peak"
+      ? t.daySheetChanceHigh
+      : dayMark === "quiet" || dayMark === "period"
+        ? t.daySheetChanceLow
+        : null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center" role="dialog" aria-modal="true" aria-label={t.daySheet}>
@@ -54,6 +63,14 @@ export function DaySheet({
           </button>
         </div>
         <div className="overflow-y-auto px-5 py-4 pb-10">
+          {chance ? (
+            <div className="mb-4 rounded-[1.25rem] bg-surface p-4 shadow-card">
+              <p className="text-sm font-semibold leading-snug">{chance}</p>
+              <p className="mt-2 text-xs leading-relaxed text-muted">{t.daySheetCalDisclaimer}</p>
+            </div>
+          ) : (
+            <p className="mb-4 text-xs leading-relaxed text-muted">{t.daySheetCalDisclaimer}</p>
+          )}
           {!log ? <p className="mb-4 text-sm leading-relaxed text-muted">{t.daySheetEmpty}</p> : null}
           <LogForm key={day} day={day} initial={log} paid={paid} onSaved={onSaved} />
           <Link

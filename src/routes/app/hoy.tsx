@@ -58,11 +58,19 @@ function HoyEmpty() {
 
 function HoyTab() {
   const navigate = useNavigate();
-  const [data, setData] = useState<TodaySnapshot | null>(() => (SAVIA_BETA ? localToday() : null));
-  const [ready, setReady] = useState(() => Boolean(SAVIA_BETA));
+  // Never read localStorage during SSR — that yields empty profile and paints "Registrarme".
+  const [data, setData] = useState<TodaySnapshot | null>(null);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     let alive = true;
+    if (SAVIA_BETA) {
+      const local = localToday();
+      if (alive) {
+        setData(local);
+        setReady(true);
+      }
+    }
     loadToday()
       .then((snap) => {
         if (alive) setData(snap);
@@ -78,6 +86,14 @@ function HoyTab() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!ready || !data) return;
+    // Onboarded but missing FUM — finish notebook, never show marketing Registrarme.
+    if (data.profile.onboardingDone && isCycling(data.profile.stage) && !data.profile.lastPeriodStart) {
+      void navigate({ to: "/app/onboarding" });
+    }
+  }, [ready, data, navigate]);
+
   if (!ready) {
     return <HoySkeleton />;
   }
@@ -86,11 +102,12 @@ function HoyTab() {
     return <HoyEmpty />;
   }
 
-  const needsNotebook =
-    !data.profile.onboardingDone || (isCycling(data.profile.stage) && !data.profile.lastPeriodStart);
-
-  if (needsNotebook) {
+  if (!data.profile.onboardingDone) {
     return <WelcomeStart />;
+  }
+
+  if (isCycling(data.profile.stage) && !data.profile.lastPeriodStart) {
+    return <HoySkeleton />;
   }
 
   return (
@@ -120,7 +137,7 @@ function HoyTab() {
           void setCycleLength(n).then(setData);
         }}
         notify
-        showFertile={data.profile.intention !== "track"}
+        showFertile
         log={data.log}
         onLogSaved={() => {
           void loadToday().then(setData);

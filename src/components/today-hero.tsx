@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useI18n } from "@/lib/i18n";
 import { CYCLE_CHOICES, daysUntil, formatLong, markForDate, todayISO, weekStrip } from "@/lib/cycle";
+import { useClientTodayISO } from "@/lib/use-today";
 import type { DailyLog, Phase, Stage } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Droplets, Heart, Plus } from "lucide-react";
@@ -31,7 +32,7 @@ export function TodayHero({
   onCameToday,
   onCycleChange,
   notify = false,
-  showFertile = false,
+  showFertile = true,
   log = null,
   onLogSaved,
 }: {
@@ -57,11 +58,12 @@ export function TodayHero({
 }) {
   const { t, lang } = useI18n();
   const [adjust, setAdjust] = useState(false);
-  const today = todayISO();
+  const today = useClientTodayISO() ?? todayISO();
   const days = weekStrip(today);
   const left = daysUntil(nextPeriod ?? null);
   const onPeriod = phase === "menstrual";
-  const fertile = showFertile && phase === "ovulatory";
+  void showFertile; // always-on for week strip / chance copy
+  const fertile = phase === "ovulatory";
   const dow = lang === "es" ? DOW_ES : DOW_EN;
   const kind = periodAlert(left, onPeriod, phase);
 
@@ -170,10 +172,8 @@ export function TodayHero({
                 className={cn(
                   "flex size-10 items-center justify-center rounded-full text-base font-semibold",
                   mark === "period" && "bg-cal-period text-primary-fg",
-                  showFertile && (mark === "fertile" || mark === "peak") && "bg-cal-fertile text-ink",
-                  !mark || mark === "quiet" || (!showFertile && (mark === "fertile" || mark === "peak"))
-                    ? "bg-surface text-fg"
-                    : "",
+                  (mark === "fertile" || mark === "peak") && "bg-cal-fertile text-ink",
+                  !mark || mark === "quiet" ? "bg-surface text-fg" : "",
                   isToday && "pulse-today ring-2 ring-ink/30",
                 )}
               >

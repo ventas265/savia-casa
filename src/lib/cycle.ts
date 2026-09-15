@@ -1,6 +1,7 @@
 import { differenceInCalendarDays } from "date-fns";
 import type { DailyLog, Phase, SaviaProfile, Stage } from "@/lib/types";
 
+/** Local calendar YYYY-MM-DD — never UTC (toISOString shifts the day). */
 export function todayISO(d = new Date()) {
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, "0");
@@ -8,8 +9,10 @@ export function todayISO(d = new Date()) {
   return `${y}-${m}-${day}`;
 }
 
+/** Parse YYYY-MM-DD as a local calendar date (not UTC midnight). */
 export function fromISO(iso: string) {
-  const [y, m, d] = iso.split("-").map(Number);
+  const day = String(iso).slice(0, 10);
+  const [y, m, d] = day.split("-").map(Number);
   return new Date(y!, (m || 1) - 1, d || 1);
 }
 

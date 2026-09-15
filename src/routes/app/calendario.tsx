@@ -10,25 +10,33 @@ import { SAVIA_BETA } from "@/lib/beta";
 import { localToday } from "@/lib/savia-local";
 import { setSelectedDay } from "@/lib/selected-day";
 import { useI18n } from "@/lib/i18n";
-import { isCycling, periodDaysFromLogs, formatDay, weightedCycle } from "@/lib/cycle";
+import { isCycling, markForDate, periodDaysFromLogs, formatDay, weightedCycle } from "@/lib/cycle";
 import type { DailyLog, TodaySnapshot } from "@/lib/types";
 
 export const Route = createFileRoute("/app/calendario")({ component: CalendarTab });
 
 function CalendarTab() {
   const { t, lang } = useI18n();
-  const [data, setData] = useState<TodaySnapshot | null>(() => (SAVIA_BETA ? localToday() : null));
+  const [data, setData] = useState<TodaySnapshot | null>(null);
   const [err, setErr] = useState(false);
   const [sheetDay, setSheetDay] = useState<string | null>(null);
 
   useEffect(() => {
+    let alive = true;
+    if (SAVIA_BETA) {
+      const local = localToday();
+      if (alive) setData(local);
+    }
     loadToday()
       .then((snap) => {
-        setData(snap);
+        if (alive) setData(snap);
       })
       .catch(() => {
-        if (!SAVIA_BETA) setErr(true);
+        if (alive && !SAVIA_BETA) setErr(true);
       });
+    return () => {
+      alive = false;
+    };
   }, []);
 
   function applyLog(log: DailyLog) {
@@ -100,11 +108,12 @@ function CalendarTab() {
               sexDays={data.sexMarks.map((s) => s.day)}
               sexMarks={data.sexMarks}
               paid={paid}
-              showFertile={data.profile.intention !== "track"}
+              showFertile
               onSelect={(iso) => {
                 setSelectedDay(iso);
                 setSheetDay(iso);
               }}
+              onMonthChange={() => setSheetDay(null)}
             />
             {data.periodStarts.length ? (
               <div className="mt-6">
@@ -132,6 +141,13 @@ function CalendarTab() {
           day={sheetDay}
           log={sheetLog}
           paid={paid}
+          dayMark={markForDate(sheetDay, {
+            lastStart: data.profile.lastPeriodStart,
+            cycleLength: learned,
+            periodLength: data.profile.periodLength,
+            periodStarts: data.periodStarts,
+            periodDays: periodDaysFromLogs(data.recentLogs),
+          })}
           onClose={() => setSheetDay(null)}
           onSaved={(log) => applyLog(log)}
         />
