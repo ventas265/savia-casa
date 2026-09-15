@@ -7,6 +7,7 @@ import { moneyToNumber } from "@/lib/utils";
 import { WHOP_MONTH } from "@/lib/pay-links";
 import { emergencyLine } from "@/lib/latam";
 import { callName } from "@/lib/names";
+import { isCompSerenaEmail } from "@/lib/serena-comps";
 
 function saviaPrompt(lang: string, emergency: string, file: string) {
   return `You are Grok (xAI), answering in-character as Savia IA — her close companion inside the Savia app. Same intelligence as the builder of this product; you do not hand her off to a weaker bot.
@@ -151,16 +152,38 @@ function mapLog(row: LogRow): DailyLog {
 
 export async function getOrCreateProfile(userId: string): Promise<SaviaProfile> {
   const sql = await getSql();
-  const existing = await sql<ProfileRow>`select * from savia_profiles where user_id = ${userId} limit 1`;
-  if (existing[0]) return mapProfile(existing[0]);
-  const inserted = await sql<ProfileRow>`
-    insert into savia_profiles (user_id) values (${userId})
-    on conflict (user_id) do nothing
-    returning *
+  const userRows = await sql<{ email: string }>`
+    select email from "user" where id = ${userId} limit 1
   `;
-  if (inserted[0]) return mapProfile(inserted[0]);
-  const again = await sql<ProfileRow>`select * from savia_profiles where user_id = ${userId} limit 1`;
-  return mapProfile(again[0]!);
+  const isComp = isCompSerenaEmail(userRows[0]?.email);
+  const existing = await sql<ProfileRow>`select * from savia_profiles where user_id = ${userId} limit 1`;
+  let row = existing[0];
+
+  if (!row) {
+    const inserted = await sql<ProfileRow>`
+      insert into savia_profiles (user_id) values (${userId})
+      on conflict (user_id) do nothing
+      returning *
+    `;
+    row = inserted[0];
+  }
+  if (!row) {
+    const again = await sql<ProfileRow>`select * from savia_profiles where user_id = ${userId} limit 1`;
+    row = again[0];
+  }
+  if (!row) throw new Error(`Profile not found for user ${userId}`);
+
+  if (isComp && !isSerena(row.plan)) {
+    const upgraded = await sql<ProfileRow>`
+      update savia_profiles
+      set plan = 'serena', updated_at = now()
+      where user_id = ${userId}
+      returning *
+    `;
+    if (upgraded[0]) row = upgraded[0];
+  }
+
+  return mapProfile(row);
 }
 
 export async function snapshotFor(userId: string): Promise<TodaySnapshot> {
