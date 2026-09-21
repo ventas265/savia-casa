@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { Link } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
 import {
   CYCLE_CHOICES,
@@ -318,10 +319,10 @@ function TalkSaviaCard({ onAsk, wrapUpPaid }: { onAsk: () => void; wrapUpPaid: b
           className="size-[3.6rem] shrink-0 rounded-full object-cover object-[center_20%] shadow-card ring-2 ring-primary/30"
         />
         <div className="min-w-0 flex-1 pt-0.5">
-          <h2 className="font-display text-xl font-semibold tracking-[-0.03em] text-fg">
+          <h2 className="font-display text-2xl font-semibold tracking-[-0.045em] text-fg">
             {t.talkSaviaTitle}
           </h2>
-          <p className="mt-1 text-sm leading-snug text-muted">{t.talkSaviaSub}</p>
+          <p className="mt-1.5 text-sm leading-relaxed text-muted">{t.talkSaviaSub}</p>
         </div>
       </div>
       <button
@@ -334,6 +335,13 @@ function TalkSaviaCard({ onAsk, wrapUpPaid }: { onAsk: () => void; wrapUpPaid: b
       >
         {t.talkSaviaCta}
       </button>
+      <Link
+        to="/app/pareja"
+        className="relative mt-2.5 flex items-center justify-center gap-1 text-xs font-semibold text-primary underline-offset-4 hover:underline"
+      >
+        {t.partnerTitle}
+        <span aria-hidden>→</span>
+      </Link>
       {!wrapUpPaid ? (
         <p className="relative mt-2.5 text-center text-[11px] font-medium leading-snug text-muted">
           {t.talkSaviaSerenaHint}
