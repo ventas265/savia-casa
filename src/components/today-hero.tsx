@@ -16,7 +16,7 @@ import {
 import { useClientTodayISO } from "@/lib/use-today";
 import type { DailyLog, Phase, Stage } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { Droplets, MessageCircle, Plus } from "lucide-react";
+import { Droplets, MessageCircle, SmilePlus } from "lucide-react";
 import { CartaHoy } from "@/components/carta-hoy";
 import { ConsejosHoy } from "@/components/consejos-hoy";
 import { QuickLog } from "@/components/quick-log";
@@ -241,7 +241,6 @@ export function TodayHero({
         <p className="font-display text-[2.85rem] font-semibold leading-[1.05] tracking-[-0.05em] text-primary">
           {heroTitle}
         </p>
-        <p className="mt-3 text-xs font-medium text-muted">{t.heroDisclaimer}</p>
       </div>
 
       <div className="relative mt-10 grid grid-cols-3 gap-4">
@@ -308,7 +307,7 @@ function HeroAct({
   tone: "rose" | "sand" | "plum";
   disabled?: boolean;
 }) {
-  const Icon = tone === "rose" ? Droplets : tone === "sand" ? Plus : MessageCircle;
+  const Icon = tone === "rose" ? Droplets : tone === "sand" ? SmilePlus : MessageCircle;
   return (
     <button
       type="button"
@@ -317,19 +316,21 @@ function HeroAct({
         haptic(14);
         onClick();
       }}
-      className="press flex min-h-11 flex-col items-center gap-2.5 py-1 disabled:opacity-60"
+      aria-label={label}
+      className="press flex min-h-[7.25rem] flex-col items-center gap-2.5 rounded-[1.35rem] px-1 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-60"
     >
       <span
+        aria-hidden="true"
         className={cn(
-          "flex size-[4.25rem] min-h-11 min-w-11 items-center justify-center rounded-full shadow-card",
-          tone === "rose" && "bg-primary text-primary-fg",
-          tone === "sand" && "bg-surface text-ink",
-          tone === "plum" && "bg-plum text-primary-fg",
+          "flex size-[4.5rem] min-h-11 min-w-11 items-center justify-center rounded-full shadow-card transition-transform",
+          tone === "rose" && "bg-primary text-primary-fg ring-4 ring-primary/20",
+          tone === "sand" && "bg-surface text-ink ring-2 ring-sand/70",
+          tone === "plum" && "bg-select text-select-fg ring-4 ring-select/15",
         )}
       >
         <Icon className="size-7" strokeWidth={2.2} />
       </span>
-      <span className="text-center text-[11px] font-semibold leading-tight">{label}</span>
+      <span className="text-center text-xs font-semibold leading-tight text-fg">{label}</span>
     </button>
   );
 }
