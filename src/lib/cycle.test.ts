@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { asIsoDay, cycleDay, formatDay, fromISO, inDayRange, nextPeriodDate, phaseForDay, predictPeriod, todayISO, weightedCycle } from "./cycle.ts";
+import { asIsoDay, cycleDay, formatDay, fromISO, inDayRange, isConfirmedPeriodDay, nextPeriodDate, phaseForDay, predictPeriod, todayISO, weightedCycle } from "./cycle.ts";
 
 test("cycle day 1 is the start", () => {
   assert.equal(cycleDay("2026-01-01", 28, "2026-01-01"), 1);
@@ -69,4 +69,33 @@ test("predict window can include today before exact next", () => {
   assert.ok(p.from && p.to);
   assert.equal(inDayRange("2026-03-28", p.from, p.to), true);
   assert.equal(inDayRange("2026-03-20", p.from, p.to), false);
+});
+
+test("isConfirmedPeriodDay treats Ogino wrap as estimate, not confirmed", () => {
+  // last start Aug 23 + 28 → Sept 20; on Sept 21 cycleDay wraps to 2 but no new start logged
+  assert.equal(
+    isConfirmedPeriodDay("2026-09-21", {
+      lastStart: "2026-08-23",
+      periodLength: 5,
+      periodStarts: ["2026-08-23"],
+    }),
+    false,
+  );
+  assert.equal(
+    isConfirmedPeriodDay("2026-08-24", {
+      lastStart: "2026-08-23",
+      periodLength: 5,
+      periodStarts: ["2026-08-23"],
+    }),
+    true,
+  );
+  assert.equal(
+    isConfirmedPeriodDay("2026-09-21", {
+      lastStart: "2026-08-23",
+      periodLength: 5,
+      periodStarts: ["2026-08-23"],
+      log: { periodStarted: true, flow: "medium" },
+    }),
+    true,
+  );
 });

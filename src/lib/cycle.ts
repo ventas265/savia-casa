@@ -285,6 +285,33 @@ export function daysUntil(iso: string | null, from = todayISO()) {
   return differenceInCalendarDays(fromISO(iso), fromISO(from));
 }
 
+
+/** True when this day is covered by a logged/confirmed period start (not Ogino estimate alone). */
+export function isConfirmedPeriodDay(
+  iso: string,
+  opts: {
+    lastStart: string | null;
+    periodLength: number;
+    periodStarts?: string[];
+    periodDays?: string[];
+    log?: { periodStarted?: boolean; flow?: string } | null;
+  },
+) {
+  const log = opts.log;
+  if (log && (log.periodStarted || (log.flow && log.flow !== "none" && log.flow !== "spotting"))) {
+    return true;
+  }
+  if (opts.periodDays?.includes(iso)) return true;
+  const plen = Math.max(opts.periodLength, 2);
+  const starts = [...(opts.periodStarts || [])];
+  if (opts.lastStart && !starts.includes(opts.lastStart)) starts.push(opts.lastStart);
+  for (const start of starts) {
+    const diff = differenceInCalendarDays(fromISO(iso), fromISO(start));
+    if (diff >= 0 && diff < plen) return true;
+  }
+  return false;
+}
+
 /** Inclusive local-calendar range check (ISO YYYY-MM-DD compares lexicographically). */
 export function inDayRange(iso: string, from: string | null, to: string | null) {
   if (!from || !to) return false;

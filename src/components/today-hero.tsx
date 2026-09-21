@@ -7,6 +7,7 @@ import {
   formatDay,
   formatLong,
   inDayRange,
+  isConfirmedPeriodDay,
   markForDate,
   predictPeriod,
   todayISO,
@@ -75,14 +76,25 @@ export function TodayHero({
   const pred = predictPeriod(lastStart, periodStarts, cycleLength, stage);
   const next = pred.next ?? nextPeriod ?? null;
   const left = daysUntil(next);
-  const loggedBleed = Boolean(
-    log && (log.periodStarted || (log.flow !== "none" && log.flow !== "spotting")),
-  );
-  const onPeriod = phase === "menstrual" || loggedBleed;
+  // Confirmed bleeding only — Ogino wrap must not look like she already logged period.
+  const onPeriod = isConfirmedPeriodDay(today, {
+    lastStart: lastStart ?? null,
+    periodLength,
+    periodStarts,
+    log,
+  });
   void showFertile;
   const fertile = phase === "ovulatory";
   const dow = lang === "es" ? DOW_ES : DOW_EN;
-  const inWindow = !onPeriod && inDayRange(today, pred.from, pred.to);
+  const estimatedBleed =
+    !onPeriod &&
+    markForDate(today, {
+      lastStart: lastStart ?? null,
+      cycleLength,
+      periodLength,
+      periodStarts,
+    }) === "period";
+  const inWindow = !onPeriod && (inDayRange(today, pred.from, pred.to) || estimatedBleed);
   const kind = periodAlert(left, onPeriod, phase, inWindow);
 
   const heroTitle = (() => {
@@ -183,7 +195,15 @@ export function TodayHero({
             periodLength,
             periodStarts,
           });
-          const estHint = inDayRange(d.iso, pred.from, pred.to) && mark !== "period";
+          const confirmed = isConfirmedPeriodDay(d.iso, {
+            lastStart: lastStart ?? null,
+            periodLength,
+            periodStarts,
+            log: d.iso === today ? log : null,
+          });
+          const estHint =
+            !confirmed &&
+            (inDayRange(d.iso, pred.from, pred.to) || mark === "period");
           return (
             <button
               key={d.iso}
@@ -198,10 +218,10 @@ export function TodayHero({
               <span
                 className={cn(
                   "flex size-10 items-center justify-center rounded-full text-base font-semibold",
-                  mark === "period" && "bg-cal-period text-primary-fg",
+                  confirmed && "bg-cal-period text-primary-fg",
                   estHint && "border-2 border-dashed border-cal-period bg-transparent text-cal-period",
-                  (mark === "fertile" || mark === "peak") && !estHint && "bg-cal-fertile text-ink",
-                  (!mark || mark === "quiet") && !estHint ? "bg-surface text-fg" : "",
+                  (mark === "fertile" || mark === "peak") && !estHint && !confirmed && "bg-cal-fertile text-ink",
+                  (!mark || mark === "quiet") && !estHint && !confirmed ? "bg-surface text-fg" : "",
                   isToday && "pulse-today ring-2 ring-ink/30",
                 )}
               >
