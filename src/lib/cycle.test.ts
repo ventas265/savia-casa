@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { asIsoDay, cycleDay, formatDay, fromISO, nextPeriodDate, phaseForDay, predictPeriod, todayISO, weightedCycle } from "./cycle.ts";
+import { asIsoDay, cycleDay, formatDay, fromISO, inDayRange, nextPeriodDate, phaseForDay, predictPeriod, todayISO, weightedCycle } from "./cycle.ts";
 
 test("cycle day 1 is the start", () => {
   assert.equal(cycleDay("2026-01-01", 28, "2026-01-01"), 1);
@@ -52,4 +52,21 @@ test("asIsoDay keeps YYYY-MM-DD strings", () => {
 test("asIsoDay UTC-midnight Date stays on that calendar day", () => {
   const d = new Date("2026-09-15T00:00:00.000Z");
   assert.equal(asIsoDay(d), "2026-09-15");
+});
+
+test("inDayRange includes endpoints", () => {
+  assert.equal(inDayRange("2026-09-20", "2026-09-18", "2026-09-22"), true);
+  assert.equal(inDayRange("2026-09-18", "2026-09-18", "2026-09-22"), true);
+  assert.equal(inDayRange("2026-09-22", "2026-09-18", "2026-09-22"), true);
+  assert.equal(inDayRange("2026-09-17", "2026-09-18", "2026-09-22"), false);
+  assert.equal(inDayRange("2026-09-20", null, "2026-09-22"), false);
+});
+
+test("predict window can include today before exact next", () => {
+  // last start Mar 1, 28d → next Mar 29; with few cycles pad >= 2 → from Mar 27
+  const p = predictPeriod("2026-03-01", [], 28, "cycle");
+  assert.equal(p.next, "2026-03-29");
+  assert.ok(p.from && p.to);
+  assert.equal(inDayRange("2026-03-28", p.from, p.to), true);
+  assert.equal(inDayRange("2026-03-20", p.from, p.to), false);
 });

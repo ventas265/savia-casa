@@ -2,11 +2,17 @@ import { todayISO } from "@/lib/cycle";
 
 export type AlertKind = "period" | "today" | "tomorrow" | "soon" | "late" | "fertile" | "pms" | null;
 
-export function periodAlert(left: number | null, onPeriod: boolean, phase?: string): AlertKind {
+export function periodAlert(
+  left: number | null,
+  onPeriod: boolean,
+  phase?: string,
+  inWindow = false,
+): AlertKind {
   if (onPeriod) return "period";
+  // Estimated window includes today (Flo-style "may start today"), not only exact next day.
+  if (inWindow || left === 0) return "today";
   if (left == null) return null;
   if (left < 0) return "late";
-  if (left === 0) return "today";
   if (left === 1) return "tomorrow";
   if (left === 2) return "soon";
   if (phase === "luteal" && left >= 3 && left <= 7) return "pms";

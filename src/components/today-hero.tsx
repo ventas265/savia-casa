@@ -1,10 +1,21 @@
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
-import { CYCLE_CHOICES, daysUntil, formatLong, markForDate, todayISO, weekStrip } from "@/lib/cycle";
+import {
+  CYCLE_CHOICES,
+  daysUntil,
+  formatDay,
+  formatLong,
+  inDayRange,
+  markForDate,
+  predictPeriod,
+  todayISO,
+  weekStrip,
+} from "@/lib/cycle";
 import { useClientTodayISO } from "@/lib/use-today";
 import type { DailyLog, Phase, Stage } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { Droplets, Heart, Plus } from "lucide-react";
+import { Droplets, MessageCircle, Plus } from "lucide-react";
 import { CartaHoy } from "@/components/carta-hoy";
 import { ConsejosHoy } from "@/components/consejos-hoy";
 import { QuickLog } from "@/components/quick-log";
@@ -49,7 +60,7 @@ export function TodayHero({
   onLog: () => void;
   onGuia: () => void;
   onAsk: () => void;
-  onCameToday?: () => void;
+  onCameToday?: () => void | Promise<unknown>;
   onCycleChange?: (n: number) => void;
   notify?: boolean;
   showFertile?: boolean;
@@ -58,52 +69,34 @@ export function TodayHero({
 }) {
   const { t, lang } = useI18n();
   const [adjust, setAdjust] = useState(false);
+  const [savingPeriod, setSavingPeriod] = useState(false);
   const today = useClientTodayISO() ?? todayISO();
   const days = weekStrip(today);
-  const left = daysUntil(nextPeriod ?? null);
-  const onPeriod = phase === "menstrual";
-  void showFertile; // always-on for week strip / chance copy
+  const pred = predictPeriod(lastStart, periodStarts, cycleLength, stage);
+  const next = pred.next ?? nextPeriod ?? null;
+  const left = daysUntil(next);
+  const loggedBleed = Boolean(
+    log && (log.periodStarted || (log.flow !== "none" && log.flow !== "spotting")),
+  );
+  const onPeriod = phase === "menstrual" || loggedBleed;
+  void showFertile;
   const fertile = phase === "ovulatory";
   const dow = lang === "es" ? DOW_ES : DOW_EN;
-  const kind = periodAlert(left, onPeriod, phase);
+  const inWindow = !onPeriod && inDayRange(today, pred.from, pred.to);
+  const kind = periodAlert(left, onPeriod, phase, inWindow);
 
-  const hero =
-    kind === "period"
-      ? { kicker: null as string | null, title: t.periodToday }
-      : kind === "today"
-        ? { kicker: null, title: t.periodComesToday }
-        : kind === "tomorrow"
-          ? { kicker: null, title: t.periodComesTomorrow }
-          : kind === "soon"
-            ? { kicker: null, title: t.periodComesSoon }
-            : kind === "late"
-              ? { kicker: t.periodLate, title: `${Math.abs(left ?? 0)} ${t.daysLeft}` }
-              : { kicker: t.periodIn, title: left == null ? "—" : `${left} ${left === 1 ? t.dayLeft : t.daysLeft}` };
-
-  const chance = stage === "peri" ? t.periSub : onPeriod ? t.periodSub : fertile ? t.ovToday : t.chanceLow;
-
-  const todayMark = markForDate(today, {
-    lastStart: lastStart ?? null,
-    cycleLength,
-    periodLength,
-    periodStarts,
-  });
-  const fertileEst = todayMark === "fertile" || todayMark === "peak";
-  const hasSexToday = Boolean(log?.sex);
-  const sexRisky = log?.sexKind === "unprotected" || log?.sexKind === "withdrawal";
-  const hoySexLine =
-    hasSexToday && fertileEst
-      ? sexRisky
-        ? t.hoySexFertile
-        : t.hoySexFertileProtected
-      : hasSexToday && (todayMark === "quiet" || todayMark === "period")
-        ? t.hoySexQuiet
-        : null;
-
-  const periHero =
-    stage === "peri"
-      ? { kicker: t.periKicker, title: hero.title }
-      : hero;
+  const heroTitle = (() => {
+    if (onPeriod && cycleDay != null) {
+      return t.heroDayMenstrual.replace("{n}", String(cycleDay));
+    }
+    if (onPeriod) return t.periodToday;
+    if (inWindow || left === 0) return t.periodComesToday;
+    if (left != null && left > 0) {
+      return left === 1 ? t.periodInOneDay : t.periodInDays.replace("{n}", String(left));
+    }
+    if (cycleDay != null) return t.heroDayCycle.replace("{n}", String(cycleDay));
+    return t.periodComesToday;
+  })();
 
   const notifyTitle =
     kind === "period"
@@ -134,14 +127,14 @@ export function TodayHero({
               ? t.notifyBodyLate
               : kind === "pms"
                 ? t.notifyBodyPms
-              : t.notifyBodyFertile;
+                : t.notifyBodyFertile;
 
   useEffect(() => {
     if (!notify) return;
     maybeNotify({ kind: kind ?? (fertile ? "fertile" : null), fertile, title: notifyTitle, body: notifyBody });
     void armReminders(
       remindPlan({
-        nextPeriod: nextPeriod ?? null,
+        nextPeriod: next,
         onPeriod,
         kind,
         titles: {
@@ -153,7 +146,22 @@ export function TodayHero({
         },
       }),
     );
-  }, [notify, kind, fertile, notifyTitle, notifyBody, nextPeriod, onPeriod, t]);
+  }, [notify, kind, fertile, notifyTitle, notifyBody, next, onPeriod, t]);
+
+  async function registerPeriodToday() {
+    if (!onCameToday || onPeriod || savingPeriod) {
+      if (onPeriod) onLog();
+      return;
+    }
+    setSavingPeriod(true);
+    haptic(14);
+    try {
+      await onCameToday();
+      toast.success(t.savedInMonth.replace("{date}", formatDay(today, lang)));
+    } finally {
+      setSavingPeriod(false);
+    }
+  }
 
   return (
     <div className="relative -mx-4 overflow-hidden px-4 pb-6">
@@ -175,6 +183,7 @@ export function TodayHero({
             periodLength,
             periodStarts,
           });
+          const estHint = inDayRange(d.iso, pred.from, pred.to) && mark !== "period";
           return (
             <button
               key={d.iso}
@@ -190,39 +199,44 @@ export function TodayHero({
                 className={cn(
                   "flex size-10 items-center justify-center rounded-full text-base font-semibold",
                   mark === "period" && "bg-cal-period text-primary-fg",
-                  (mark === "fertile" || mark === "peak") && "bg-cal-fertile text-ink",
-                  !mark || mark === "quiet" ? "bg-surface text-fg" : "",
+                  estHint && "border-2 border-dashed border-cal-period bg-transparent text-cal-period",
+                  (mark === "fertile" || mark === "peak") && !estHint && "bg-cal-fertile text-ink",
+                  (!mark || mark === "quiet") && !estHint ? "bg-surface text-fg" : "",
                   isToday && "pulse-today ring-2 ring-ink/30",
                 )}
               >
                 {d.date}
               </span>
+              {estHint ? (
+                <span className="size-1 rounded-full bg-cal-period/80" aria-hidden />
+              ) : (
+                <span className="size-1" aria-hidden />
+              )}
             </button>
           );
         })}
       </div>
 
       <div className="relative mt-10 text-center">
-        {periHero.kicker ? <p className="text-sm font-semibold text-muted">{periHero.kicker}</p> : null}
-        <p className="font-display text-[2.85rem] font-semibold leading-none tracking-[-0.05em] text-primary">
-          {periHero.title}
+        <p className="font-display text-[2.85rem] font-semibold leading-[1.05] tracking-[-0.05em] text-primary">
+          {heroTitle}
         </p>
-        <p className="mt-3 text-sm font-semibold">{chance}</p>
-        {hoySexLine ? (
-          <div className="mx-auto mt-3 max-w-sm rounded-[1.25rem] bg-surface px-4 py-3 text-left shadow-card">
-            <p className="text-sm font-semibold leading-snug">{hoySexLine}</p>
-            <p className="mt-1.5 text-xs leading-relaxed text-muted">{t.daySheetCalDisclaimer}</p>
-          </div>
-        ) : null}
-        {!onPeriod ? (
-          <p className="mt-2 text-xs font-medium text-muted">{t.periodEstimate}</p>
-        ) : null}
+        <p className="mt-3 text-xs font-medium text-muted">{t.heroDisclaimer}</p>
       </div>
 
       <div className="relative mt-10 grid grid-cols-3 gap-4">
-        <HeroAct label={t.actBleed} onClick={() => (onCameToday && !onPeriod ? onCameToday() : onLog())} tone="rose" />
-        <HeroAct label={t.actBody} onClick={() => document.getElementById("anotar")?.scrollIntoView({ behavior: "smooth" })} tone="sand" />
-        <HeroAct label={t.actSex} onClick={onLog} tone="plum" />
+        <HeroAct
+          label={t.actBleed}
+          onClick={() => void registerPeriodToday()}
+          tone="rose"
+          disabled={savingPeriod}
+        />
+        <HeroAct
+          label={t.actBody}
+          onClick={() => document.getElementById("anotar")?.scrollIntoView({ behavior: "smooth" })}
+          tone="sand"
+        />
+        <HeroAct label={t.actAskSavia} onClick={onAsk} tone="plum" />
       </div>
 
       <ConsejosHoy stage={stage} phase={phase} onAsk={onAsk} onGuia={onGuia} />
@@ -231,15 +245,6 @@ export function TodayHero({
 
       <CartaHoy name={name} stage={stage} phase={phase} onAsk={onAsk} />
 
-      {!onPeriod && onCameToday ? (
-        <button
-          type="button"
-          onClick={onCameToday}
-          className="relative mt-6 w-full min-h-12 rounded-full bg-primary text-sm font-semibold text-primary-fg shadow-card"
-        >
-          {t.cameToday}
-        </button>
-      ) : null}
       {onCycleChange ? (
         <div className="relative mt-4 text-center">
           <button
@@ -276,20 +281,23 @@ function HeroAct({
   label,
   onClick,
   tone,
+  disabled,
 }: {
   label: string;
   onClick: () => void;
   tone: "rose" | "sand" | "plum";
+  disabled?: boolean;
 }) {
-  const Icon = tone === "rose" ? Droplets : tone === "sand" ? Plus : Heart;
+  const Icon = tone === "rose" ? Droplets : tone === "sand" ? Plus : MessageCircle;
   return (
     <button
       type="button"
+      disabled={disabled}
       onClick={() => {
         haptic(14);
         onClick();
       }}
-      className="press flex min-h-11 flex-col items-center gap-2.5 py-1"
+      className="press flex min-h-11 flex-col items-center gap-2.5 py-1 disabled:opacity-60"
     >
       <span
         className={cn(

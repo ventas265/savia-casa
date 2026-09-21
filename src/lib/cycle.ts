@@ -285,6 +285,12 @@ export function daysUntil(iso: string | null, from = todayISO()) {
   return differenceInCalendarDays(fromISO(iso), fromISO(from));
 }
 
+/** Inclusive local-calendar range check (ISO YYYY-MM-DD compares lexicographically). */
+export function inDayRange(iso: string, from: string | null, to: string | null) {
+  if (!from || !to) return false;
+  return iso >= from && iso <= to;
+}
+
 export function weekStrip(iso = todayISO()) {
   const d = fromISO(iso);
   const js = d.getDay();
