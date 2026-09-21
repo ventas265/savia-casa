@@ -16,7 +16,7 @@ import {
 import { useClientTodayISO } from "@/lib/use-today";
 import type { DailyLog, Phase, Stage } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { Droplets, MessageCircle, SmilePlus } from "lucide-react";
+import { Droplets, SmilePlus } from "lucide-react";
 import { CartaHoy } from "@/components/carta-hoy";
 import { ConsejosHoy } from "@/components/consejos-hoy";
 import { QuickLog } from "@/components/quick-log";
@@ -47,6 +47,7 @@ export function TodayHero({
   showFertile = true,
   log = null,
   onLogSaved,
+  wrapUpPaid = false,
 }: {
   stage: Stage;
   phase: Phase;
@@ -67,6 +68,8 @@ export function TodayHero({
   showFertile?: boolean;
   log?: DailyLog | null;
   onLogSaved?: () => void;
+  /** Soft Serena hint only when not on serena/year. */
+  wrapUpPaid?: boolean;
 }) {
   const { t, lang } = useI18n();
   const [adjust, setAdjust] = useState(false);
@@ -243,7 +246,7 @@ export function TodayHero({
         </p>
       </div>
 
-      <div className="relative mt-10 grid grid-cols-3 gap-4">
+      <div className="relative mt-10 grid grid-cols-2 gap-4">
         <HeroAct
           label={t.actBleed}
           onClick={() => void registerPeriodToday()}
@@ -255,8 +258,9 @@ export function TodayHero({
           onClick={() => document.getElementById("anotar")?.scrollIntoView({ behavior: "smooth" })}
           tone="sand"
         />
-        <HeroAct label={t.actAskSavia} onClick={onAsk} tone="plum" />
       </div>
+
+      <TalkSaviaCard onAsk={onAsk} wrapUpPaid={wrapUpPaid} />
 
       <ConsejosHoy stage={stage} phase={phase} onAsk={onAsk} onGuia={onGuia} />
 
@@ -296,6 +300,49 @@ export function TodayHero({
   );
 }
 
+function TalkSaviaCard({ onAsk, wrapUpPaid }: { onAsk: () => void; wrapUpPaid: boolean }) {
+  const { t } = useI18n();
+  return (
+    <section
+      className="relative mt-5 overflow-hidden rounded-[1.6rem] bg-gradient-to-br from-surface via-surface to-primary/10 p-4 shadow-card ring-1 ring-primary/20"
+      aria-label={t.talkSaviaTitle}
+    >
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -right-8 -top-10 size-28 rounded-full bg-primary/10 blur-2xl"
+      />
+      <div className="relative flex items-start gap-3.5">
+        <img
+          src="/photos/savia-ia.jpg"
+          alt=""
+          className="size-[3.6rem] shrink-0 rounded-full object-cover object-[center_20%] shadow-card ring-2 ring-primary/30"
+        />
+        <div className="min-w-0 flex-1 pt-0.5">
+          <h2 className="font-display text-xl font-semibold tracking-[-0.03em] text-fg">
+            {t.talkSaviaTitle}
+          </h2>
+          <p className="mt-1 text-sm leading-snug text-muted">{t.talkSaviaSub}</p>
+        </div>
+      </div>
+      <button
+        type="button"
+        onClick={() => {
+          haptic(14);
+          onAsk();
+        }}
+        className="press relative mt-4 flex h-12 w-full items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-fg shadow-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+      >
+        {t.talkSaviaCta}
+      </button>
+      {!wrapUpPaid ? (
+        <p className="relative mt-2.5 text-center text-[11px] font-medium leading-snug text-muted">
+          {t.talkSaviaSerenaHint}
+        </p>
+      ) : null}
+    </section>
+  );
+}
+
 function HeroAct({
   label,
   onClick,
@@ -304,10 +351,10 @@ function HeroAct({
 }: {
   label: string;
   onClick: () => void;
-  tone: "rose" | "sand" | "plum";
+  tone: "rose" | "sand";
   disabled?: boolean;
 }) {
-  const Icon = tone === "rose" ? Droplets : tone === "sand" ? SmilePlus : MessageCircle;
+  const Icon = tone === "rose" ? Droplets : SmilePlus;
   return (
     <button
       type="button"
@@ -325,7 +372,6 @@ function HeroAct({
           "flex size-[4.5rem] min-h-11 min-w-11 items-center justify-center rounded-full shadow-card transition-transform",
           tone === "rose" && "bg-primary text-primary-fg ring-4 ring-primary/20",
           tone === "sand" && "bg-surface text-ink ring-2 ring-sand/70",
-          tone === "plum" && "bg-select text-select-fg ring-4 ring-select/15",
         )}
       >
         <Icon className="size-7" strokeWidth={2.2} />

@@ -30,11 +30,11 @@ function HoySkeleton() {
         <Skeleton className="mx-auto h-12 w-56 rounded-lg" />
         <Skeleton className="mx-auto h-4 w-40 rounded-full" />
       </div>
-      <div className="grid grid-cols-3 gap-4 pt-4">
-        <Skeleton className="mx-auto size-[4.25rem] rounded-full" />
+      <div className="grid grid-cols-2 gap-4 pt-4">
         <Skeleton className="mx-auto size-[4.25rem] rounded-full" />
         <Skeleton className="mx-auto size-[4.25rem] rounded-full" />
       </div>
+      <Skeleton className="mt-5 h-36 w-full rounded-[1.6rem]" />
       <Skeleton className="mt-4 h-28 w-full rounded-[1.5rem]" />
     </div>
   );
@@ -146,6 +146,7 @@ function HoyTab() {
         onLogSaved={() => {
           void loadToday().then(setData);
         }}
+        wrapUpPaid={data.profile.plan === "serena" || data.profile.plan === "year"}
       />
     </>
   );
