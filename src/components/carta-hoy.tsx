@@ -34,11 +34,11 @@ export function CartaHoy({
   }
 
   return (
-    <section className="relative mt-6 rounded-[1.75rem] bg-surface p-5 shadow-card">
-      <p className="text-xs font-semibold tracking-wide text-muted">{t.noteToday}</p>
+    <section className="glass relative mt-6 rounded-[22px] p-5">
+      <p className="kicker">{t.noteToday}</p>
       <h2 className="mt-1 font-display text-2xl font-semibold tracking-[-0.03em]">{note.title}</h2>
       <p className="mt-3 line-clamp-4 text-sm leading-relaxed text-fg">{note.body}</p>
-      <button type="button" onClick={onAsk} className="mt-4 text-left text-sm font-medium text-primary">
+      <button type="button" onClick={onAsk} className="mt-4 text-left text-sm font-medium text-[#ff8fa8]">
         {note.ask}
       </button>
 
@@ -51,7 +51,7 @@ export function CartaHoy({
             onClick={() => pickFeel(c.id)}
             className={cn(
               "press h-11 rounded-full px-4 text-sm font-semibold",
-              feeling === c.id ? "bg-select text-select-fg" : "bg-bg text-fg",
+              feeling === c.id ? "bg-select text-select-fg" : "bg-white/[0.06] text-fg ring-1 ring-white/10",
             )}
           >
             {c.label}
@@ -64,7 +64,7 @@ export function CartaHoy({
       </label>
       <textarea
         id="my-note"
-        className="mt-2 min-h-20 w-full resize-none rounded-2xl bg-bg px-4 py-3 text-sm leading-relaxed outline-none"
+        className="mt-2 min-h-20 w-full resize-none rounded-2xl bg-black/30 px-4 py-3 text-sm leading-relaxed outline-none ring-1 ring-white/[0.08] focus:ring-[rgb(255_79_123/0.5)]"
         placeholder={t.yourNoteHint}
         value={mine}
         maxLength={400}

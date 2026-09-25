@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 import { Link } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
@@ -9,24 +9,23 @@ import {
   formatLong,
   inDayRange,
   isConfirmedPeriodDay,
+  isCycling,
   markForDate,
   predictPeriod,
   todayISO,
-  weekStrip,
 } from "@/lib/cycle";
 import { useClientTodayISO } from "@/lib/use-today";
-import type { DailyLog, Phase, Stage } from "@/lib/types";
+import type { DailyLog, Intention, Phase, Stage } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { Droplets, SmilePlus } from "lucide-react";
+import { Activity, ArrowRight, ArrowUpRight, Bell, Droplet } from "lucide-react";
+import { SegmentRing } from "@/components/cycle-ring";
+import { phaseName, pick } from "@/lib/savia-content";
 import { CartaHoy } from "@/components/carta-hoy";
 import { ConsejosHoy } from "@/components/consejos-hoy";
 import { QuickLog } from "@/components/quick-log";
 import { haptic } from "@/lib/haptic";
 import { maybeNotify, periodAlert } from "@/lib/notify";
 import { armReminders, remindPlan } from "@/lib/reminders";
-
-const DOW_ES = ["Lu", "Ma", "Mi", "Ju", "Vi", "Sa", "Do"];
-const DOW_EN = ["M", "T", "W", "T", "F", "S", "S"];
 
 export function TodayHero({
   stage,
@@ -49,6 +48,7 @@ export function TodayHero({
   log = null,
   onLogSaved,
   wrapUpPaid = false,
+  intention = null,
 }: {
   stage: Stage;
   phase: Phase;
@@ -71,12 +71,12 @@ export function TodayHero({
   onLogSaved?: () => void;
   /** Soft Serena hint only when not on serena/year. */
   wrapUpPaid?: boolean;
+  intention?: Intention | null;
 }) {
   const { t, lang } = useI18n();
   const [adjust, setAdjust] = useState(false);
   const [savingPeriod, setSavingPeriod] = useState(false);
   const today = useClientTodayISO() ?? todayISO();
-  const days = weekStrip(today);
   const pred = predictPeriod(lastStart, periodStarts, cycleLength, stage);
   const next = pred.next ?? nextPeriod ?? null;
   const left = daysUntil(next);
@@ -89,7 +89,6 @@ export function TodayHero({
   });
   void showFertile;
   const fertile = phase === "ovulatory";
-  const dow = lang === "es" ? DOW_ES : DOW_EN;
   const estimatedBleed =
     !onPeriod &&
     markForDate(today, {
@@ -179,89 +178,200 @@ export function TodayHero({
     }
   }
 
+  const initial = (name || "").trim().charAt(0).toUpperCase() || "S";
+  const cycling = isCycling(stage) && Boolean(lastStart);
+  const todayMark = cycling
+    ? markForDate(today, { lastStart: lastStart ?? null, cycleLength, periodLength, periodStarts })
+    : null;
+  const fertHot = todayMark === "fertile" || todayMark === "peak";
+  const meterOn = todayMark === "peak" ? 5 : todayMark === "fertile" ? 4 : onPeriod ? 1 : 2;
+  const fertTitle =
+    todayMark === "peak" ? t.fertChancePeak : todayMark === "fertile" ? t.fertChanceHigh : t.fertChanceLow;
+  const fertBody = fertHot
+    ? intention === "ttc"
+      ? t.fertileTry
+      : t.fertBodyAvoid
+    : t.daySheetChanceLowSex;
+  const nextShort = next ? formatDay(next, lang) : null;
+
+  // Big-number ring center: number when there is one, text otherwise.
+  const center = (() => {
+    if (onPeriod && cycleDay != null) {
+      return { kicker: t.ringOnPeriod, num: String(cycleDay), sub: t.ringOnPeriodSub };
+    }
+    if (!inWindow && left != null && left > 0) {
+      return {
+        kicker: t.ringPeriodIn,
+        num: String(left),
+        sub: left === 1 ? t.ringDay : t.ringDays,
+        date: nextShort ? `~${nextShort}` : null,
+      };
+    }
+    if (!inWindow && left != null && left < 0 && cycleDay != null) {
+      return { kicker: t.ringCycleDay, num: String(cycleDay), sub: t.ringOfCycle };
+    }
+    return { kicker: null, num: null, sub: heroTitle };
+  })();
+
   return (
-    <div className="relative -mx-4 overflow-hidden px-4 pb-6">
-      {name ? (
-        <p className="relative font-display text-3xl font-semibold tracking-[-0.03em]">
-          {t.goodMorning}, {name}
-        </p>
-      ) : (
-        <p className="relative font-display text-3xl font-semibold tracking-[-0.03em]">{t.goodMorning}</p>
-      )}
-      <p className="relative mt-1 text-center text-sm font-semibold text-muted">{formatLong(today, lang)}</p>
+    <div className="relative pb-6">
+      <header className="flex items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-3">
+          <span
+            aria-hidden
+            className="size-[2.4rem] shrink-0 rounded-full p-[1.5px]"
+            style={{ background: "conic-gradient(from 200deg,#FF4F7B,#FF9A6B,#8B6BFF,#FF4F7B)" }}
+          >
+            <span className="grid size-full place-items-center rounded-full bg-[#1a1419] text-[15px] font-semibold">
+              {initial}
+            </span>
+          </span>
+          <div className="min-w-0">
+            <p className="truncate font-display text-lg font-medium tracking-[-0.02em]">
+              {name ? `${t.goodMorning}, ${name}` : t.goodMorning}
+            </p>
+            <p className="text-[12.5px] text-muted first-letter:uppercase">{formatLong(today, lang)}</p>
+          </div>
+        </div>
+        <Link
+          to="/app/mas"
+          aria-label={t.more}
+          className="press glass grid size-10 shrink-0 place-items-center rounded-full text-fg"
+        >
+          <Bell className="size-[18px]" strokeWidth={1.5} />
+        </Link>
+      </header>
 
-      <div className="relative mt-6 grid grid-cols-7 text-center">
-        {days.map((d) => {
-          const isToday = d.iso === today;
-          const mark = markForDate(d.iso, {
-            lastStart: lastStart ?? null,
-            cycleLength,
-            periodLength,
-            periodStarts,
-          });
-          const confirmed = isConfirmedPeriodDay(d.iso, {
-            lastStart: lastStart ?? null,
-            periodLength,
-            periodStarts,
-            log: d.iso === today ? log : null,
-          });
-          const estHint =
-            !confirmed &&
-            (inDayRange(d.iso, pred.from, pred.to) || mark === "period");
-          return (
-            <button
-              key={d.iso}
-              type="button"
-              onClick={() => {
-                haptic();
-                onCal();
-              }}
-              className="press flex flex-col items-center gap-2"
+      <div className="mt-3">
+        <SegmentRing
+          cycleLength={cycleLength}
+          periodLength={periodLength}
+          cycleDay={cycling ? cycleDay : null}
+          label={heroTitle}
+          onClick={onCal}
+        >
+          {center.kicker ? <span className="kicker !text-[#ffb3c4]">{center.kicker}</span> : null}
+          {center.num ? (
+            <span
+              className="mt-2 font-display text-[6.5rem] font-semibold leading-[0.82] tracking-[-0.06em] text-transparent"
+              style={{ backgroundImage: "linear-gradient(180deg,#fff 30%,#ffd6de 100%)", WebkitBackgroundClip: "text", backgroundClip: "text" }}
             >
-              <span className="text-xs font-semibold text-muted">{dow[d.dow]}</span>
-              <span
-                className={cn(
-                  "flex size-10 items-center justify-center rounded-full text-base font-semibold",
-                  confirmed && "bg-cal-period text-primary-fg",
-                  estHint && "border-2 border-dashed border-cal-period bg-transparent text-cal-period",
-                  (mark === "fertile" || mark === "peak") && !estHint && !confirmed && "bg-cal-fertile text-ink",
-                  (!mark || mark === "quiet") && !estHint && !confirmed ? "bg-surface text-fg" : "",
-                  isToday && "pulse-today ring-2 ring-ink/30",
-                )}
-              >
-                {d.date}
-              </span>
-              {estHint ? (
-                <span className="size-1 rounded-full bg-cal-period/80" aria-hidden />
-              ) : (
-                <span className="size-1" aria-hidden />
-              )}
-            </button>
-          );
-        })}
+              {center.num}
+            </span>
+          ) : null}
+          {center.num ? (
+            <span className="mt-2.5 text-sm text-muted">
+              <b className="font-medium text-fg">{center.sub}</b>
+              {center.date ? ` · ${center.date}` : null}
+            </span>
+          ) : (
+            <span className="font-display text-[2rem] font-semibold leading-[1.05] tracking-[-0.04em] text-fg">
+              {center.sub}
+            </span>
+          )}
+        </SegmentRing>
       </div>
 
-      <div className="relative mt-10 text-center">
-        <p className="font-display text-[2.85rem] font-semibold leading-[1.05] tracking-[-0.05em] text-primary">
-          {heroTitle}
-        </p>
-      </div>
+      {cycling ? (
+        <div className="mt-2 grid grid-cols-3 gap-2">
+          <StatTile label={t.statDay}>
+            {cycleDay ?? "–"}
+            <small className="text-[13px] font-normal text-muted"> /{cycleLength}</small>
+          </StatTile>
+          <StatTile label={t.statPhase} small={pick(phaseName[phase], lang).length > 9}>
+            {pick(phaseName[phase], lang)}
+          </StatTile>
+          <StatTile label={t.statCycle} onClick={onCycleChange ? () => setAdjust((v) => !v) : undefined}>
+            {cycleLength}
+            <small className="text-[13px] font-normal text-muted"> {t.ringDays}</small>
+          </StatTile>
+        </div>
+      ) : null}
 
-      <div className="relative mt-10 grid grid-cols-2 gap-4">
-        <HeroAct
-          label={t.actBleed}
-          onClick={() => void registerPeriodToday()}
-          tone="rose"
+      {cycling ? (
+        <button
+          type="button"
+          onClick={onCal}
+          className={cn(
+            "press mt-2 flex w-full items-center gap-3.5 rounded-[22px] border px-4 py-3.5 text-left",
+            fertHot
+              ? "border-[rgb(255_79_123/0.3)] bg-[linear-gradient(135deg,rgb(255_79_123/0.2),rgb(139_107_255/0.12))]"
+              : "glass",
+          )}
+        >
+          <span className="flex h-[38px] shrink-0 items-end gap-1" aria-hidden>
+            {[12, 19, 26, 32, 38].map((h, i) => (
+              <i
+                key={h}
+                className={cn("w-[7px] rounded-[3px]", i < meterOn ? "bg-[linear-gradient(180deg,#FF9A6B,#FF4F7B)]" : "bg-white/15")}
+                style={{ height: h }}
+              />
+            ))}
+          </span>
+          <span className="min-w-0">
+            <span className={cn("kicker block", fertHot && "!text-[#ffb3c4]")}>
+              {fertHot ? t.fertKickerOn : t.fertKickerOff}
+            </span>
+            <span className="mt-0.5 block font-display text-[19px] font-semibold leading-tight tracking-[-0.02em]">
+              {fertTitle}
+            </span>
+            <span className="mt-1 block text-[12.5px] leading-snug text-[#d9ccd3]">{fertBody}</span>
+          </span>
+        </button>
+      ) : null}
+
+      <div className="mt-2 grid grid-cols-[1.15fr_1fr] gap-2">
+        <button
+          type="button"
           disabled={savingPeriod}
-        />
-        <HeroAct
-          label={t.actBody}
-          onClick={() => document.getElementById("anotar")?.scrollIntoView({ behavior: "smooth" })}
-          tone="sand"
-        />
+          onClick={() => {
+            haptic(14);
+            void registerPeriodToday();
+          }}
+          className="press bg-grad flex h-[54px] items-center gap-2.5 whitespace-nowrap rounded-[18px] px-3 text-[13.5px] font-semibold text-primary-fg shadow-[0_8px_24px_-8px_rgb(255_79_123/0.6)] disabled:opacity-60"
+        >
+          <span className="grid size-[30px] place-items-center rounded-full bg-black/15">
+            <Droplet className="size-4" strokeWidth={1.8} />
+          </span>
+          {t.actBleed}
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            haptic(14);
+            document.getElementById("anotar")?.scrollIntoView({ behavior: "smooth" });
+          }}
+          className="press glass flex h-[54px] items-center gap-2.5 whitespace-nowrap rounded-[18px] px-3 text-[13.5px] font-medium text-fg"
+        >
+          <span className="grid size-[30px] place-items-center rounded-full bg-white/10">
+            <Activity className="size-4" strokeWidth={1.8} />
+          </span>
+          {t.actBody}
+        </button>
       </div>
 
       <TalkSaviaCard onAsk={onAsk} wrapUpPaid={wrapUpPaid} />
+
+      {onCycleChange && adjust ? (
+        <div className="glass mt-2 rounded-[22px] p-3">
+          <p className="kicker px-1">{t.adjustCycle}</p>
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {CYCLE_CHOICES.map((n) => (
+              <button
+                key={n}
+                type="button"
+                onClick={() => onCycleChange(n)}
+                className={cn(
+                  "h-10 min-w-10 rounded-full px-2 text-sm font-semibold",
+                  cycleLength === n ? "bg-grad text-primary-fg" : "bg-white/5 text-fg ring-1 ring-white/10",
+                )}
+              >
+                {n}
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : null}
 
       <ConsejosHoy stage={stage} phase={phase} onAsk={onAsk} onGuia={onGuia} />
 
@@ -278,113 +388,91 @@ export function TodayHero({
           >
             {adjust ? t.hideAdjust : t.adjustCycle}
           </button>
-          {adjust ? (
-            <div className="mt-2 flex flex-wrap justify-center gap-1.5">
-              {CYCLE_CHOICES.map((n) => (
-                <button
-                  key={n}
-                  type="button"
-                  onClick={() => onCycleChange(n)}
-                  className={cn(
-                    "h-10 min-w-10 rounded-full px-2 text-sm font-semibold",
-                    cycleLength === n ? "bg-select text-select-fg shadow-card" : "bg-surface text-fg",
-                  )}
-                >
-                  {n}
-                </button>
-              ))}
-            </div>
-          ) : null}
         </div>
       ) : null}
     </div>
   );
 }
 
+function StatTile({
+  label,
+  children,
+  small,
+  onClick,
+}: {
+  label: string;
+  children: ReactNode;
+  small?: boolean;
+  onClick?: () => void;
+}) {
+  const body = (
+    <>
+      <span className="kicker block">{label}</span>
+      <span
+        className={cn(
+          "mt-1.5 block truncate font-display font-medium tracking-[-0.03em]",
+          small ? "text-[16px] leading-[1.6rem]" : "text-[21px] leading-[1.6rem]",
+        )}
+      >
+        {children}
+      </span>
+    </>
+  );
+  if (onClick) {
+    return (
+      <button type="button" onClick={onClick} className="press glass rounded-[18px] px-3 py-2.5 text-left">
+        {body}
+      </button>
+    );
+  }
+  return <div className="glass rounded-[18px] px-3 py-2.5">{body}</div>;
+}
+
 function TalkSaviaCard({ onAsk, wrapUpPaid }: { onAsk: () => void; wrapUpPaid: boolean }) {
   const { t } = useI18n();
   return (
-    <section
-      className="relative mt-5 overflow-hidden rounded-[1.6rem] bg-gradient-to-br from-surface via-surface to-primary/10 p-4 shadow-card ring-1 ring-primary/20"
-      aria-label={t.talkSaviaTitle}
-    >
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -right-8 -top-10 size-28 rounded-full bg-primary/10 blur-2xl"
-      />
-      <div className="relative flex items-start gap-3.5">
-        <img
-          src="/photos/savia-ia.jpg"
-          alt=""
-          className="size-[3.6rem] shrink-0 rounded-full object-cover object-[center_20%] shadow-card ring-2 ring-primary/30"
-        />
-        <div className="min-w-0 flex-1 pt-0.5">
-          <h2 className="font-display text-2xl font-semibold tracking-[-0.045em] text-fg">
-            {t.talkSaviaTitle}
-          </h2>
-          <p className="mt-1.5 text-sm leading-relaxed text-muted">{t.talkSaviaSub}</p>
-        </div>
-      </div>
+    <section className="glass mt-2 rounded-[22px] px-3.5 py-3.5" aria-label={t.talkSaviaTitle}>
       <button
         type="button"
         onClick={() => {
           haptic(14);
           onAsk();
         }}
-        className="press relative mt-4 flex h-12 w-full items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-fg shadow-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        className="press flex w-full items-center gap-3.5 text-left"
       >
-        {t.talkSaviaCta}
+        <span aria-hidden className="orb size-[46px] shrink-0 rounded-full" />
+        <span className="min-w-0 flex-1">
+          <span className="block font-display text-[17px] font-semibold tracking-[-0.02em] text-fg">
+            {t.talkSaviaTitle}
+          </span>
+          <span className="mt-0.5 block text-[12.5px] leading-snug text-muted">{t.talkSaviaSub}</span>
+        </span>
+        <span aria-hidden className="grid size-[34px] shrink-0 place-items-center rounded-full bg-white text-[#130d12]">
+          <ArrowUpRight className="size-4" strokeWidth={2} />
+        </span>
       </button>
-      <Link
-        to="/app/pareja"
-        className="relative mt-2.5 flex items-center justify-center gap-1 text-xs font-semibold text-primary underline-offset-4 hover:underline"
-      >
-        {t.partnerTitle}
-        <span aria-hidden>→</span>
-      </Link>
+      <div className="mt-3 flex items-center justify-between gap-2 border-t border-white/[0.07] pt-3">
+        <Link
+          to="/app/pareja"
+          className="inline-flex min-h-9 items-center gap-1 text-xs font-medium text-muted hover:text-fg"
+        >
+          {t.partnerTitle}
+          <ArrowRight className="size-3.5" strokeWidth={1.8} aria-hidden />
+        </Link>
+        <button
+          type="button"
+          onClick={() => {
+            haptic(14);
+            onAsk();
+          }}
+          className="press bg-grad inline-flex h-9 items-center rounded-full px-4 text-xs font-semibold text-primary-fg"
+        >
+          {t.talkSaviaCta}
+        </button>
+      </div>
       {!wrapUpPaid ? (
-        <p className="relative mt-2.5 text-center text-[11px] font-medium leading-snug text-muted">
-          {t.talkSaviaSerenaHint}
-        </p>
+        <p className="mt-2 text-[11px] font-medium leading-snug text-muted">{t.talkSaviaSerenaHint}</p>
       ) : null}
     </section>
-  );
-}
-
-function HeroAct({
-  label,
-  onClick,
-  tone,
-  disabled,
-}: {
-  label: string;
-  onClick: () => void;
-  tone: "rose" | "sand";
-  disabled?: boolean;
-}) {
-  const Icon = tone === "rose" ? Droplets : SmilePlus;
-  return (
-    <button
-      type="button"
-      disabled={disabled}
-      onClick={() => {
-        haptic(14);
-        onClick();
-      }}
-      aria-label={label}
-      className="press flex min-h-[7.25rem] flex-col items-center gap-2.5 rounded-[1.35rem] px-1 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-60"
-    >
-      <span
-        aria-hidden="true"
-        className={cn(
-          "flex size-[4.5rem] min-h-11 min-w-11 items-center justify-center rounded-full shadow-card transition-transform",
-          tone === "rose" && "bg-primary text-primary-fg ring-4 ring-primary/20",
-          tone === "sand" && "bg-surface text-ink ring-2 ring-sand/70",
-        )}
-      >
-        <Icon className="size-7" strokeWidth={2.2} />
-      </span>
-      <span className="text-center text-xs font-semibold leading-tight text-fg">{label}</span>
-    </button>
   );
 }

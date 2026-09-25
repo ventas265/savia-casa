@@ -30,13 +30,8 @@ export function AskFab() {
       <Link
         to="/app/preguntar"
         aria-label={t.askTalk}
-        className="pointer-events-auto absolute right-4 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] flex size-16 items-center justify-center overflow-hidden rounded-full bg-primary shadow-card ring-4 ring-primary/25"
+        className="orb pointer-events-auto absolute right-4 bottom-[calc(6rem+env(safe-area-inset-bottom))] flex size-14 items-center justify-center rounded-full"
       >
-        <img
-          src="/photos/savia-ia.jpg"
-          alt=""
-          className="size-full object-cover object-[center_20%]"
-        />
       </Link>
     </div>
   );

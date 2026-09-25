@@ -49,7 +49,7 @@ function Login() {
   }
 
   return (
-    <div className="min-h-dvh bg-bg">
+    <div className="min-h-dvh">
       <SiteHeader />
       <main className="mx-auto grid max-w-lg px-4 pt-12 pb-20">
         <h1 className="text-4xl font-bold tracking-tight">{t.loginTitle}</h1>

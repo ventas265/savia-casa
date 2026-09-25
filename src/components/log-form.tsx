@@ -1,6 +1,31 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { ChevronDown, Droplet, Droplets, Ellipsis, Heart, Lock, Salad, Smile, Sparkles, Zap } from "lucide-react";
+import {
+  Annoyed,
+  Battery,
+  BatteryFull,
+  BatteryLow,
+  BatteryMedium,
+  ChevronDown,
+  CircleDot,
+  Droplet,
+  Droplets,
+  Egg,
+  Ellipsis,
+  Frown,
+  Heart,
+  HeartHandshake,
+  Laugh,
+  Lock,
+  Meh,
+  Milk,
+  Salad,
+  ShieldCheck,
+  Smile,
+  Sparkles,
+  Zap,
+  type LucideIcon,
+} from "lucide-react";
 import { toast } from "sonner";
 import { CircleChip } from "@/components/circle-chip";
 import { useI18n } from "@/lib/i18n";
@@ -12,13 +37,13 @@ import { tipAfterSave, tipVisibleRecs, type TipResult } from "@/lib/savia-tip";
 import { setSelectedDay } from "@/lib/selected-day";
 import { MUCUS, SEX_KINDS, type DailyLog, type Flow, type Intention, type Mucus, type Phase, type SexKind } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { SYMPTOM_EMOJI, TONE_CLS, type ChipTone } from "@/lib/symptom-meta";
+import { symptomIcon, TONE_CLS, type ChipTone } from "@/lib/symptom-meta";
 
 const FLOW_DOT: { id: Flow; cls: string; drops: number }[] = [
-  { id: "spotting", cls: "bg-primary/25 text-primary", drops: 1 },
-  { id: "light", cls: "bg-primary/50 text-surface", drops: 1 },
-  { id: "medium", cls: "bg-primary text-surface", drops: 2 },
-  { id: "heavy", cls: "bg-plum text-surface", drops: 3 },
+  { id: "spotting", cls: "text-[#ffb3c4]", drops: 1 },
+  { id: "light", cls: "text-[#ff8fa8]", drops: 1 },
+  { id: "medium", cls: "text-[#ff6b8f]", drops: 2 },
+  { id: "heavy", cls: "text-[#ff4f7b]", drops: 3 },
 ];
 
 type CatKey = "flow" | "pain" | "mood" | "gut" | "skin" | "sex" | "other";
@@ -44,18 +69,19 @@ const CAT_TONE: Record<CatKey, ChipTone> = {
   other: "sage",
 };
 
-const MOOD_EMOJI = ["😣", "😕", "😐", "🙂", "😊"];
-const ENERGY_EMOJI = ["🪫", "🥀", "🌿", "🌸", "⚡"];
-const MUCUS_EMOJI: Record<Exclude<Mucus, "none">, string> = {
-  sticky: "🫧",
-  creamy: "🥛",
-  eggwhite: "🥚",
-  watery: "💧",
+const line = (Icon: LucideIcon) => <Icon className="size-[22px]" strokeWidth={1.5} />;
+const MOOD_ICON = [Frown, Annoyed, Meh, Smile, Laugh].map(line);
+const ENERGY_ICON = [Battery, BatteryLow, BatteryMedium, BatteryFull, Zap].map(line);
+const MUCUS_ICON: Record<Exclude<Mucus, "none">, ReactNode> = {
+  sticky: line(CircleDot),
+  creamy: line(Milk),
+  eggwhite: line(Egg),
+  watery: line(Droplets),
 };
-const SEX_EMOJI: Record<Exclude<SexKind, "none">, ReactNode> = {
-  protected: <Heart className="size-6" />,
-  unprotected: <Heart className="size-6 fill-current" />,
-  withdrawal: <Heart className="size-6 fill-current opacity-60" />,
+const SEX_ICON: Record<Exclude<SexKind, "none">, ReactNode> = {
+  protected: line(ShieldCheck),
+  unprotected: line(Heart),
+  withdrawal: line(HeartHandshake),
 };
 
 type LiveFields = {
@@ -267,7 +293,7 @@ export function LogForm({
           <CircleChip
             key={id}
             label={pick(symptomLabel[id]!, lang)}
-            icon={SYMPTOM_EMOJI[id] ?? "•"}
+            icon={symptomIcon(id)}
             tone={CAT_TONE[cat]}
             on={symptoms.includes(id)}
             onClick={() => toggleSymptom(id)}
@@ -293,7 +319,7 @@ export function LogForm({
                   icon={
                     <span className="flex items-end gap-px">
                       {Array.from({ length: f.drops }).map((_, i) => (
-                        <Droplet key={i} className={cn("fill-current", f.drops === 1 ? "size-5" : "size-3.5")} />
+                        <Droplet key={i} strokeWidth={1.6} className={f.drops === 1 ? "size-5" : "size-3.5"} />
                       ))}
                     </span>
                   }
@@ -312,7 +338,7 @@ export function LogForm({
                 <CircleChip
                   key={m}
                   label={mucusLabel[m]}
-                  icon={MUCUS_EMOJI[m]}
+                  icon={MUCUS_ICON[m]}
                   tone="sage"
                   on={mucus === m}
                   onClick={() => {
@@ -335,7 +361,7 @@ export function LogForm({
                   key={n}
                   size="sm"
                   label={moodLabels[n - 1]!}
-                  icon={MOOD_EMOJI[n - 1]}
+                  icon={MOOD_ICON[n - 1]}
                   tone="sand"
                   on={mood === n}
                   onClick={() => {
@@ -353,7 +379,7 @@ export function LogForm({
                   key={n}
                   size="sm"
                   label={energyLabels[n - 1]!}
-                  icon={ENERGY_EMOJI[n - 1]}
+                  icon={ENERGY_ICON[n - 1]}
                   tone="sage"
                   on={energy === n}
                   onClick={() => {
@@ -380,7 +406,7 @@ export function LogForm({
                   <CircleChip
                     key={kind}
                     label={sexLabels[k]}
-                    icon={<span className="text-primary">{SEX_EMOJI[k]}</span>}
+                    icon={SEX_ICON[k]}
                     tone="rose"
                     on={on}
                     onClick={() => {
@@ -415,8 +441,8 @@ export function LogForm({
                   className={cn(
                     "press h-11 min-w-12 rounded-full px-3 text-sm font-semibold transition-colors",
                     sleepHours === h
-                      ? "bg-select text-select-fg ring-2 ring-select-ring ring-offset-2 ring-offset-surface"
-                      : "bg-sage-soft text-fg",
+                      ? "bg-grad text-primary-fg"
+                      : "bg-white/[0.06] text-fg ring-1 ring-white/10",
                   )}
                 >
                   {h} h
@@ -425,7 +451,7 @@ export function LogForm({
             </div>
             <SubLabel className="mt-5">{t.notes}</SubLabel>
             <textarea
-              className="min-h-24 w-full resize-none rounded-2xl border border-border bg-bg/60 px-4 py-3 text-sm outline-none transition-colors focus:border-sage-deep/50"
+              className="min-h-24 w-full resize-none rounded-2xl border border-border bg-bg/60 px-4 py-3 text-sm outline-none transition-colors focus:border-[rgb(255_79_123/0.5)]"
               value={notes}
               onChange={(e) => {
                 setNotes(e.target.value);
@@ -443,7 +469,7 @@ export function LogForm({
   return (
     <div className="space-y-4">
       <header className="space-y-1">
-        <p className="font-display text-[1.35rem] font-semibold leading-tight tracking-[-0.02em]">{t.logSheetTitle}</p>
+        <p className="font-display text-[1.5rem] font-semibold leading-tight tracking-[-0.035em]">{t.logSheetTitle}</p>
         <p className="text-sm leading-relaxed text-muted">{!initial ? t.emptyLog : t.logSheetSub}</p>
       </header>
 
@@ -457,8 +483,8 @@ export function LogForm({
               key={c.key}
               data-cat={c.key}
               className={cn(
-                "overflow-hidden rounded-[1.4rem] border bg-surface transition-shadow duration-300",
-                open ? "border-rose-dust/60 shadow-card" : "border-border/70 shadow-soft",
+                "overflow-hidden rounded-[22px] border bg-white/[0.045] backdrop-blur-xl transition-[border-color,background-color] duration-300",
+                open ? "border-[rgb(255_79_123/0.32)] bg-white/[0.06]" : "border-white/[0.08]",
               )}
             >
               <button
@@ -495,7 +521,7 @@ export function LogForm({
                 inert={!open}
               >
                 <div className="min-h-0 overflow-hidden">
-                  <div className="border-t border-border/60 px-4 pb-5 pt-4">{body(c.key)}</div>
+                  <div className="border-t border-white/[0.07] px-4 pb-5 pt-4">{body(c.key)}</div>
                 </div>
               </div>
             </section>
@@ -523,7 +549,7 @@ export function LogForm({
         <button
           type="button"
           data-testid="log-save"
-          className="press flex h-14 w-full items-center justify-center gap-2 rounded-full bg-primary text-base font-semibold text-primary-fg shadow-bar ring-4 ring-bg/80 transition-opacity disabled:opacity-70"
+          className="press flex h-14 w-full items-center justify-center gap-2 rounded-full bg-grad text-base font-semibold text-primary-fg shadow-[0_10px_30px_-8px_rgb(255_79_123/0.6)] ring-4 ring-bg/80 transition-opacity disabled:opacity-70"
           onClick={() => {
             scrollTipOnSave.current = true;
             persist({ notes: live.current.notes });
@@ -540,7 +566,7 @@ export function LogForm({
 
 function SubLabel({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <p className={cn("mb-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-muted", className)}>{children}</p>
+    <p className={cn("kicker mb-3", className)}>{children}</p>
   );
 }
 
@@ -566,17 +592,17 @@ export function WrapUpCard({
 
   return (
     <section
-      className="rounded-[1.25rem] bg-primary/12 p-4 shadow-card ring-1 ring-primary/15"
+      className="rounded-[22px] border border-[rgb(255_79_123/0.28)] bg-[linear-gradient(135deg,rgb(255_79_123/0.16),rgb(139_107_255/0.1))] p-4 backdrop-blur-xl"
       aria-live="polite"
     >
-      <p className="text-xs font-semibold uppercase tracking-wide text-muted">{t.saviaTipLabel}</p>
+      <p className="kicker !text-[#ffb3c4]">{t.saviaTipLabel}</p>
       <p className="mt-2 text-sm leading-relaxed text-fg">{tip.conclusion}</p>
 
       {visible.length > 0 ? (
         <ul className="mt-3 space-y-2">
           {visible.map((rec) => (
             <li key={rec} className="flex gap-2 text-sm leading-snug text-fg">
-              <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-primary" aria-hidden />
+              <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-grad" aria-hidden />
               <span>{rec}</span>
             </li>
           ))}
@@ -584,17 +610,17 @@ export function WrapUpCard({
       ) : null}
 
       {!wrapUpPaid && locked.length > 0 ? (
-        <div className="relative mt-3 overflow-hidden rounded-2xl bg-surface/60 px-3 py-3">
+        <div className="relative mt-3 overflow-hidden rounded-2xl bg-black/25 px-3 py-3">
           <ul className="space-y-2 blur-[3px] select-none" aria-hidden>
             {locked.map((rec) => (
               <li key={rec} className="flex gap-2 text-sm leading-snug text-fg">
-                <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-primary" />
+                <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-grad" />
                 <span>{rec}</span>
               </li>
             ))}
           </ul>
-          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-t from-primary/20 via-primary/10 to-transparent px-3">
-            <p className="inline-flex items-center gap-1.5 rounded-full bg-surface px-3 py-1.5 text-xs font-semibold text-fg shadow-card">
+          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-t from-black/40 via-black/10 to-transparent px-3">
+            <p className="inline-flex items-center gap-1.5 rounded-full bg-elevated px-3 py-1.5 text-xs font-semibold text-fg ring-1 ring-white/10">
               <Lock className="size-3.5 shrink-0" aria-hidden />
               {t.saviaTipSerenaLock}
             </p>
@@ -603,11 +629,11 @@ export function WrapUpCard({
       ) : null}
 
       {!wrapUpPaid ? (
-        <div className="mt-4 rounded-2xl bg-ink/5 px-3 py-3">
+        <div className="mt-4 rounded-2xl bg-white/[0.05] px-3 py-3 ring-1 ring-white/[0.07]">
           <p className="text-sm leading-snug text-fg">{t.saviaTipSerenaTeaser}</p>
           <Link
             to="/pagar"
-            className="press mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-ink px-4 text-sm font-semibold text-primary-fg"
+            className="press mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-grad px-4 text-sm font-semibold text-primary-fg"
           >
             {t.saviaTipSerenaCta}
           </Link>
@@ -618,7 +644,7 @@ export function WrapUpCard({
 
       <Link
         to="/app/preguntar"
-        className="press mt-3 inline-flex min-h-11 items-center justify-center rounded-full bg-surface px-4 text-sm font-semibold shadow-card"
+        className="press glass mt-3 inline-flex min-h-11 items-center justify-center rounded-full px-4 text-sm font-semibold"
       >
         {t.saviaTipAsk}
       </Link>

@@ -29,7 +29,7 @@ export function PhaseForYou({
   if (!items.length) return null;
 
   return (
-    <section className="relative mt-6 overflow-hidden rounded-[1.6rem] bg-plum p-5 text-primary-fg shadow-card">
+    <section className="relative mt-6 overflow-hidden rounded-[1.6rem] card-hot p-5">
       <p className="text-[10px] font-bold uppercase tracking-[0.16em] opacity-80">{t.forYou}</p>
       <div className="mt-3 space-y-3">
         {items.map((it) => (

@@ -157,7 +157,7 @@ function CalendarTab() {
                 />
                 <div className="mt-3 flex flex-wrap gap-2">
                   <Button
-                    className="min-h-12 flex-1 rounded-full bg-primary text-primary-fg"
+                    className="min-h-12 flex-1 rounded-full bg-grad text-primary-fg"
                     disabled={!fumDraft || savingFum}
                     onClick={() => void saveLastPeriod()}
                   >

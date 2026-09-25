@@ -68,20 +68,20 @@ export function DaySheet({
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center" role="dialog" aria-modal="true" aria-label={t.daySheet}>
-      <button type="button" className="absolute inset-0 bg-ink/40" aria-label={t.close} onClick={onClose} />
-      <div className="relative z-10 flex max-h-[88vh] w-full max-w-lg flex-col rounded-t-[1.75rem] bg-bg shadow-card sm:rounded-[1.75rem]">
-        <div className="flex items-start justify-between gap-3 border-b border-border px-5 pb-3 pt-4">
+      <button type="button" className="absolute inset-0 bg-black/60" aria-label={t.close} onClick={onClose} />
+      <div className="relative z-10 flex max-h-[88vh] w-full max-w-lg flex-col rounded-t-[1.75rem] bg-elevated shadow-card sm:rounded-[1.75rem]">
+        <div className="flex items-start justify-between gap-3 border-b border-white/[0.07] px-5 pb-3 pt-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted">{t.daySheet}</p>
+            <p className="kicker">{t.daySheet}</p>
             <p className="mt-1 font-display text-xl font-semibold tracking-[-0.03em]">{formatDay(day, lang)}</p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="press inline-flex size-11 shrink-0 items-center justify-center rounded-full bg-surface shadow-card"
+            className="press inline-flex size-11 shrink-0 items-center justify-center rounded-full bg-white/[0.06] ring-1 ring-white/10"
             aria-label={t.close}
           >
-            <X className="size-5" />
+            <X className="size-5" strokeWidth={1.5} />
           </button>
         </div>
         <div className="overflow-y-auto px-5 py-4 pb-10">

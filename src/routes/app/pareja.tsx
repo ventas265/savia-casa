@@ -27,16 +27,16 @@ function Pareja() {
       <PageTitle kicker={t.paidLabel} title={t.partnerTitle} />
       <p className="mt-2 text-sm leading-relaxed text-muted">{t.partnerHint}</p>
       {!paid ? (
-        <div className="mt-6 rounded-[1.5rem] bg-primary p-5 text-primary-fg">
+        <div className="card-hot mt-6 rounded-[22px] p-5">
           <p className="font-display text-xl font-semibold">{t.partnerPay}</p>
-          <Button className="mt-4 w-full bg-surface text-primary" asChild>
+          <Button className="mt-4 w-full" asChild>
             <Link to="/pagar">{t.payCta} · {t.proPrice}</Link>
           </Button>
         </div>
       ) : null}
       {paid && card ? (
         <div className="mt-6 space-y-3">
-          <article className="rounded-[1.5rem] bg-primary p-5 text-primary-fg">
+          <article className="card-hot rounded-[22px] p-5">
             <p className="font-display text-2xl font-semibold">{card.title}</p>
             <p className="mt-3 text-sm leading-relaxed opacity-95">{card.need}</p>
           </article>
@@ -44,7 +44,7 @@ function Pareja() {
             <p className="text-[10px] font-bold uppercase tracking-wide text-muted">{t.partnerAsk}</p>
             <p className="mt-2 font-display text-xl font-semibold leading-snug">{card.ask}</p>
           </article>
-          <article className="rounded-[1.5rem] bg-plum p-5 text-primary-fg">
+          <article className="glass rounded-[22px] p-5">
             <p className="text-[10px] font-bold uppercase tracking-wide opacity-80">{t.partnerSkip}</p>
             <p className="mt-2 text-sm leading-relaxed">{card.skip}</p>
           </article>

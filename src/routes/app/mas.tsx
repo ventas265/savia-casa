@@ -83,7 +83,7 @@ function MasTab() {
         )}
         <Link
           to="/app/onboarding"
-        className="press mt-4 flex min-h-12 items-center justify-between rounded-full bg-primary px-4 text-sm font-semibold text-primary-fg"
+        className="press mt-4 flex min-h-12 items-center justify-between rounded-full bg-grad px-4 text-sm font-semibold text-primary-fg"
         >
           {t.profile}
           <ChevronRight className="size-4" />
@@ -106,11 +106,11 @@ function MasTab() {
         </div>
       </section>
 
-      <section className="mt-4 rounded-[1.6rem] bg-ink p-5 text-primary-fg shadow-card">
+      <section className="mt-4 rounded-[1.6rem] card-hot p-5">
         <p className="text-sm opacity-70">{t.proName}</p>
         <p className="mt-1 text-xl font-extrabold">{paid ? t.serenaActive : t.proPrice}</p>
         {!paid ? (
-          <Button className="mt-4 w-full bg-primary text-primary-fg" asChild>
+          <Button className="mt-4 w-full" asChild>
             <Link to="/pagar">{t.payCta}</Link>
           </Button>
         ) : (
@@ -162,7 +162,7 @@ function MasTab() {
         </button>
         <a
           href="/?install=1"
-          className="mt-2 flex min-h-14 items-center justify-between rounded-[1.25rem] bg-accent px-4 text-sm font-semibold text-ink shadow-card"
+          className="mt-2 flex min-h-14 items-center justify-between rounded-[1.25rem] bg-surface px-4 text-sm font-semibold shadow-card"
         >
           {t.installCta}
           <ChevronRight className="size-4 opacity-70" />

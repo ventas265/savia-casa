@@ -128,7 +128,7 @@ function Pagar() {
   }
 
   return (
-    <div className="min-h-dvh bg-bg">
+    <div className="min-h-dvh">
       <SiteHeader />
       <main className="mx-auto max-w-lg px-4 py-8">
         <h1 className="text-2xl font-extrabold">{t.payTitle}</h1>
@@ -156,11 +156,11 @@ function Pagar() {
           </button>
         </div>
 
-        <div className="mt-6 rounded-[1.6rem] bg-ink p-6 text-primary-fg shadow-card">
+        <div className="mt-6 rounded-[1.6rem] card-hot p-6">
           <p className="text-sm opacity-70">{plan === "year" ? t.yearName : t.proName}</p>
           <p className="mt-1 text-5xl font-extrabold tracking-tight">{amount}</p>
           <p className="mt-2 text-sm opacity-80">{t.cardOk}</p>
-          <Button className="mt-5 w-full bg-primary text-primary-fg" asChild>
+          <Button className="mt-5 w-full bg-grad text-primary-fg" asChild>
             <a href={cardLink} target="_blank" rel="noreferrer">
               {t.cardOpen}
             </a>

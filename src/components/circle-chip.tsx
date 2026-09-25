@@ -1,14 +1,13 @@
 import type { ReactNode } from "react";
 import { Check } from "lucide-react";
-import { TONE_CLS, type ChipTone } from "@/lib/symptom-meta";
+import type { ChipTone } from "@/lib/symptom-meta";
 import { cn } from "@/lib/utils";
 
-/** Flo-style chip: colored circle with icon, label below, ring + check when on. */
+/** Nocturna chip: dark glass circle + thin line icon; selected = gradient fill + glow. */
 export function CircleChip({
   label,
   icon,
   on,
-  tone = "rose",
   onClick,
   size = "md",
   circleClassName,
@@ -19,9 +18,9 @@ export function CircleChip({
   tone?: ChipTone;
   onClick: () => void;
   size?: "md" | "sm";
+  /** Extra classes for the idle circle (e.g. icon tint). Ignored when selected. */
   circleClassName?: string;
 }) {
-  const c = TONE_CLS[tone];
   return (
     <button
       type="button"
@@ -34,15 +33,18 @@ export function CircleChip({
     >
       <span
         className={cn(
-          "relative flex items-center justify-center rounded-full text-2xl leading-none transition-[background-color,box-shadow] duration-200",
+          "relative flex items-center justify-center rounded-full leading-none transition-[background-color,box-shadow,color] duration-200",
           size === "md" ? "size-14" : "size-[3.25rem]",
-          on ? cn(c.on, "ring-[2.5px] ring-select-ring ring-offset-2 ring-offset-surface") : c.idle,
-          circleClassName,
+          on
+            ? "bg-grad text-primary-fg shadow-[0_6px_22px_-4px_rgb(255_79_123/0.65)]"
+            : cn("bg-white/[0.055] text-fg/85 ring-1 ring-white/10 backdrop-blur-md", circleClassName),
         )}
       >
-        <span aria-hidden>{icon}</span>
+        <span aria-hidden className="flex items-center justify-center">
+          {icon}
+        </span>
         {on ? (
-          <span className="absolute -right-0.5 -bottom-0.5 flex size-5 items-center justify-center rounded-full bg-select-ring text-surface shadow-soft">
+          <span className="absolute -right-0.5 -bottom-0.5 flex size-5 items-center justify-center rounded-full bg-white text-[#130d12] ring-2 ring-[#1a141b]">
             <Check className="size-3" strokeWidth={3} />
           </span>
         ) : null}
@@ -50,7 +52,7 @@ export function CircleChip({
       <span
         className={cn(
           "line-clamp-2 min-h-[2rem] text-[11px] leading-tight",
-          on ? "font-bold text-fg" : "font-medium text-muted",
+          on ? "font-semibold text-fg" : "font-medium text-muted",
         )}
       >
         {label}

@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
-import { BatteryLow, Droplets, SmilePlus, Sparkles } from "lucide-react";
+import { BatteryLow, Droplet, Droplets, SmilePlus, Sparkles } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { writeLog } from "@/lib/savia-api";
 import { todayISO } from "@/lib/cycle";
@@ -10,11 +10,11 @@ import { cn } from "@/lib/utils";
 import { haptic } from "@/lib/haptic";
 import { pick, symptomLabel } from "@/lib/savia-content";
 
-const FLOWS: { id: Flow; ring: string }[] = [
-  { id: "spotting", ring: "bg-primary/25" },
-  { id: "light", ring: "bg-primary/50" },
-  { id: "medium", ring: "bg-primary" },
-  { id: "heavy", ring: "bg-plum" },
+const FLOWS: { id: Flow; tint: string; drops: number }[] = [
+  { id: "spotting", tint: "text-[#ffb3c4]", drops: 1 },
+  { id: "light", tint: "text-[#ff8fa8]", drops: 1 },
+  { id: "medium", tint: "text-[#ff6b8f]", drops: 2 },
+  { id: "heavy", tint: "text-[#ff4f7b]", drops: 3 },
 ];
 
 const FEEL = ["fatigue", "low_mood", "craving", "acne", "irritable"];
@@ -80,7 +80,7 @@ export function QuickLog({
 
   return (
     <div id="anotar" className="relative mt-6 space-y-3">
-      <Card tone="rose" icon={<Droplets className="size-4" />} title={t.quickLog}>
+      <Card tone="rose" icon={<Droplets className="size-4" strokeWidth={1.6} />} title={t.quickLog}>
         <div className="flex justify-between">
           {FLOWS.map((f) => (
             <button
@@ -96,26 +96,33 @@ export function QuickLog({
             >
               <span
                 className={cn(
-                  "flex size-12 items-center justify-center rounded-full",
-                  f.ring,
-                  flow === f.id ? "ring-4 ring-select-ring" : "opacity-80",
+                  "flex size-12 items-center justify-center gap-px rounded-full transition-colors",
+                  flow === f.id
+                    ? "bg-grad text-primary-fg shadow-[0_6px_22px_-4px_rgb(255_79_123/0.65)]"
+                    : cn("bg-white/[0.055] ring-1 ring-white/10", f.tint),
                 )}
-              />
-              <span className="text-[11px] font-semibold">{flowLabel[f.id]}</span>
+              >
+                {Array.from({ length: f.drops }).map((_, i) => (
+                  <Droplet key={i} strokeWidth={1.6} className={f.drops === 1 ? "size-5" : "size-3.5"} />
+                ))}
+              </span>
+              <span className={cn("text-[11px]", flow === f.id ? "font-semibold text-fg" : "font-medium text-muted")}>
+                {flowLabel[f.id]}
+              </span>
             </button>
           ))}
         </div>
       </Card>
 
-      <Card tone="sand" icon={<BatteryLow className="size-4" />} title={t.howMorning}>
+      <Card tone="sand" icon={<BatteryLow className="size-4" strokeWidth={1.6} />} title={t.howMorning}>
         <Chips ids={FEEL} selected={symptoms} onTap={tapSym} lang={lang} />
       </Card>
 
-      <Card tone="plum" icon={<SmilePlus className="size-4" />} title={t.logBody}>
+      <Card tone="plum" icon={<SmilePlus className="size-4" strokeWidth={1.6} />} title={t.logBody}>
         <Chips ids={BODY} selected={symptoms} onTap={tapSym} lang={lang} />
       </Card>
 
-      <Card tone="sage" icon={<Sparkles className="size-4" />} title={t.mucus}>
+      <Card tone="sage" icon={<Sparkles className="size-4" strokeWidth={1.6} />} title={t.mucus}>
         <div className="flex flex-wrap gap-2">
           {MUCUS.map((m) => (
             <button
@@ -128,14 +135,14 @@ export function QuickLog({
               }}
               className={cn(
                 "press h-11 rounded-full px-4 text-sm font-semibold",
-                mucus === m ? "bg-accent text-ink" : "bg-bg text-fg",
+                mucus === m ? "bg-select text-select-fg" : "bg-white/[0.06] text-fg ring-1 ring-white/10",
               )}
             >
               {mucusLabel[m]}
             </button>
           ))}
         </div>
-        <p className="mt-5 text-sm font-semibold">{t.logGut}</p>
+        <p className="kicker mt-5">{t.logGut}</p>
         <div className="mt-3">
           <Chips ids={GUT} selected={symptoms} onTap={tapSym} lang={lang} />
         </div>
@@ -143,7 +150,7 @@ export function QuickLog({
 
       <Link
         to="/app/registro"
-        className="press flex min-h-12 items-center justify-center rounded-full bg-surface text-sm font-semibold shadow-card"
+        className="press glass flex min-h-12 items-center justify-center rounded-full text-sm font-semibold"
       >
         {t.logMore}
       </Link>
@@ -164,16 +171,20 @@ function Card({
 }) {
   return (
     <section
-      className={cn(
-        "rounded-[1.6rem] border border-border/50 p-5 shadow-soft",
-        tone === "rose" && "bg-primary/10",
-        tone === "sand" && "bg-sand/40",
-        tone === "plum" && "bg-rose-dust-soft",
-        tone === "sage" && "bg-sage-soft",
-      )}
+      className="glass rounded-[22px] p-4"
     >
-      <p className="mb-4 flex items-center gap-2 text-[15px] font-semibold tracking-[-0.01em]">
-        <span className="flex size-7 items-center justify-center rounded-full bg-surface text-primary shadow-soft">{icon}</span>
+      <p className="mb-4 flex items-center gap-2.5 font-display text-[16px] font-semibold tracking-[-0.02em]">
+        <span
+          className={cn(
+            "flex size-8 items-center justify-center rounded-full bg-white/[0.06] ring-1 ring-white/10",
+            tone === "rose" && "text-[#ff8fa8]",
+            tone === "sand" && "text-[#ffb892]",
+            tone === "plum" && "text-[#b9a6ff]",
+            tone === "sage" && "text-[#7fe3c8]",
+          )}
+        >
+          {icon}
+        </span>
         {title}
       </p>
       {children}
@@ -201,7 +212,7 @@ function Chips({
           onClick={() => onTap(id)}
           className={cn(
             "press h-11 rounded-full px-4 text-sm font-semibold",
-            selected.includes(id) ? "bg-select text-select-fg" : "bg-surface text-fg",
+            selected.includes(id) ? "bg-select text-select-fg" : "bg-white/[0.06] text-fg ring-1 ring-white/10",
           )}
         >
           {pick(symptomLabel[id]!, lang)}

@@ -8,7 +8,7 @@ function Privacidad() {
   const { lang } = useI18n();
   const es = lang !== "en";
   return (
-    <div className="min-h-dvh bg-bg">
+    <div className="min-h-dvh">
       <SiteHeader />
       <main className="mx-auto max-w-lg space-y-4 px-4 py-10 text-sm leading-relaxed">
         <h1 className="text-2xl font-extrabold">{es ? "Privacidad" : "Privacy"}</h1>

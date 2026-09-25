@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { ArrowLeft, ArrowUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { type ChatTurn } from "@/lib/savia-server";
 import { askGuide } from "@/lib/savia-api";
@@ -10,14 +11,9 @@ import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/app/preguntar")({ component: Preguntar });
 
+/** Savia IA presence: the breathing Nocturna orb (no stock photo). */
 function Face({ className }: { className?: string }) {
-  return (
-    <img
-      src="/photos/savia-ia.jpg"
-      alt=""
-      className={cn("rounded-full object-cover object-[center_20%] shadow-card", className)}
-    />
-  );
+  return <span aria-hidden className={cn("orb block shrink-0 rounded-full", className)} />;
 }
 
 function Preguntar() {
@@ -58,28 +54,23 @@ function Preguntar() {
       <div className="flex shrink-0 items-center gap-3">
         <Link
           to="/app/hoy"
-          className="flex size-11 shrink-0 items-center justify-center rounded-full bg-surface text-lg font-semibold text-fg"
+          className="press glass flex size-11 shrink-0 items-center justify-center rounded-full text-fg"
           aria-label={t.today}
         >
-          ←
+          <ArrowLeft className="size-5" strokeWidth={1.5} />
         </Link>
-        <Face className="size-12" />
+        <Face className="size-11" />
         <div className="min-w-0">
-          <p className="font-display text-xl font-semibold leading-none">{t.askTitle}</p>
-          <p className="mt-1 text-sm text-muted">{t.askHere}</p>
+          <p className="font-display text-xl font-semibold leading-none tracking-[-0.02em]">{t.askTitle}</p>
+          <p className="mt-1 flex items-center gap-1.5 text-sm text-muted"><span className="size-1.5 rounded-full bg-[#7fe3c8]" aria-hidden />{t.askHere}</p>
         </div>
       </div>
 
       <div className="mt-4 min-h-0 flex-1 overflow-y-auto">
         {turns.length === 0 ? (
-          <div className="relative overflow-hidden rounded-[1.6rem]">
-            <img
-              src="/photos/savia-ia-hero.jpg"
-              alt=""
-              className="h-40 w-full object-cover object-[center_40%]"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-ink/70 to-transparent" />
-            <p className="absolute bottom-4 left-4 right-4 font-display text-2xl font-semibold text-primary-fg">
+          <div className="glass relative overflow-hidden rounded-[22px] p-5">
+            <Face className="size-16" />
+            <p className="mt-5 font-display text-[1.6rem] font-semibold leading-[1.1] tracking-[-0.035em] text-fg">
               {t.askEmpty}
             </p>
           </div>
@@ -95,8 +86,8 @@ function Preguntar() {
                   className={cn(
                     "max-w-[78%] whitespace-pre-wrap px-4 py-3 text-sm leading-relaxed",
                     m.role === "user"
-                      ? "rounded-[1.4rem] rounded-br-md bg-primary text-primary-fg"
-                      : "rounded-[1.4rem] rounded-bl-md bg-surface text-fg shadow-card",
+                      ? "rounded-[1.4rem] rounded-br-md bg-grad text-primary-fg"
+                      : "glass rounded-[1.4rem] rounded-bl-md text-fg",
                   )}
                 >
                   {m.content}
@@ -106,10 +97,10 @@ function Preguntar() {
             {busy ? (
               <div className="flex items-end gap-2">
                 <Face className="size-8" />
-                <div className="flex gap-1 rounded-[1.4rem] rounded-bl-md bg-surface px-4 py-3 shadow-card">
-                  <span className="size-1.5 animate-bounce rounded-full bg-primary [animation-delay:0ms]" />
-                  <span className="size-1.5 animate-bounce rounded-full bg-primary [animation-delay:120ms]" />
-                  <span className="size-1.5 animate-bounce rounded-full bg-primary [animation-delay:240ms]" />
+                <div className="glass flex gap-1 rounded-[1.4rem] rounded-bl-md px-4 py-3">
+                  <span className="size-1.5 animate-bounce rounded-full bg-grad [animation-delay:0ms]" />
+                  <span className="size-1.5 animate-bounce rounded-full bg-grad [animation-delay:120ms]" />
+                  <span className="size-1.5 animate-bounce rounded-full bg-grad [animation-delay:240ms]" />
                 </div>
               </div>
             ) : null}
@@ -140,13 +131,23 @@ function Preguntar() {
           autoComplete="off"
           autoCorrect="on"
           enterKeyHint="send"
-          className="min-h-14 min-w-0 flex-1 rounded-full border-0 bg-surface px-5 text-base text-fg outline-none ring-primary focus:ring-2"
+          className="glass min-h-14 min-w-0 flex-1 rounded-full px-5 text-base text-fg outline-none focus:border-[rgb(255_79_123/0.5)]"
           placeholder={t.askHint}
           value={q}
           onChange={(e) => setQ(e.target.value)}
         />
-        <Button type="submit" className="h-14 shrink-0 rounded-full px-5" disabled={!canSend}>
-          {busy ? "…" : t.askCta}
+        <Button
+          type="submit"
+          className="size-14 shrink-0 rounded-full p-0 disabled:opacity-40"
+          disabled={!canSend}
+          aria-label={t.askCta}
+          title={t.askCta}
+        >
+          {busy ? (
+            <span className="size-4 animate-spin rounded-full border-2 border-primary-fg/40 border-t-primary-fg" />
+          ) : (
+            <ArrowUp className="size-5" strokeWidth={2} />
+          )}
         </Button>
       </form>
     </div>

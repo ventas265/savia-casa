@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 const styles = {
   draft: "bg-surface-2 text-muted",
   sent: "bg-primary/10 text-primary",
-  accepted: "bg-primary text-primary-fg",
+  accepted: "bg-grad text-primary-fg",
   paid: "bg-ink text-primary-fg",
   declined: "bg-danger/10 text-danger",
   expired: "bg-surface-2 text-muted",

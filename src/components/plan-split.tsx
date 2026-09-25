@@ -7,7 +7,7 @@ export function PlanSplit() {
   const paid = [t.paid1, t.paid2, t.paid3, t.paid4, t.paid5];
   return (
     <div className="mt-8 space-y-3">
-      <section className="rounded-[1.5rem] bg-surface p-5 shadow-card">
+      <section className="glass rounded-[22px] p-5">
         <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted">{t.freeLabel}</p>
         <p className="mt-1 font-display text-2xl font-semibold">{t.freeTitle}</p>
         <p className="mt-1 text-sm text-muted">{t.freePrice} · {t.freeNote}</p>
@@ -17,7 +17,7 @@ export function PlanSplit() {
           ))}
         </ul>
       </section>
-      <section className="rounded-[1.5rem] bg-primary p-5 text-primary-fg shadow-card">
+      <section className="card-hot rounded-[22px] p-5">
         <p className="text-[10px] font-bold uppercase tracking-[0.16em] opacity-80">{t.proName}</p>
         <p className="mt-1 font-display text-2xl font-semibold">{t.paidTitle}</p>
         <p className="mt-1 text-sm opacity-90">
@@ -31,7 +31,7 @@ export function PlanSplit() {
         <p className="mt-3 text-xs opacity-80">{t.planSame}</p>
         <Link
           to="/pagar"
-          className="mt-5 flex h-12 items-center justify-center rounded-full bg-surface text-sm font-semibold text-primary"
+          className="press bg-grad mt-5 flex h-12 items-center justify-center rounded-full text-sm font-semibold text-primary-fg"
         >
           {t.payCta}
         </Link>

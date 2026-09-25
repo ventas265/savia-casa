@@ -59,7 +59,7 @@ function Pricing() {
   ];
 
   return (
-    <div className="min-h-dvh bg-bg">
+    <div className="min-h-dvh">
       <SiteHeader />
       <main className="mx-auto max-w-lg px-4 py-8">
         <h1 className="text-2xl font-semibold tracking-tight">{t.pricingTitle}</h1>
@@ -78,7 +78,7 @@ function Pricing() {
               <ul className="mt-6 flex-1 space-y-2 text-sm">
                 {card.feats.map((f) => (
                   <li key={f} className="flex gap-2">
-                    <span className="mt-1 size-1.5 shrink-0 rounded-full bg-primary" />
+                    <span className="mt-1 size-1.5 shrink-0 rounded-full bg-grad" />
                     {f}
                   </li>
                 ))}

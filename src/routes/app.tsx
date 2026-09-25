@@ -27,7 +27,7 @@ function AppLayout() {
   if (!SAVIA_BETA) {
     if (isPending) {
       return (
-        <div className="min-h-dvh bg-bg p-6">
+        <div className="min-h-dvh p-6">
           <Skeleton className="h-14 w-full" />
           <Skeleton className="mt-8 h-40 w-full" />
         </div>

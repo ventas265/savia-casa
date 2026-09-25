@@ -183,25 +183,25 @@ export function CycleCalendar({
       <div className="flex items-center justify-between">
         <button
           type="button"
-          className="inline-flex size-11 items-center justify-center rounded-full hover:bg-surface-2"
+          className="inline-flex size-11 items-center justify-center rounded-full ring-1 ring-white/10 hover:bg-surface-2"
           onClick={() => moveMonth(-1)}
           aria-label="prev"
         >
-          <ChevronLeft className="size-5" />
+          <ChevronLeft className="size-5" strokeWidth={1.5} />
         </button>
-        <p className="font-display text-2xl font-semibold tracking-[-0.03em]">
+        <p className="font-display text-2xl font-semibold tracking-[-0.035em]">
           {months[cursor.m]} {cursor.y}
         </p>
         <button
           type="button"
-          className="inline-flex size-11 items-center justify-center rounded-full hover:bg-surface-2"
+          className="inline-flex size-11 items-center justify-center rounded-full ring-1 ring-white/10 hover:bg-surface-2"
           onClick={() => moveMonth(1)}
           aria-label="next"
         >
-          <ChevronRight className="size-5" />
+          <ChevronRight className="size-5" strokeWidth={1.5} />
         </button>
       </div>
-      <div className="mt-2 grid grid-cols-7 text-center text-xs tracking-wide text-muted">
+      <div className="mt-2 grid grid-cols-7 text-center font-mono text-[10.5px] uppercase tracking-[0.1em] text-muted">
         {weekdays.map((w, i) => (
           <div key={`${w}-${i}`} className="py-2">
             {w}
@@ -265,17 +265,17 @@ export function CycleCalendar({
                   isPredicted &&
                     "border-2 border-dashed border-cal-period bg-transparent font-medium text-cal-period",
                   // Fertile (opt-in only)
-                  isFertile && m === "peak" && "bg-cal-peak/25 font-medium text-ink",
-                  isFertile && m === "fertile" && "bg-cal-fertile text-ink",
+                  isFertile && m === "peak" && "bg-cal-peak/45 font-semibold text-white ring-1 ring-cal-peak",
+                  isFertile && m === "fertile" && "bg-cal-fertile text-[#c9f5ef]",
                   // Today — soft sand wash, not rose
                   isToday &&
                     !isConfirmed &&
                     !isPredicted &&
                     !isFertile &&
-                    "bg-sand/55 font-semibold text-ink",
+                    "bg-white/[0.12] font-semibold text-white ring-1 ring-white/40",
                   isToday && (isConfirmed || isPredicted || isFertile) && "font-semibold",
                   // Selected — strong outline (always)
-                  isPicked && "ring-[3px] ring-select-ring ring-offset-2 ring-offset-surface",
+                  isPicked && "ring-2 ring-white ring-offset-2 ring-offset-bg",
                   !isConfirmed &&
                     !isPredicted &&
                     !isFertile &&
@@ -288,7 +288,7 @@ export function CycleCalendar({
                   <span
                     className={cn(
                       "absolute top-0.5 size-1 rounded-full",
-                      onDark ? "bg-primary-fg/90" : "bg-ink/55",
+                      onDark ? "bg-primary-fg/90" : "bg-white/90",
                     )}
                     aria-hidden
                   />
@@ -305,7 +305,7 @@ export function CycleCalendar({
                   />
                 ) : null}
                 {hasMood ? (
-                  <span className="size-1.5 rounded-full bg-ink/65" title={t.calMarkMood} />
+                  <span className="size-1.5 rounded-full bg-white/70" title={t.calMarkMood} />
                 ) : null}
                 {hasSex ? (
                   <Heart
@@ -329,7 +329,7 @@ export function CycleCalendar({
             <span className="size-2.5 rounded-full bg-cal-period" /> {t.legendPeriod}
           </li>
           <li className="inline-flex items-center gap-1.5">
-            <span className="size-2.5 rounded-full bg-cal-fertile" /> {t.legendFertile}
+            <span className="size-2.5 rounded-full bg-cal-fertile ring-1 ring-cal-peak/50" /> {t.legendFertile}
           </li>
           <li className="inline-flex items-center gap-1.5">
             <Heart className="size-3 fill-current text-primary" /> {t.legendSex}
@@ -337,7 +337,7 @@ export function CycleCalendar({
         </ul>
         <button
           type="button"
-          className="mt-2 text-xs font-semibold text-primary"
+          className="mt-2 inline-flex min-h-9 items-center text-xs font-semibold text-[#ff8fa8]"
           aria-expanded={legendOpen}
           onClick={() => setLegendOpen((v) => !v)}
         >
@@ -350,8 +350,8 @@ export function CycleCalendar({
               {t.legendPredicted}
             </li>
             <li className="inline-flex items-center gap-1.5">
-              <span className="relative flex size-2.5 items-center justify-center rounded-full bg-sand/80">
-                <span className="absolute top-0 size-1 rounded-full bg-ink/55" />
+              <span className="relative flex size-2.5 items-center justify-center rounded-full bg-white/[0.12] ring-1 ring-white/40">
+                <span className="absolute top-0 size-1 rounded-full bg-white/90" />
               </span>{" "}
               {t.legendToday}
             </li>
@@ -362,7 +362,7 @@ export function CycleCalendar({
               <span className="size-1.5 rounded-full bg-cal-period" /> {t.calMarkFlow}
             </li>
             <li className="inline-flex items-center gap-1.5">
-              <span className="size-1.5 rounded-full bg-ink/65" /> {t.calMarkMood}
+              <span className="size-1.5 rounded-full bg-white/70" /> {t.calMarkMood}
             </li>
             <li className="inline-flex items-center gap-1.5">
               <Heart className="size-3 text-primary" /> {t.legendSexProtected}
@@ -370,7 +370,7 @@ export function CycleCalendar({
           </ul>
         ) : null}
       </div>
-      <div className="mt-4 border-t border-border pt-3">
+      <div className="mt-4 border-t border-white/[0.07] pt-3">
         <p className="font-medium">
           {formatDay(picked, lang)}
           {dayNum ? ` · ${t.dayOf} ${dayNum}` : ""}
@@ -410,7 +410,7 @@ export function CycleCalendar({
           }
           return (
             <div className="mt-3 rounded-[1.1rem] bg-surface-2/80 p-3">
-              <p className="text-xs font-semibold uppercase tracking-wide text-muted">{t.dayLoggedHeading}</p>
+              <p className="kicker">{t.dayLoggedHeading}</p>
               <ul className="mt-1.5 space-y-1 text-sm">
                 {lines.map((line) => (
                   <li key={line}>{line}</li>
@@ -421,7 +421,7 @@ export function CycleCalendar({
         })()}
         <button
           type="button"
-          className="press mt-3 flex min-h-11 w-full items-center justify-center rounded-full bg-surface text-sm font-semibold shadow-card"
+          className="press glass mt-3 flex min-h-11 w-full items-center justify-center rounded-full text-sm font-semibold"
           onClick={() => onSelect?.(picked)}
         >
           {t.editDayCta}

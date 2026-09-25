@@ -41,7 +41,7 @@ function RegistroEmpty() {
       <p className="mt-4 text-base leading-relaxed text-muted">{t.emptyLog}</p>
       <Link
         to="/app/hoy"
-        className="mt-8 flex h-14 w-full items-center justify-center rounded-full bg-primary text-base font-semibold text-primary-fg shadow-card"
+        className="mt-8 flex h-14 w-full items-center justify-center rounded-full bg-grad text-base font-semibold text-primary-fg shadow-card"
       >
         {t.today}
       </Link>

@@ -39,7 +39,7 @@ export function InstallSavia() {
   }
 
   return (
-    <section className="rounded-[1.6rem] bg-plum p-5 text-primary-fg shadow-card">
+    <section className="rounded-[1.6rem] card-hot p-5">
       <div className="flex items-center gap-3">
         <BrandMark className="size-14 rounded-2xl" />
         <div>
@@ -53,7 +53,7 @@ export function InstallSavia() {
         <button
           type="button"
           onClick={() => void install()}
-          className="press mt-4 flex h-12 w-full items-center justify-center rounded-full bg-surface text-sm font-semibold text-primary"
+          className="press mt-4 flex h-12 w-full items-center justify-center rounded-full bg-white text-sm font-semibold text-[#130d12]"
         >
           {t.installCta}
         </button>

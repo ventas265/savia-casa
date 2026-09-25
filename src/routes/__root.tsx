@@ -20,7 +20,9 @@ export const Route = createRootRoute({
       { title: APP_NAME },
       { name: "description", content: "Calendario del ciclo, peri y menopausia. En español, para Latinoamérica." },
       { name: "apple-mobile-web-app-title", content: APP_NAME },
-      { name: "theme-color", content: "#C4455C" },
+      { name: "theme-color", content: "#0D0A0F" },
+      { name: "color-scheme", content: "dark" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "mobile-web-app-capable", content: "yes" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -50,7 +52,7 @@ export const Route = createRootRoute({
     ],
   }),
   component: () => (
-    <html lang="es" className="antialiased" suppressHydrationWarning>
+    <html lang="es" className="dark antialiased" style={{ backgroundColor: "#0D0A0F" }} suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>
@@ -59,7 +61,27 @@ export const Route = createRootRoute({
         <AuthProvider>
           <I18nProvider>
             <Outlet />
-            <Toaster richColors={false} position="top-center" />
+            <Toaster
+              theme="dark"
+              richColors={false}
+              position="top-center"
+              toastOptions={{
+                style: {
+                  background: "rgba(30,24,30,0.92)",
+                  color: "#F6F1F3",
+                  border: "1px solid rgba(255,255,255,0.1)",
+                  backdropFilter: "blur(20px)",
+                  borderRadius: "18px",
+                  fontFamily: "Inter, system-ui, sans-serif",
+                },
+                actionButtonStyle: {
+                  background: "linear-gradient(135deg,#FF4F7B,#FF9A6B)",
+                  color: "#1A0710",
+                  borderRadius: "999px",
+                  fontWeight: 600,
+                },
+              }}
+            />
           </I18nProvider>
         </AuthProvider>
         <Scripts />

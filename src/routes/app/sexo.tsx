@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { ArrowUpRight, Heart } from "lucide-react";
 import { PageTitle } from "@/components/color-blobs";
 import { Disclaimer } from "@/components/disclaimer";
 import { useI18n } from "@/lib/i18n";
@@ -7,11 +8,9 @@ export const Route = createFileRoute("/app/sexo")({ component: SexoTab });
 
 function SexBlob() {
   return (
-    <svg viewBox="0 0 120 80" className="h-16 w-24 text-primary/40" aria-hidden>
-      <ellipse cx="48" cy="40" rx="36" ry="28" fill="currentColor" opacity="0.55" />
-      <ellipse cx="78" cy="36" rx="26" ry="22" fill="currentColor" opacity="0.35" />
-      <circle cx="62" cy="34" r="10" fill="currentColor" opacity="0.25" />
-    </svg>
+    <span aria-hidden className="glass grid size-12 shrink-0 place-items-center rounded-full text-[#ff8fa8]">
+      <Heart className="size-5" strokeWidth={1.5} />
+    </span>
   );
 }
 
@@ -35,12 +34,10 @@ function SexoTab() {
       <p className="mt-2 text-base leading-relaxed text-muted">{t.sexLead}</p>
 
       <ul className="mt-6 space-y-3">
-        {tips.map((tip) => (
-          <li
-            key={tip.title}
-            className="rounded-[1.5rem] bg-primary/10 p-5 shadow-card ring-1 ring-primary/15"
-          >
-            <p className="font-display text-lg font-semibold tracking-[-0.02em] text-ink">{tip.title}</p>
+        {tips.map((tip, i) => (
+          <li key={tip.title} className="glass rounded-[22px] p-5">
+            <p className="kicker !text-[#ffb3c4]">{String(i + 1).padStart(2, "0")}</p>
+            <p className="mt-1.5 font-display text-lg font-semibold tracking-[-0.02em] text-ink">{tip.title}</p>
             <p className="mt-2 text-sm leading-relaxed text-fg/90">{tip.body}</p>
           </li>
         ))}
@@ -49,19 +46,20 @@ function SexoTab() {
       <div className="mt-6 space-y-3">
         <Link
           to="/app/preguntar"
-          className="press flex min-h-14 items-center justify-center rounded-full bg-primary px-5 text-sm font-semibold text-primary-fg shadow-card"
+          className="press flex min-h-14 items-center justify-center gap-2 rounded-full bg-grad px-5 text-sm font-semibold text-primary-fg shadow-[0_10px_30px_-8px_rgb(255_79_123/0.6)]"
         >
           {t.sexAskCta}
+          <ArrowUpRight className="size-4" strokeWidth={2} aria-hidden />
         </Link>
         <Link
           to="/pagar"
-          className="press flex min-h-12 items-center justify-center rounded-full bg-plum/15 px-5 text-sm font-semibold text-ink"
+          className="press glass flex min-h-12 items-center justify-center rounded-full px-5 text-sm font-semibold text-ink"
         >
           {t.sexSerenaCta}
         </Link>
         <Link
           to="/app/guia"
-          className="press flex min-h-12 items-center justify-center rounded-full bg-surface px-5 text-sm font-semibold text-primary shadow-card"
+          className="press flex min-h-12 items-center justify-center rounded-full px-5 text-sm font-semibold text-[#ff8fa8]"
         >
           {t.sexGuideLink}
         </Link>

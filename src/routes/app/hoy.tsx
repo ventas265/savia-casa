@@ -49,7 +49,7 @@ function HoyEmpty() {
       <p className="mt-4 text-base leading-relaxed text-muted">{t.emptyLog}</p>
       <Link
         to="/app/onboarding"
-        className="mt-8 flex h-14 w-full items-center justify-center rounded-full bg-primary text-base font-semibold text-primary-fg shadow-card"
+        className="mt-8 flex h-14 w-full items-center justify-center rounded-full bg-grad text-base font-semibold text-primary-fg shadow-card"
       >
         {t.welcomeCta}
       </Link>
@@ -153,6 +153,7 @@ function HoyTab() {
           void loadToday().then(setData);
         }}
         wrapUpPaid={data.profile.plan === "serena" || data.profile.plan === "year"}
+        intention={data.profile.intention}
       />
       {symAsk.open ? (
         <SymptomCheckSheet

@@ -9,7 +9,7 @@ export const Route = createFileRoute("/guia")({ component: GuidePage });
 function GuidePage() {
   const { t } = useI18n();
   return (
-    <div className="min-h-dvh bg-bg">
+    <div className="min-h-dvh">
       <SiteHeader />
       <main className="mx-auto max-w-lg px-4 py-12">
         <h1 className="text-2xl font-semibold">{t.library}</h1>

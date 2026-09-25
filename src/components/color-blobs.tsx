@@ -1,15 +1,10 @@
 export function PageTitle({ kicker, title }: { kicker?: string; title: string }) {
   return (
     <div>
-      {kicker ? <p className="text-sm font-medium text-muted">{kicker}</p> : null}
-      <h1 className="font-display text-3xl font-semibold tracking-[-0.03em] text-ink">{title}</h1>
+      {kicker ? <p className="kicker">{kicker}</p> : null}
+      <h1 className="font-display text-[2rem] font-semibold leading-[1.05] tracking-[-0.045em] text-ink">{title}</h1>
     </div>
   );
 }
 
-export const CHIP_TONES = [
-  "bg-primary text-primary-fg",
-  "bg-accent text-ink",
-  "bg-sand text-ink",
-  "bg-plum text-primary-fg",
-];
+export const CHIP_TONES = ["bg-grad text-primary-fg", "glass text-fg", "glass text-fg", "glass text-fg"];

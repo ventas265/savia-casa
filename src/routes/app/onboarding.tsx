@@ -1,9 +1,9 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { CalendarDays, Minus, Plus, Sparkle, UserRound } from "lucide-react";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { BrandMark } from "@/components/brand-mark";
-import { IconCal, IconHoy, IconMas } from "@/components/savia-icons";
 import { loadToday, writeProfile } from "@/lib/savia-api";
 import { requestNotify } from "@/lib/notify";
 import { useI18n } from "@/lib/i18n";
@@ -18,11 +18,11 @@ const PRIMARY: Stage = "cycle";
 const OTHER_STAGES: Stage[] = ["pregnancy", "postpartum", "peri", "meno"];
 
 function StepIcon({ step }: { step: number }) {
-  const wrap = "flex size-12 items-center justify-center rounded-2xl bg-surface text-primary shadow-card";
+  const wrap = "glass flex size-12 items-center justify-center rounded-full text-[#ff8fa8]";
   if (step === 0) {
     return (
       <div className={wrap} aria-hidden>
-        <IconMas className="size-6" />
+        <UserRound className="size-5" strokeWidth={1.5} />
       </div>
     );
   }
@@ -32,13 +32,13 @@ function StepIcon({ step }: { step: number }) {
   if (step === 2) {
     return (
       <div className={wrap} aria-hidden>
-        <IconCal className="size-6" />
+        <CalendarDays className="size-5" strokeWidth={1.5} />
       </div>
     );
   }
   return (
     <div className={wrap} aria-hidden>
-      <IconHoy className="size-6" />
+      <Sparkle className="size-5" strokeWidth={1.5} />
     </div>
   );
 }
@@ -63,15 +63,15 @@ function StepHeader({
           {Array.from({ length: total }).map((_, i) => (
             <span
               key={i}
-              className={cn("h-1.5 flex-1 rounded-full transition-colors", i <= step ? "bg-primary" : "bg-surface-2")}
+              className={cn("h-1.5 flex-1 rounded-full transition-colors", i <= step ? "bg-grad" : "bg-surface-2")}
             />
           ))}
         </div>
-        <p className="shrink-0 font-display text-sm font-semibold tabular-nums text-muted">{progressLabel}</p>
+        <p className="kicker shrink-0 tabular-nums">{progressLabel}</p>
       </div>
       <StepIcon step={step} />
       <div>
-        <h1 className="font-display text-3xl font-semibold leading-tight tracking-[-0.03em] sm:text-[2.1rem]">
+        <h1 className="font-display text-[2rem] font-semibold leading-[1.05] tracking-[-0.045em] sm:text-[2.2rem]">
           {title}
         </h1>
         {hint ? <p className="mt-2 text-sm leading-relaxed text-muted">{hint}</p> : null}
@@ -96,11 +96,11 @@ function Onboarding() {
   const [busy, setBusy] = useState(false);
 
   const stageCopy: Record<Stage, { title: string; feel: string; tone: string }> = {
-    cycle: { title: t.stageCycle, feel: t.stageCycleFeel, tone: "bg-primary text-primary-fg" },
-    pregnancy: { title: t.stagePregnancy, feel: t.stagePregnancyFeel, tone: "bg-sand text-ink" },
-    postpartum: { title: t.stagePostpartum, feel: t.stagePostpartumFeel, tone: "bg-accent text-ink" },
-    peri: { title: t.stagePeri, feel: t.stagePeriFeel, tone: "bg-plum text-primary-fg" },
-    meno: { title: t.stageMeno, feel: t.stageMenoFeel, tone: "bg-ink text-primary-fg" },
+    cycle: { title: t.stageCycle, feel: t.stageCycleFeel, tone: "card-hot" },
+    pregnancy: { title: t.stagePregnancy, feel: t.stagePregnancyFeel, tone: "glass" },
+    postpartum: { title: t.stagePostpartum, feel: t.stagePostpartumFeel, tone: "glass" },
+    peri: { title: t.stagePeri, feel: t.stagePeriFeel, tone: "glass" },
+    meno: { title: t.stageMeno, feel: t.stageMenoFeel, tone: "glass" },
   };
 
   useEffect(() => {
@@ -188,12 +188,12 @@ function Onboarding() {
         type="button"
         onClick={() => pickStage(id)}
         className={cn(
-          "press min-h-[3.25rem] w-full rounded-[1.5rem] p-5 text-left shadow-card",
+          "press min-h-[3.25rem] w-full rounded-[22px] p-5 text-left",
           s.tone,
         )}
       >
         <p className="font-display text-xl font-semibold">{s.title}</p>
-        <p className="mt-1 text-sm opacity-80">{s.feel}</p>
+        <p className="mt-1 text-sm text-muted">{s.feel}</p>
       </button>
     );
   }
@@ -207,7 +207,7 @@ function Onboarding() {
             autoFocus
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
-            className="mt-10 w-full border-0 border-b-2 border-primary bg-transparent py-4 font-display text-3xl font-semibold outline-none placeholder:text-muted/50"
+            className="mt-10 w-full border-0 border-b-2 border-[#ff6b8f] bg-transparent py-4 font-display text-3xl font-semibold outline-none placeholder:text-muted/50"
             placeholder={t.yourName}
           />
         </div>
@@ -263,33 +263,35 @@ function Onboarding() {
             type="date"
             value={lastPeriodStart}
             onChange={(e) => setLastPeriodStart(e.target.value)}
-            className="mt-8 min-h-14 w-full rounded-[1.5rem] bg-surface px-5 font-display text-xl font-semibold shadow-card outline-none"
+            className="glass mt-8 min-h-14 w-full rounded-[22px] px-5 font-display text-xl font-semibold outline-none [color-scheme:dark]"
           />
           {lastPeriodStart ? (
             <p className="mt-3 text-sm text-muted">{formatLong(lastPeriodStart, lang)}</p>
           ) : null}
-          <p className="mt-10 text-sm font-semibold">{t.askRhythm}</p>
+          <p className="kicker mt-10">{t.askRhythm}</p>
           <div className="mt-5 flex items-center justify-center gap-8">
             <button
               type="button"
-              className="press flex size-14 items-center justify-center rounded-full bg-surface text-2xl font-semibold shadow-card"
+              aria-label="−"
+              className="press glass flex size-14 items-center justify-center rounded-full"
               onClick={() => {
                 haptic();
                 setCycleLength((n) => Math.max(21, n - 1));
               }}
             >
-              −
+              <Minus className="size-5" strokeWidth={1.5} />
             </button>
-            <p className="font-display text-6xl font-semibold tabular-nums text-primary">{cycleLength}</p>
+            <p className="font-display text-7xl font-semibold tabular-nums tracking-[-0.05em] text-fg">{cycleLength}</p>
             <button
               type="button"
-              className="press flex size-14 items-center justify-center rounded-full bg-surface text-2xl font-semibold shadow-card"
+              aria-label="+"
+              className="press glass flex size-14 items-center justify-center rounded-full"
               onClick={() => {
                 haptic();
                 setCycleLength((n) => Math.min(45, n + 1));
               }}
             >
-              +
+              <Plus className="size-5" strokeWidth={1.5} />
             </button>
           </div>
           <p className="mt-2 text-center text-sm text-muted">
@@ -305,7 +307,7 @@ function Onboarding() {
             type="date"
             value={dueDate}
             onChange={(e) => setDueDate(e.target.value)}
-            className="mt-8 min-h-14 w-full rounded-[1.5rem] bg-surface px-5 font-display text-xl shadow-card outline-none"
+            className="glass mt-8 min-h-14 w-full rounded-[22px] px-5 font-display text-xl outline-none [color-scheme:dark]"
           />
           {dueDate ? <p className="mt-3 text-sm text-muted">{formatLong(dueDate, lang)}</p> : null}
         </div>
@@ -318,7 +320,7 @@ function Onboarding() {
             type="number"
             value={lastPeriodYear}
             onChange={(e) => setLastPeriodYear(Number(e.target.value))}
-            className="mt-8 min-h-14 w-full rounded-[1.5rem] bg-surface px-5 font-display text-3xl shadow-card outline-none"
+            className="glass mt-8 min-h-14 w-full rounded-[22px] px-5 font-display text-3xl outline-none"
           />
         </div>
       ) : null}
@@ -333,8 +335,8 @@ function Onboarding() {
           />
           {left != null ? (
             <div className="mt-10">
-              <p className="text-sm font-semibold text-muted">{t.periodIn}</p>
-              <p className="mt-2 font-display text-6xl font-semibold text-primary">
+              <p className="kicker !text-[#ffb3c4]">{t.periodIn}</p>
+              <p className="mt-2 font-display text-6xl font-semibold tracking-[-0.05em] text-fg">
                 {left} {left === 1 ? t.dayLeft : t.daysLeft}
               </p>
             </div>
@@ -348,7 +350,7 @@ function Onboarding() {
         {step > 0 ? (
           <button
             type="button"
-            className="press min-h-11 w-full rounded-full bg-surface text-sm font-semibold text-muted shadow-card"
+            className="press glass min-h-11 w-full rounded-full text-sm font-semibold text-muted"
             onClick={() => {
               if (step === 1 && showOtherStages) {
                 haptic();
@@ -364,7 +366,7 @@ function Onboarding() {
         ) : null}
         {step < 3 && step !== 1 ? (
           <Button
-            className="h-14 min-h-11 w-full text-base disabled:bg-surface-2 disabled:text-muted disabled:opacity-100"
+            className="h-14 min-h-11 w-full text-base disabled:bg-surface-2 disabled:[background-image:none] disabled:text-muted disabled:opacity-100"
             disabled={!canNext}
             onClick={() => go(step + 1)}
           >
@@ -373,7 +375,7 @@ function Onboarding() {
         ) : null}
         {step === 3 ? (
           <Button
-            className="h-14 min-h-11 w-full text-base disabled:bg-surface-2 disabled:text-muted disabled:opacity-100"
+            className="h-14 min-h-11 w-full text-base disabled:bg-surface-2 disabled:[background-image:none] disabled:text-muted disabled:opacity-100"
             disabled={busy}
             onClick={() => void save()}
           >

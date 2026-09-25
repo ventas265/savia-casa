@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { X } from "lucide-react";
+import { Leaf, X } from "lucide-react";
 import { toast } from "sonner";
 import { CircleChip } from "@/components/circle-chip";
 import { WrapUpCard } from "@/components/log-form";
@@ -11,7 +11,7 @@ import { asIsoDay, formatDay, todayISO } from "@/lib/cycle";
 import { pick, symptomLabel } from "@/lib/savia-content";
 import { tipAfterSave, type TipResult } from "@/lib/savia-tip";
 import { setSelectedDay } from "@/lib/selected-day";
-import { QUICK_SYMPTOMS, SYMPTOM_EMOJI } from "@/lib/symptom-meta";
+import { QUICK_SYMPTOMS, symptomIcon } from "@/lib/symptom-meta";
 import type { DailyLog, Intention, Phase } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -165,23 +165,23 @@ export function SymptomCheckSheet({
     >
       <button
         type="button"
-        className={cn("absolute inset-0 bg-ink/40 transition-opacity duration-300", shown ? "opacity-100" : "opacity-0")}
+        className={cn("absolute inset-0 bg-black/60 backdrop-blur-[2px] transition-opacity duration-300", shown ? "opacity-100" : "opacity-0")}
         aria-label={t.close}
         onClick={onClose}
       />
       <div
         className={cn(
-          "relative z-10 flex max-h-[88vh] w-full max-w-lg flex-col rounded-t-[1.75rem] bg-surface shadow-bar transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+          "relative z-10 flex max-h-[88vh] w-full max-w-lg flex-col rounded-t-[1.75rem] border-t border-white/10 bg-elevated shadow-bar transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
           shown ? "translate-y-0" : "translate-y-full",
         )}
       >
-        <div className="mx-auto mt-2.5 h-1 w-10 rounded-full bg-border" aria-hidden />
+        <div className="mx-auto mt-2.5 h-1 w-10 rounded-full bg-white/20" aria-hidden />
         <div className="flex items-start justify-between gap-3 px-5 pt-3">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-sage-deep">
+            <p className="kicker !text-[#ffb3c4]">
               {formatDay(day, lang)}
             </p>
-            <h2 id="sym-ask-title" className="mt-1 font-display text-[1.4rem] font-semibold leading-tight tracking-[-0.02em]">
+            <h2 id="sym-ask-title" className="mt-1 font-display text-[1.5rem] font-semibold leading-tight tracking-[-0.035em]">
               {t.symAskTitle}
             </h2>
             {!tip ? <p className="mt-1.5 text-sm leading-relaxed text-muted">{t.symAskSub}</p> : null}
@@ -189,10 +189,10 @@ export function SymptomCheckSheet({
           <button
             type="button"
             onClick={onClose}
-            className="press inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-bg text-muted"
+            className="press inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-white/[0.06] text-muted ring-1 ring-white/10"
             aria-label={t.close}
           >
-            <X className="size-5" />
+            <X className="size-5" strokeWidth={1.5} />
           </button>
         </div>
 
@@ -204,7 +204,7 @@ export function SymptomCheckSheet({
                   <CircleChip
                     size="sm"
                     label={t.symAskNone}
-                    icon="🌿"
+                    icon={<Leaf className="size-[22px]" strokeWidth={1.5} />}
                     tone="sage"
                     on={none}
                     onClick={() => {
@@ -219,7 +219,7 @@ export function SymptomCheckSheet({
                     <CircleChip
                       size="sm"
                       label={pick(symptomLabel[id]!, lang)}
-                      icon={SYMPTOM_EMOJI[id] ?? "•"}
+                      icon={symptomIcon(id)}
                       tone="dust"
                       on={picked.includes(id)}
                       onClick={() => toggle(id)}
@@ -232,7 +232,7 @@ export function SymptomCheckSheet({
                 data-testid="symptom-apply"
                 disabled={busy || (!none && picked.length === 0)}
                 onClick={() => void apply()}
-                className="press mt-4 flex h-14 w-full items-center justify-center rounded-full bg-primary text-base font-semibold text-primary-fg shadow-card transition-opacity disabled:opacity-45"
+                className="press mt-4 flex h-14 w-full items-center justify-center rounded-full bg-grad text-base font-semibold text-primary-fg shadow-[0_10px_30px_-8px_rgb(255_79_123/0.6)] transition-opacity disabled:opacity-40"
               >
                 {t.symAskApply}
               </button>
@@ -242,7 +242,7 @@ export function SymptomCheckSheet({
                   markAsked(day, "more");
                   onClose();
                 }}
-                className="mt-2 flex min-h-11 items-center justify-center text-sm font-semibold text-sage-deep"
+                className="mt-2 flex min-h-11 items-center justify-center text-sm font-semibold text-[#ffb3c4]"
               >
                 {t.symAskMore}
               </Link>
@@ -253,7 +253,7 @@ export function SymptomCheckSheet({
               <button
                 type="button"
                 onClick={onClose}
-                className="press flex h-12 w-full items-center justify-center rounded-full bg-surface text-sm font-semibold shadow-card ring-1 ring-border"
+                className="press flex h-12 w-full items-center justify-center rounded-full bg-white/[0.06] text-sm font-semibold ring-1 ring-white/10"
               >
                 {t.symAskDone}
               </button>

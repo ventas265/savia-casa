@@ -12,13 +12,13 @@ export function RecoveryCard() {
   }, []);
   if (!code) return null;
   return (
-    <section className="relative mb-4 rounded-[1.5rem] bg-plum p-5 text-primary-fg">
+    <section className="relative mb-4 rounded-[1.5rem] card-hot p-5">
       <p className="text-xs font-bold uppercase tracking-wide opacity-80">{t.keepCode}</p>
       <p className="mt-2 font-display text-3xl font-semibold tracking-[0.2em]">{code}</p>
       <p className="mt-2 text-sm opacity-90">{t.keepCodeBody}</p>
       <button
         type="button"
-        className="press mt-4 h-11 w-full rounded-full bg-surface text-sm font-semibold text-primary"
+        className="press mt-4 h-11 w-full rounded-full bg-white text-sm font-semibold text-[#130d12]"
         onClick={() => {
           void navigator.clipboard.writeText(code).then(
             () => toast.success(t.copiedCode),

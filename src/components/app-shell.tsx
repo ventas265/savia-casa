@@ -17,6 +17,7 @@ export function AppShell({
   return (
     <Shell
       header={
+        current === "hoy" ? null : (
         <div className="flex h-14 items-center justify-between gap-3 px-4">
           <BrandLockup />
           <div className="flex items-center gap-2">
@@ -25,6 +26,7 @@ export function AppShell({
             {SAVIA_BETA ? null : <AuthSlot compact />}
           </div>
         </div>
+        )
       }
       footer={current !== "other" ? <TabBar current={current} /> : undefined}
     >
