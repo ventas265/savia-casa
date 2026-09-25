@@ -593,12 +593,64 @@ export const claimSerena = createServerFn({ method: "POST" })
 
 export type ChatTurn = { role: "user" | "assistant"; content: string };
 
+/**
+ * One xAI chat call. grok-4.5 is a reasoning model (default effort "high"):
+ * reasoning tokens count against max_tokens, so a tiny budget returns empty
+ * content. Use low effort + room for reasoning; the prompt caps reply length.
+ * Logs status/finish_reason/usage only — never the key or the conversation.
+ */
+async function callGrok(
+  apiKey: string,
+  messages: { role: string; content: string }[],
+): Promise<string | null> {
+  let res: Response;
+  try {
+    res = await fetch("https://api.x.ai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: "grok-4.5",
+        reasoning_effort: "low",
+        max_tokens: 4000,
+        temperature: 0.7,
+        messages,
+      }),
+    });
+  } catch (err) {
+    console.error("[savia-ai] fetch failed:", (err as Error)?.message);
+    return null;
+  }
+  if (!res.ok) {
+    const detail = (await res.text().catch(() => "")).slice(0, 300);
+    console.error(`[savia-ai] xAI HTTP ${res.status}: ${detail}`);
+    return null;
+  }
+  const body = (await res.json()) as {
+    choices?: { message?: { content?: string }; finish_reason?: string }[];
+    usage?: unknown;
+  };
+  const text = body.choices?.[0]?.message?.content ?? "";
+  if (!text) {
+    console.error(
+      `[savia-ai] empty reply finish_reason=${body.choices?.[0]?.finish_reason} usage=${JSON.stringify(body.usage)}`,
+    );
+    return null;
+  }
+  return text;
+}
+
 export const askSavia = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
   .validator((input: { question: string; locale: string; history?: ChatTurn[] }) => input)
   .handler(async ({ context, data }) => {
     const apiKey = process.env.XAI_API_KEY;
-    if (!apiKey) return { ok: false as const, error: "ai" };
+    if (!apiKey) {
+      console.error("[savia-ai] XAI_API_KEY is not set in this environment");
+      return { ok: false as const, error: "ai" };
+    }
     const sql = await getSql();
     const profile = await getOrCreateProfile(context.userId);
     const paid = isSerena(profile.plan);
@@ -620,17 +672,7 @@ export const askSavia = createServerFn({ method: "POST" })
         role: m.role,
         content: m.content.slice(0, 1500),
       }));
-    const res = await fetch("https://api.x.ai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: "grok-4.5",
-        max_tokens: 240,
-        temperature: 0.7,
-        messages: [
+    const text = await callGrok(apiKey, [
           {
             role: "system",
             content: saviaPrompt(
@@ -653,12 +695,7 @@ export const askSavia = createServerFn({ method: "POST" })
           },
           ...history,
           { role: "user", content: data.question.slice(0, 2000) },
-        ],
-      }),
-    });
-    if (!res.ok) return { ok: false as const, error: "ai" };
-    const body = (await res.json()) as { choices?: { message?: { content?: string } }[] };
-    const text = body.choices?.[0]?.message?.content ?? "";
+        ]);
     if (!text) return { ok: false as const, error: "ai" };
     let remaining: number | null = null;
     if (!paid) {
@@ -707,24 +744,17 @@ export const askSaviaOpen = createServerFn({ method: "POST" })
   .validator((input: { question: string; locale: string; history?: ChatTurn[]; file?: AskFile }) => input)
   .handler(async ({ data }) => {
     const apiKey = process.env.XAI_API_KEY;
-    if (!apiKey) return { ok: false as const, error: "ai" as const };
+    if (!apiKey) {
+      console.error("[savia-ai] XAI_API_KEY is not set in this environment");
+      return { ok: false as const, error: "ai" as const };
+    }
     const lang = data.locale === "en" ? "English" : "Spanish";
     const f = data.file || {};
     const history = (data.history ?? [])
       .filter((m) => m.content.trim())
       .slice(-8)
       .map((m) => ({ role: m.role, content: m.content.slice(0, 1500) }));
-    const res = await fetch("https://api.x.ai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: "grok-4.5",
-        max_tokens: 240,
-        temperature: 0.7,
-        messages: [
+    const text = await callGrok(apiKey, [
           {
             role: "system",
             content: saviaPrompt(
@@ -753,12 +783,7 @@ export const askSaviaOpen = createServerFn({ method: "POST" })
           },
           ...history,
           { role: "user", content: data.question.slice(0, 2000) },
-        ],
-      }),
-    });
-    if (!res.ok) return { ok: false as const, error: "ai" as const };
-    const body = (await res.json()) as { choices?: { message?: { content?: string } }[] };
-    const text = body.choices?.[0]?.message?.content ?? "";
+        ]);
     if (!text) return { ok: false as const, error: "ai" as const };
     return { ok: true as const, text, remaining: null as number | null };
   });

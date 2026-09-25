@@ -176,6 +176,11 @@ async function createSql(): Promise<Sql> {
         "or a server route loader, never from client code.",
     );
   }
+  if (dbSource === "pglite" && process.env.VERCEL === "1") {
+    // Vercel lambdas don't ship pglite.data: constructing PGlite there throws an
+    // unhandled ENOENT that kills the whole process (exit 128). Fail cleanly.
+    throw new Error("No DATABASE_URL on Vercel — server DB unavailable");
+  }
   return dbSource === "neon" ? createNeonSql() : createPgliteSql();
 }
 
