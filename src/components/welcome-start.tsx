@@ -11,7 +11,7 @@ export function WelcomeStart() {
         {t.welcomeTitle}
       </p>
       <p className="mt-4 text-base leading-relaxed text-muted">{t.welcomeShort}</p>
-      <Button className="mt-8 h-14 w-full text-base font-semibold shadow-[0_10px_30px_-8px_rgb(255_79_123/0.6)]" asChild>
+      <Button className="mt-8 h-14 w-full text-base font-semibold shadow-[0_10px_30px_-8px_rgb(242_66_126/0.6)]" asChild>
         <Link to="/app/onboarding">{t.welcomeCta}</Link>
       </Button>
       <p className="mt-3 text-center text-xs text-muted">{t.welcomeNote}</p>

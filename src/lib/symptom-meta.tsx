@@ -63,11 +63,11 @@ export type ChipTone = "rose" | "dust" | "sand" | "sage" | "plum";
 
 /** Nocturna: glass circles; tone only tints the category icon. */
 export const TONE_CLS: Record<ChipTone, { idle: string; on: string; badge: string; icon: string }> = {
-  rose: { idle: "", on: "", badge: "bg-grad text-primary-fg", icon: "bg-white/[0.06] ring-1 ring-white/10 text-[#ff8fa8]" },
-  dust: { idle: "", on: "", badge: "bg-grad text-primary-fg", icon: "bg-white/[0.06] ring-1 ring-white/10 text-[#ffb3c4]" },
-  sand: { idle: "", on: "", badge: "bg-grad text-primary-fg", icon: "bg-white/[0.06] ring-1 ring-white/10 text-[#ffb892]" },
-  sage: { idle: "", on: "", badge: "bg-grad text-primary-fg", icon: "bg-white/[0.06] ring-1 ring-white/10 text-[#7fe3c8]" },
-  plum: { idle: "", on: "", badge: "bg-grad text-primary-fg", icon: "bg-white/[0.06] ring-1 ring-white/10 text-[#b9a6ff]" },
+  rose: { idle: "", on: "", badge: "bg-grad text-primary-fg", icon: "bg-white/[0.06] ring-1 ring-white/10 text-[#ff8cb8]" },
+  dust: { idle: "", on: "", badge: "bg-grad text-primary-fg", icon: "bg-white/[0.06] ring-1 ring-white/10 text-[#ffb0cc]" },
+  sand: { idle: "", on: "", badge: "bg-grad text-primary-fg", icon: "bg-white/[0.06] ring-1 ring-white/10 text-[#f0b0e8]" },
+  sage: { idle: "", on: "", badge: "bg-grad text-primary-fg", icon: "bg-white/[0.06] ring-1 ring-white/10 text-[#6fe0d2]" },
+  plum: { idle: "", on: "", badge: "bg-grad text-primary-fg", icon: "bg-white/[0.06] ring-1 ring-white/10 text-[#c7a6ff]" },
 };
 
 /** Frequent symptoms for the Hoy quick check (order matters). */

@@ -2,11 +2,14 @@ import { useEffect, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 import { Link } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
+import { differenceInCalendarDays } from "date-fns";
 import {
+  addDaysISO,
   CYCLE_CHOICES,
   daysUntil,
   formatDay,
   formatLong,
+  fromISO,
   inDayRange,
   isConfirmedPeriodDay,
   isCycling,
@@ -49,6 +52,7 @@ export function TodayHero({
   onLogSaved,
   wrapUpPaid = false,
   intention = null,
+  sexMarks = [],
 }: {
   stage: Stage;
   phase: Phase;
@@ -72,6 +76,8 @@ export function TodayHero({
   /** Soft Serena hint only when not on serena/year. */
   wrapUpPaid?: boolean;
   intention?: Intention | null;
+  /** Logged sex days (any cycle) — hearts on the ring for this cycle. */
+  sexMarks?: { day: string; kind: string }[];
 }) {
   const { t, lang } = useI18n();
   const [adjust, setAdjust] = useState(false);
@@ -193,6 +199,15 @@ export function TodayHero({
       : t.fertBodyAvoid
     : t.daySheetChanceLowSex;
   const nextShort = next ? formatDay(next, lang) : null;
+  const ringSex =
+    cycling && cycleDay != null
+      ? (() => {
+          const start = addDaysISO(today, -(cycleDay - 1));
+          return sexMarks
+            .filter((m) => m.day >= start && m.day <= today)
+            .map((m) => ({ n: differenceInCalendarDays(fromISO(m.day), fromISO(start)) + 1, kind: m.kind }));
+        })()
+      : [];
 
   // Big-number ring center: number when there is one, text otherwise.
   const center = (() => {
@@ -220,9 +235,9 @@ export function TodayHero({
           <span
             aria-hidden
             className="size-[2.4rem] shrink-0 rounded-full p-[1.5px]"
-            style={{ background: "conic-gradient(from 200deg,#FF4F7B,#FF9A6B,#8B6BFF,#FF4F7B)" }}
+            style={{ background: "conic-gradient(from 200deg,#f2427e,#b65cff,#9b5cff,#f2427e)" }}
           >
-            <span className="grid size-full place-items-center rounded-full bg-[#1a1419] text-[15px] font-semibold">
+            <span className="grid size-full place-items-center rounded-full bg-[#1b131e] text-[15px] font-semibold">
               {initial}
             </span>
           </span>
@@ -249,12 +264,13 @@ export function TodayHero({
           cycleDay={cycling ? cycleDay : null}
           label={heroTitle}
           onClick={onCal}
+          sexDays={ringSex}
         >
-          {center.kicker ? <span className="kicker !text-[#ffb3c4]">{center.kicker}</span> : null}
+          {center.kicker ? <span className="kicker !text-[#ffb0cc]">{center.kicker}</span> : null}
           {center.num ? (
             <span
               className="mt-2 font-display text-[6.5rem] font-semibold leading-[0.82] tracking-[-0.06em] text-transparent"
-              style={{ backgroundImage: "linear-gradient(180deg,#fff 30%,#ffd6de 100%)", WebkitBackgroundClip: "text", backgroundClip: "text" }}
+              style={{ backgroundImage: "linear-gradient(180deg,#fff 30%,#ffc4df 100%)", WebkitBackgroundClip: "text", backgroundClip: "text" }}
             >
               {center.num}
             </span>
@@ -294,28 +310,30 @@ export function TodayHero({
           onClick={onCal}
           className={cn(
             "press mt-2 flex w-full items-center gap-3.5 rounded-[22px] border px-4 py-3.5 text-left",
-            fertHot
-              ? "border-[rgb(255_79_123/0.3)] bg-[linear-gradient(135deg,rgb(255_79_123/0.2),rgb(139_107_255/0.12))]"
-              : "glass",
+            fertHot ? "card-fert" : "glass",
           )}
         >
           <span className="flex h-[38px] shrink-0 items-end gap-1" aria-hidden>
             {[12, 19, 26, 32, 38].map((h, i) => (
               <i
                 key={h}
-                className={cn("w-[7px] rounded-[3px]", i < meterOn ? "bg-[linear-gradient(180deg,#FF9A6B,#FF4F7B)]" : "bg-white/15")}
+                className={cn("w-[7px] rounded-[3px]", i < meterOn
+                    ? fertHot
+                      ? "bg-[linear-gradient(180deg,#6FE0D2,#3FBDB0)]"
+                      : "bg-[linear-gradient(180deg,#B65CFF,#F2427E)]"
+                    : "bg-white/15")}
                 style={{ height: h }}
               />
             ))}
           </span>
           <span className="min-w-0">
-            <span className={cn("kicker block", fertHot && "!text-[#ffb3c4]")}>
+            <span className={cn("kicker block", fertHot && "!text-[#6FE0D2]")}>
               {fertHot ? t.fertKickerOn : t.fertKickerOff}
             </span>
             <span className="mt-0.5 block font-display text-[19px] font-semibold leading-tight tracking-[-0.02em]">
               {fertTitle}
             </span>
-            <span className="mt-1 block text-[12.5px] leading-snug text-[#d9ccd3]">{fertBody}</span>
+            <span className="mt-1 block text-[12.5px] leading-snug text-[#dccbdb]">{fertBody}</span>
           </span>
         </button>
       ) : null}
@@ -328,7 +346,7 @@ export function TodayHero({
             haptic(14);
             void registerPeriodToday();
           }}
-          className="press bg-grad flex h-[54px] items-center gap-2.5 whitespace-nowrap rounded-[18px] px-3 text-[13.5px] font-semibold text-primary-fg shadow-[0_8px_24px_-8px_rgb(255_79_123/0.6)] disabled:opacity-60"
+          className="press bg-grad flex h-[54px] items-center gap-2.5 whitespace-nowrap rounded-[18px] px-3 text-[13.5px] font-semibold text-primary-fg shadow-[0_8px_24px_-8px_rgb(242_66_126/0.6)] disabled:opacity-60"
         >
           <span className="grid size-[30px] place-items-center rounded-full bg-black/15">
             <Droplet className="size-4" strokeWidth={1.8} />

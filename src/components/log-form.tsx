@@ -32,7 +32,7 @@ import { useI18n } from "@/lib/i18n";
 import { writeLog } from "@/lib/savia-api";
 import { haptic } from "@/lib/haptic";
 import { pick, symptomLabel } from "@/lib/savia-content";
-import { asIsoDay, formatDay } from "@/lib/cycle";
+import { asIsoDay, formatDay, sexChanceForMark, type DayMark } from "@/lib/cycle";
 import { tipAfterSave, tipVisibleRecs, type TipResult } from "@/lib/savia-tip";
 import { setSelectedDay } from "@/lib/selected-day";
 import { MUCUS, SEX_KINDS, type DailyLog, type Flow, type Intention, type Mucus, type Phase, type SexKind } from "@/lib/types";
@@ -40,10 +40,10 @@ import { cn } from "@/lib/utils";
 import { symptomIcon, TONE_CLS, type ChipTone } from "@/lib/symptom-meta";
 
 const FLOW_DOT: { id: Flow; cls: string; drops: number }[] = [
-  { id: "spotting", cls: "text-[#ffb3c4]", drops: 1 },
-  { id: "light", cls: "text-[#ff8fa8]", drops: 1 },
-  { id: "medium", cls: "text-[#ff6b8f]", drops: 2 },
-  { id: "heavy", cls: "text-[#ff4f7b]", drops: 3 },
+  { id: "spotting", cls: "text-[#ffb0cc]", drops: 1 },
+  { id: "light", cls: "text-[#ff8cb8]", drops: 1 },
+  { id: "medium", cls: "text-[#ff5f92]", drops: 2 },
+  { id: "heavy", cls: "text-[#ff4d84]", drops: 3 },
 ];
 
 type CatKey = "flow" | "pain" | "mood" | "gut" | "skin" | "sex" | "other";
@@ -101,6 +101,7 @@ export function LogForm({
   wrapUpPaid = false,
   phase = "none",
   intention = null,
+  dayMark,
   variant = "page",
   onSaved,
 }: {
@@ -110,6 +111,8 @@ export function LogForm({
   wrapUpPaid?: boolean;
   phase?: Phase;
   intention?: Intention | null;
+  /** Cycle estimate for this day — drives the fertile / non-fertile chip under Sexo. */
+  dayMark?: DayMark | null;
   /** page = above the tab bar; sheet = inside a modal scroller. */
   variant?: "page" | "sheet";
   onSaved?: (log: DailyLog) => void;
@@ -418,6 +421,7 @@ export function LogForm({
                 );
               })}
             </ChipGrid>
+            {sexKind !== "none" ? <SexChanceChip mark={dayMark ?? null} /> : null}
             <SubLabel className="mt-5">{t.logSubDesire}</SubLabel>
             {symptomChips("sex")}
           </>
@@ -451,7 +455,7 @@ export function LogForm({
             </div>
             <SubLabel className="mt-5">{t.notes}</SubLabel>
             <textarea
-              className="min-h-24 w-full resize-none rounded-2xl border border-border bg-bg/60 px-4 py-3 text-sm outline-none transition-colors focus:border-[rgb(255_79_123/0.5)]"
+              className="min-h-24 w-full resize-none rounded-2xl border border-border bg-bg/60 px-4 py-3 text-sm outline-none transition-colors focus:border-[rgb(242_66_126/0.5)]"
               value={notes}
               onChange={(e) => {
                 setNotes(e.target.value);
@@ -484,7 +488,7 @@ export function LogForm({
               data-cat={c.key}
               className={cn(
                 "overflow-hidden rounded-[22px] border bg-white/[0.045] backdrop-blur-xl transition-[border-color,background-color] duration-300",
-                open ? "border-[rgb(255_79_123/0.32)] bg-white/[0.06]" : "border-white/[0.08]",
+                open ? "border-[rgb(242_66_126/0.32)] bg-white/[0.06]" : "border-white/[0.08]",
               )}
             >
               <button
@@ -549,7 +553,7 @@ export function LogForm({
         <button
           type="button"
           data-testid="log-save"
-          className="press flex h-14 w-full items-center justify-center gap-2 rounded-full bg-grad text-base font-semibold text-primary-fg shadow-[0_10px_30px_-8px_rgb(255_79_123/0.6)] ring-4 ring-bg/80 transition-opacity disabled:opacity-70"
+          className="press flex h-14 w-full items-center justify-center gap-2 rounded-full bg-grad text-base font-semibold text-primary-fg shadow-[0_10px_30px_-8px_rgb(242_66_126/0.6)] ring-4 ring-bg/80 transition-opacity disabled:opacity-70"
           onClick={() => {
             scrollTipOnSave.current = true;
             persist({ notes: live.current.notes });
@@ -592,10 +596,10 @@ export function WrapUpCard({
 
   return (
     <section
-      className="rounded-[22px] border border-[rgb(255_79_123/0.28)] bg-[linear-gradient(135deg,rgb(255_79_123/0.16),rgb(139_107_255/0.1))] p-4 backdrop-blur-xl"
+      className="rounded-[22px] border border-[rgb(242_66_126/0.28)] bg-[linear-gradient(135deg,rgb(242_66_126/0.16),rgb(155_92_255/0.1))] p-4 backdrop-blur-xl"
       aria-live="polite"
     >
-      <p className="kicker !text-[#ffb3c4]">{t.saviaTipLabel}</p>
+      <p className="kicker !text-[#ffb0cc]">{t.saviaTipLabel}</p>
       <p className="mt-2 text-sm leading-relaxed text-fg">{tip.conclusion}</p>
 
       {visible.length > 0 ? (
@@ -649,5 +653,39 @@ export function WrapUpCard({
         {t.saviaTipAsk}
       </Link>
     </section>
+  );
+}
+
+/** Inline fertile-window read under Sexo: more vs less chance, never "safe". */
+function SexChanceChip({ mark }: { mark: DayMark | null }) {
+  const { t } = useI18n();
+  const chance = sexChanceForMark(mark);
+  if (!chance) return null;
+  const hot = chance !== "quiet";
+  return (
+    <p
+      data-testid="sex-chance"
+      data-chance={chance}
+      role="status"
+      className={cn(
+        "mt-4 flex items-start gap-2.5 rounded-[18px] border px-3.5 py-2.5 text-[13px] font-medium leading-snug",
+        hot
+          ? "border-[rgb(111_224_210/0.35)] bg-[rgb(111_224_210/0.12)] text-[#d2f7f2]"
+          : "border-white/10 bg-white/[0.05] text-soft",
+      )}
+    >
+      <span
+        aria-hidden
+        className={cn(
+          "mt-[5px] size-2 shrink-0 rounded-full",
+          chance === "peak"
+            ? "bg-cal-peak shadow-[0_0_10px_rgb(111_224_210/0.9)]"
+            : chance === "fertile"
+              ? "bg-cal-peak/70"
+              : "bg-white/35",
+        )}
+      />
+      {chance === "peak" ? t.sexChipPeak : chance === "fertile" ? t.sexChipFertile : t.sexChipQuiet}
+    </p>
   );
 }

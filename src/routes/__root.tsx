@@ -20,7 +20,7 @@ export const Route = createRootRoute({
       { title: APP_NAME },
       { name: "description", content: "Calendario del ciclo, peri y menopausia. En español, para Latinoamérica." },
       { name: "apple-mobile-web-app-title", content: APP_NAME },
-      { name: "theme-color", content: "#0D0A0F" },
+      { name: "theme-color", content: "#0e0911" },
       { name: "color-scheme", content: "dark" },
       { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
@@ -52,7 +52,7 @@ export const Route = createRootRoute({
     ],
   }),
   component: () => (
-    <html lang="es" className="dark antialiased" style={{ backgroundColor: "#0D0A0F" }} suppressHydrationWarning>
+    <html lang="es" className="dark antialiased" style={{ backgroundColor: "#0e0911" }} suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>
@@ -67,16 +67,16 @@ export const Route = createRootRoute({
               position="top-center"
               toastOptions={{
                 style: {
-                  background: "rgba(30,24,30,0.92)",
-                  color: "#F6F1F3",
+                  background: "rgba(32,22,36,0.92)",
+                  color: "#f7f0f5",
                   border: "1px solid rgba(255,255,255,0.1)",
                   backdropFilter: "blur(20px)",
                   borderRadius: "18px",
                   fontFamily: "Inter, system-ui, sans-serif",
                 },
                 actionButtonStyle: {
-                  background: "linear-gradient(135deg,#FF4F7B,#FF9A6B)",
-                  color: "#1A0710",
+                  background: "linear-gradient(135deg,#f2427e,#b65cff)",
+                  color: "#ffffff",
                   borderRadius: "999px",
                   fontWeight: 600,
                 },

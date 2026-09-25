@@ -26,14 +26,14 @@ export function Predictions({
   return (
     <div className="mb-4">
       <div className="grid grid-cols-3 gap-2">
-        <div className="rounded-[18px] border border-[rgb(255_79_123/0.35)] bg-[rgb(255_79_123/0.14)] px-2.5 py-3 backdrop-blur-xl">
-          <p className="kicker !text-[9px] !tracking-[0.08em] !text-[#ffb3c4]">{t.predNext}</p>
+        <div className="rounded-[18px] border border-[rgb(242_66_126/0.35)] bg-[rgb(242_66_126/0.14)] px-2.5 py-3 backdrop-blur-xl">
+          <p className="kicker !text-[9px] !tracking-[0.08em] !text-[#ffb0cc]">{t.predNext}</p>
           <p className="mt-1.5 font-display text-[15px] font-semibold leading-tight tracking-[-0.02em]">
             {pred.from && pred.to ? `${formatDay(pred.from, lang)}–${formatDay(pred.to, lang)}` : "—"}
           </p>
         </div>
-        <div className="rounded-[18px] border border-[rgb(63_208_192/0.35)] bg-[rgb(63_208_192/0.12)] px-2.5 py-3 backdrop-blur-xl">
-          <p className="kicker !text-[9px] !tracking-[0.08em] !text-[#8ff0e4]">{t.predFertile}</p>
+        <div className="rounded-[18px] border border-[rgb(111_224_210/0.35)] bg-[rgb(111_224_210/0.12)] px-2.5 py-3 backdrop-blur-xl">
+          <p className="kicker !text-[9px] !tracking-[0.08em] !text-[#9ff0e6]">{t.predFertile}</p>
           <p className="mt-1.5 font-display text-[15px] font-semibold leading-tight tracking-[-0.02em]">
             {win ? `${formatDay(win.start, lang)}–${formatDay(win.end, lang)}` : "—"}
           </p>

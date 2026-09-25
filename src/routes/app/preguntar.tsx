@@ -62,7 +62,7 @@ function Preguntar() {
         <Face className="size-11" />
         <div className="min-w-0">
           <p className="font-display text-xl font-semibold leading-none tracking-[-0.02em]">{t.askTitle}</p>
-          <p className="mt-1 flex items-center gap-1.5 text-sm text-muted"><span className="size-1.5 rounded-full bg-[#7fe3c8]" aria-hidden />{t.askHere}</p>
+          <p className="mt-1 flex items-center gap-1.5 text-sm text-muted"><span className="size-1.5 rounded-full bg-[#6fe0d2]" aria-hidden />{t.askHere}</p>
         </div>
       </div>
 
@@ -131,7 +131,7 @@ function Preguntar() {
           autoComplete="off"
           autoCorrect="on"
           enterKeyHint="send"
-          className="glass min-h-14 min-w-0 flex-1 rounded-full px-5 text-base text-fg outline-none focus:border-[rgb(255_79_123/0.5)]"
+          className="glass min-h-14 min-w-0 flex-1 rounded-full px-5 text-base text-fg outline-none focus:border-[rgb(242_66_126/0.5)]"
           placeholder={t.askHint}
           value={q}
           onChange={(e) => setQ(e.target.value)}

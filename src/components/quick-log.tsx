@@ -11,10 +11,10 @@ import { haptic } from "@/lib/haptic";
 import { pick, symptomLabel } from "@/lib/savia-content";
 
 const FLOWS: { id: Flow; tint: string; drops: number }[] = [
-  { id: "spotting", tint: "text-[#ffb3c4]", drops: 1 },
-  { id: "light", tint: "text-[#ff8fa8]", drops: 1 },
-  { id: "medium", tint: "text-[#ff6b8f]", drops: 2 },
-  { id: "heavy", tint: "text-[#ff4f7b]", drops: 3 },
+  { id: "spotting", tint: "text-[#ffb0cc]", drops: 1 },
+  { id: "light", tint: "text-[#ff8cb8]", drops: 1 },
+  { id: "medium", tint: "text-[#ff5f92]", drops: 2 },
+  { id: "heavy", tint: "text-[#ff4d84]", drops: 3 },
 ];
 
 const FEEL = ["fatigue", "low_mood", "craving", "acne", "irritable"];
@@ -98,7 +98,7 @@ export function QuickLog({
                 className={cn(
                   "flex size-12 items-center justify-center gap-px rounded-full transition-colors",
                   flow === f.id
-                    ? "bg-grad text-primary-fg shadow-[0_6px_22px_-4px_rgb(255_79_123/0.65)]"
+                    ? "bg-grad text-primary-fg shadow-[0_6px_22px_-4px_rgb(242_66_126/0.65)]"
                     : cn("bg-white/[0.055] ring-1 ring-white/10", f.tint),
                 )}
               >
@@ -177,10 +177,10 @@ function Card({
         <span
           className={cn(
             "flex size-8 items-center justify-center rounded-full bg-white/[0.06] ring-1 ring-white/10",
-            tone === "rose" && "text-[#ff8fa8]",
-            tone === "sand" && "text-[#ffb892]",
-            tone === "plum" && "text-[#b9a6ff]",
-            tone === "sage" && "text-[#7fe3c8]",
+            tone === "rose" && "text-[#ff8cb8]",
+            tone === "sand" && "text-[#f0b0e8]",
+            tone === "plum" && "text-[#c7a6ff]",
+            tone === "sage" && "text-[#6fe0d2]",
           )}
         >
           {icon}

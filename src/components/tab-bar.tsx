@@ -39,7 +39,7 @@ export function TabBar({
             active && !plus ? "text-white" : "text-muted",
           );
           const icon = plus ? (
-            <span className="bg-grad flex size-[46px] items-center justify-center rounded-full text-white shadow-[0_6px_20px_rgb(255_79_123/0.5)]">
+            <span className="bg-grad flex size-[46px] items-center justify-center rounded-full text-white shadow-[0_6px_20px_rgb(242_66_126/0.5)]">
               <Icon className="size-[22px]" strokeWidth={2} />
             </span>
           ) : (

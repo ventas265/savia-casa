@@ -99,3 +99,20 @@ test("isConfirmedPeriodDay treats Ogino wrap as estimate, not confirmed", () => 
     true,
   );
 });
+
+import { dayStatus, sexChanceForMark } from "./cycle.ts";
+
+test("dayStatus: confirmed period wins, estimate period is predicted", () => {
+  assert.equal(dayStatus("fertile", true), "period");
+  assert.equal(dayStatus("period", false), "predicted");
+  assert.equal(dayStatus("peak", false), "peak");
+  assert.equal(dayStatus("quiet", false), "quiet");
+  assert.equal(dayStatus(null, false), null);
+});
+
+test("sexChanceForMark never reads period as fertile", () => {
+  assert.equal(sexChanceForMark("period"), "quiet");
+  assert.equal(sexChanceForMark("fertile"), "fertile");
+  assert.equal(sexChanceForMark("peak"), "peak");
+  assert.equal(sexChanceForMark(null), null);
+});

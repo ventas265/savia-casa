@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight, Heart } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, Heart } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import {
   addDaysISO,
   cycleDay,
+  dayStatus,
   formatDay,
   fromISO,
   markForDate,
@@ -162,24 +163,76 @@ export function CycleCalendar({
     pickedFlow === "heavy" ||
     pickedFlow === "medium" ||
     pickedFlow === "light";
-  const pickedPredicted = selectedMark === "period" && !pickedConfirmed;
 
-  const caption = pickedConfirmed
-    ? t.legendPeriod
-    : pickedPredicted
-      ? t.legendPredicted
-      : selectedMark === "peak"
-        ? t.legendPeak
-        : selectedMark === "fertile"
-          ? t.legendFertile
-          : selectedMark === "quiet"
-            ? t.legendQuiet
-            : selectedMark === "period"
-              ? t.legendPeriod
-              : t.calEmpty;
+  const status = dayStatus(selectedMark, pickedConfirmed);
+  const pickedSex = sexSet.has(picked) || Boolean(pickedLog?.sex);
+  const pickedSexKind = sexKindByDay[picked] || (pickedLog?.sex ? "unprotected" : "none");
+
+  const statusTitle =
+    status === "period"
+      ? t.calStatusPeriod
+      : status === "predicted"
+        ? t.calStatusPredicted
+        : status === "peak"
+          ? t.calStatusPeak
+          : status === "fertile"
+            ? t.calStatusFertile
+            : status === "quiet"
+              ? t.calStatusQuiet
+              : t.calStatusNone;
+  const statusSub =
+    status === "period"
+      ? t.calStatusPeriodSub
+      : status === "predicted"
+        ? t.calStatusPredictedSub
+        : status === "quiet"
+          ? t.calStatusQuietSub
+          : null;
+  const hot = status === "peak" || status === "fertile";
 
   return (
     <div>
+      <div
+        data-testid="cal-status"
+        data-status={status ?? "none"}
+        className={cn(
+          "mb-4 flex items-start gap-3 rounded-[22px] border px-4 py-3.5",
+          hot
+            ? "card-fert"
+            : status === "period" || status === "predicted"
+              ? "border-[rgb(255_77_132/0.3)] bg-[linear-gradient(135deg,rgb(255_77_132/0.16),rgb(155_92_255/0.08))]"
+              : "glass",
+        )}
+        aria-live="polite"
+      >
+        <StatusDot status={status} />
+        <div className="min-w-0 flex-1">
+          <p className={cn("kicker", hot ? "!text-[#6FE0D2]" : status === "period" || status === "predicted" ? "!text-label" : "")}>
+            {picked === today ? `${t.calStatusToday} · ` : ""}
+            {formatDay(picked, lang)}
+            {dayNum ? ` · ${t.dayOf} ${dayNum}` : ""}
+          </p>
+          <p className="mt-1 font-display text-[17px] font-semibold leading-tight tracking-[-0.02em]">{statusTitle}</p>
+          {statusSub || phase !== "none" ? (
+            <p className="mt-0.5 text-[12.5px] leading-snug text-soft">
+              {phase !== "none" ? pick(phaseName[phase], lang) : null}
+              {phase !== "none" && statusSub ? " · " : null}
+              {statusSub}
+            </p>
+          ) : null}
+          {pickedSex ? (
+            <p className="mt-1.5 inline-flex items-center gap-1.5 text-[12.5px] text-soft">
+              <SexHeart kind={pickedSexKind} />
+              {pickedSexKind === "protected"
+                ? t.relationsProtected
+                : pickedSexKind === "withdrawal"
+                  ? t.relationsWithdrawal
+                  : t.relationsUnprotected}
+            </p>
+          ) : null}
+          <p className="mt-1.5 text-[11px] leading-snug text-muted">{t.calShortDisclaimer}</p>
+        </div>
+      </div>
       <div className="flex items-center justify-between">
         <button
           type="button"
@@ -223,17 +276,15 @@ export function CycleCalendar({
             flow === "medium" ||
             flow === "light";
           const isPredicted = m === "period" && !isConfirmed;
-          const isFertile = (m === "peak" || m === "fertile") && !isConfirmed && !isPredicted;
-          const hasFlowMark = hasLoggedFlow;
+          const isPeak = m === "peak" && !isConfirmed;
+          const isFertile = m === "fertile" && !isConfirmed;
+          // Period fill already says "flow": only show the dot for spotting / off-period flow.
+          const hasFlowMark = hasLoggedFlow && !isConfirmed;
           const hasMood = Boolean(
             logged && ((logged.mood != null && logged.mood > 0) || logged.symptoms.length > 0),
           );
           const hasSex = sexSet.has(cell.iso) || Boolean(logged?.sex);
           const sexKind = sexKindByDay[cell.iso] || (logged?.sex ? "unprotected" : "none");
-          const onDark =
-            flow === "heavy" ||
-            flow === "medium" ||
-            (isConfirmed && flow !== "light" && flow !== "spotting");
 
           return (
             <button
@@ -243,6 +294,8 @@ export function CycleCalendar({
               aria-label={cell.iso}
               aria-current={isToday ? "date" : undefined}
               aria-pressed={isPicked}
+              data-status={dayStatus(m, isConfirmed) ?? "none"}
+              data-sex={hasSex ? sexKind : undefined}
               className={cn(
                 "press flex min-h-11 flex-col items-center justify-center gap-0.5 py-0.5",
                 !cell.inMonth && "opacity-30",
@@ -250,183 +303,145 @@ export function CycleCalendar({
             >
               <span
                 className={cn(
-                  "relative flex size-10 items-center justify-center rounded-full text-sm tabular-nums sm:size-11",
-                  // Confirmed period — filled rose (flow intensity when logged)
-                  flow === "heavy" && "bg-cal-period font-medium text-primary-fg",
-                  flow === "medium" && "bg-primary/85 font-medium text-primary-fg",
-                  flow === "light" && "bg-primary/45 font-medium text-ink",
+                  "relative flex size-10 items-center justify-center rounded-full text-sm tabular-nums transition-shadow sm:size-11",
+                  // Confirmed period — filled berry with a soft glow
                   isConfirmed &&
-                    !hasLoggedFlow &&
-                    "bg-cal-period font-medium text-primary-fg",
-                  isConfirmed &&
-                    flow === "spotting" &&
-                    "bg-cal-period font-medium text-primary-fg",
-                  // Predicted period — dotted ring, never filled
-                  isPredicted &&
-                    "border-2 border-dashed border-cal-period bg-transparent font-medium text-cal-period",
-                  // Fertile (opt-in only)
-                  isFertile && m === "peak" && "bg-cal-peak/45 font-semibold text-white ring-1 ring-cal-peak",
-                  isFertile && m === "fertile" && "bg-cal-fertile text-[#c9f5ef]",
-                  // Today — soft sand wash, not rose
-                  isToday &&
-                    !isConfirmed &&
-                    !isPredicted &&
-                    !isFertile &&
-                    "bg-white/[0.12] font-semibold text-white ring-1 ring-white/40",
-                  isToday && (isConfirmed || isPredicted || isFertile) && "font-semibold",
-                  // Selected — strong outline (always)
-                  isPicked && "ring-2 ring-white ring-offset-2 ring-offset-bg",
-                  !isConfirmed &&
-                    !isPredicted &&
-                    !isFertile &&
-                    !isToday &&
-                    "text-fg",
+                    "bg-cal-period font-semibold text-white shadow-[0_0_16px_-4px_rgb(255_77_132/0.7)]",
+                  // Predicted period — dotted outline, never filled
+                  isPredicted && "border-2 border-dotted border-cal-period bg-transparent font-medium text-rose-dust",
+                  // Fertile window — aqua tint; ovulation stronger (solid ring + marker)
+                  isFertile && "bg-cal-fertile font-semibold text-[#8ff0e4] ring-1 ring-inset ring-cal-peak/35",
+                  isPeak &&
+                    "bg-cal-peak/30 font-semibold text-white ring-2 ring-cal-peak shadow-[0_0_16px_-4px_rgb(111_224_210/0.75)]",
+                  // Non-fertile / quiet days stay neutral
+                  !isConfirmed && !isPredicted && !isFertile && !isPeak && "text-fg/80",
+                  isToday && !isConfirmed && !isPredicted && !isFertile && !isPeak && "bg-white/[0.1] font-semibold text-white",
+                  isToday && "font-semibold",
+                  // Selected — pearl outline (always)
+                  isPicked && "outline-2 outline-offset-2 outline-white/90",
                 )}
               >
                 {cell.date}
                 {isToday ? (
+                  <span className="absolute top-0.5 size-1 rounded-full bg-white/90" aria-hidden />
+                ) : null}
+                {isPeak ? (
                   <span
-                    className={cn(
-                      "absolute top-0.5 size-1 rounded-full",
-                      onDark ? "bg-primary-fg/90" : "bg-white/90",
-                    )}
+                    className="absolute -right-0.5 -top-0.5 size-2.5 rounded-full bg-cal-peak ring-2 ring-bg"
                     aria-hidden
                   />
                 ) : null}
               </span>
-              <span className="flex h-3 min-h-[12px] items-center justify-center gap-0.5" aria-hidden>
+              <span className="flex h-3 min-h-[12px] items-center justify-center gap-[3px]" aria-hidden>
+                {hasSex ? <SexHeart kind={sexKind} /> : null}
                 {hasFlowMark ? (
                   <span
-                    className={cn(
-                      "size-1.5 rounded-full",
-                      flow === "spotting" ? "bg-primary/60" : "bg-cal-period",
-                    )}
+                    className={cn("size-1 rounded-full", flow === "spotting" ? "bg-cal-period/60" : "bg-cal-period")}
                     title={t.calMarkFlow}
                   />
                 ) : null}
-                {hasMood ? (
-                  <span className="size-1.5 rounded-full bg-white/70" title={t.calMarkMood} />
-                ) : null}
-                {hasSex ? (
-                  <Heart
-                    className={cn(
-                      "size-3 text-primary",
-                      sexKind === "protected" && "fill-none",
-                      sexKind === "withdrawal" && "fill-current opacity-70",
-                      (sexKind === "unprotected" || sexKind === "none") && "fill-current",
-                    )}
-                    aria-label={t.legendSex}
-                  />
+                {hasMood && !hasSex ? (
+                  <span className="size-1 rounded-full bg-white/55" title={t.calMarkMood} />
                 ) : null}
               </span>
             </button>
           );
         })}
       </div>
-      <div className="mt-3">
-        <ul className="flex flex-wrap gap-x-4 gap-y-2 text-xs text-muted">
-          <li className="inline-flex items-center gap-1.5">
-            <span className="size-2.5 rounded-full bg-cal-period" /> {t.legendPeriod}
-          </li>
-          <li className="inline-flex items-center gap-1.5">
-            <span className="size-2.5 rounded-full bg-cal-fertile ring-1 ring-cal-peak/50" /> {t.legendFertile}
-          </li>
-          <li className="inline-flex items-center gap-1.5">
-            <Heart className="size-3 fill-current text-primary" /> {t.legendSex}
-          </li>
-        </ul>
-        <button
-          type="button"
-          className="mt-2 inline-flex min-h-9 items-center text-xs font-semibold text-[#ff8fa8]"
-          aria-expanded={legendOpen}
-          onClick={() => setLegendOpen((v) => !v)}
-        >
-          {legendOpen ? t.hideSymbols : t.showSymbols}
-        </button>
+      <div className="mt-3 rounded-[18px] bg-white/[0.03] px-3 py-2.5 ring-1 ring-white/[0.06]" data-testid="cal-legend">
+        <div className="flex items-center justify-between gap-2">
+          <ul className="flex flex-wrap gap-x-3.5 gap-y-1.5 text-xs text-soft">
+            <li className="inline-flex items-center gap-1.5">
+              <span className="size-3 rounded-full bg-cal-period" /> {t.legendPeriod}
+            </li>
+            <li className="inline-flex items-center gap-1.5">
+              <span className="size-3 rounded-full bg-cal-fertile ring-1 ring-cal-peak/50" /> {t.legendFertileShort}
+            </li>
+            <li className="inline-flex items-center gap-1.5">
+              <SexHeart kind="unprotected" /> {t.legendSexUnprotected}
+            </li>
+          </ul>
+          <button
+            type="button"
+            className="inline-flex min-h-9 shrink-0 items-center gap-1 text-xs font-semibold text-rose-dust"
+            aria-expanded={legendOpen}
+            onClick={() => setLegendOpen((v) => !v)}
+          >
+            {legendOpen ? t.hideSymbols : t.showSymbols}
+            <ChevronDown className={cn("size-3.5 transition-transform", legendOpen && "rotate-180")} strokeWidth={1.8} />
+          </button>
+        </div>
         {legendOpen ? (
-          <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-2 text-xs text-muted">
+          <ul className="mt-2 grid grid-cols-2 gap-x-3 gap-y-2 border-t border-white/[0.06] pt-2.5 text-xs text-soft">
             <li className="inline-flex items-center gap-1.5">
-              <span className="size-2.5 rounded-full border-2 border-dashed border-cal-period bg-transparent" />{" "}
-              {t.legendPredicted}
+              <span className="size-3 rounded-full border-2 border-dotted border-cal-period bg-transparent" />
+              {t.legendPeriodPredicted}
             </li>
             <li className="inline-flex items-center gap-1.5">
-              <span className="relative flex size-2.5 items-center justify-center rounded-full bg-white/[0.12] ring-1 ring-white/40">
+              <span className="relative size-3 rounded-full bg-cal-peak/30 ring-2 ring-cal-peak">
+                <span className="absolute -right-1 -top-1 size-1.5 rounded-full bg-cal-peak" />
+              </span>
+              {t.legendPeak}
+            </li>
+            <li className="inline-flex items-center gap-1.5">
+              <SexHeart kind="protected" /> {t.legendSexProtectedFull}
+            </li>
+            <li className="inline-flex items-center gap-1.5">
+              <span className="relative flex size-3 items-center justify-center rounded-full bg-white/[0.1]">
                 <span className="absolute top-0 size-1 rounded-full bg-white/90" />
-              </span>{" "}
+              </span>
               {t.legendToday}
-            </li>
-            <li className="inline-flex items-center gap-1.5">
-              <span className="size-2.5 rounded-full bg-cal-peak" /> {t.legendPeak}
             </li>
             <li className="inline-flex items-center gap-1.5">
               <span className="size-1.5 rounded-full bg-cal-period" /> {t.calMarkFlow}
             </li>
             <li className="inline-flex items-center gap-1.5">
-              <span className="size-1.5 rounded-full bg-white/70" /> {t.calMarkMood}
-            </li>
-            <li className="inline-flex items-center gap-1.5">
-              <Heart className="size-3 text-primary" /> {t.legendSexProtected}
+              <span className="size-1.5 rounded-full bg-white/55" /> {t.calMarkMood}
             </li>
           </ul>
         ) : null}
       </div>
-      <div className="mt-4 border-t border-white/[0.07] pt-3">
-        <p className="font-medium">
-          {formatDay(picked, lang)}
-          {dayNum ? ` · ${t.dayOf} ${dayNum}` : ""}
-          {phase !== "none" ? ` · ${pick(phaseName[phase], lang)}` : ""}
-        </p>
-        <p className="mt-1 text-sm text-muted">{caption}</p>
-        {(() => {
-          const kind = sexKindByDay[picked] || (pickedLog?.sex ? "unprotected" : "none");
-          const lines: string[] = [];
-          if (pickedFlow && pickedFlow !== "none") {
-            lines.push(
-              pickedFlow === "spotting"
-                ? t.flowSpot
-                : pickedFlow === "light"
-                  ? t.flowLight
-                  : pickedFlow === "medium"
-                    ? t.flowMed
-                    : pickedFlow === "heavy"
-                      ? t.flowHeavy
-                      : t.flow,
-            );
-          }
-          if (pickedLog && ((pickedLog.mood != null && pickedLog.mood > 0) || pickedLog.symptoms.length > 0)) {
-            lines.push(t.calMarkMood);
-          }
-          if (sexSet.has(picked) || pickedLog?.sex) {
-            lines.push(
-              kind === "protected"
-                ? t.relationsProtected
-                : kind === "withdrawal"
-                  ? t.relationsWithdrawal
-                  : t.relationsUnprotected,
-            );
-          }
-          if (!lines.length) {
-            return <p className="mt-2 text-xs text-muted">{t.daySheetEmpty}</p>;
-          }
-          return (
-            <div className="mt-3 rounded-[1.1rem] bg-surface-2/80 p-3">
-              <p className="kicker">{t.dayLoggedHeading}</p>
-              <ul className="mt-1.5 space-y-1 text-sm">
-                {lines.map((line) => (
-                  <li key={line}>{line}</li>
-                ))}
-              </ul>
-            </div>
-          );
-        })()}
-        <button
-          type="button"
-          className="press glass mt-3 flex min-h-11 w-full items-center justify-center rounded-full text-sm font-semibold"
-          onClick={() => onSelect?.(picked)}
-        >
-          {t.editDayCta}
-        </button>
-      </div>
+      <button
+        type="button"
+        className="press glass mt-3 flex min-h-11 w-full items-center justify-center rounded-full text-sm font-semibold"
+        onClick={() => onSelect?.(picked)}
+      >
+        {t.editDayCta}
+      </button>
     </div>
+  );
+}
+
+/** Fine-line heart: filled = unprotected (or withdrawal, softer), outline = protected. */
+export function SexHeart({ kind, className }: { kind: string; className?: string }) {
+  const filled = kind !== "protected";
+  return (
+    <Heart
+      className={cn(
+        "size-3 shrink-0 text-cal-period",
+        filled ? "fill-current" : "fill-none text-rose-dust",
+        kind === "withdrawal" && "opacity-75",
+        className,
+      )}
+      strokeWidth={1.6}
+      aria-hidden
+    />
+  );
+}
+
+function StatusDot({ status }: { status: ReturnType<typeof dayStatus> }) {
+  return (
+    <span aria-hidden className="mt-0.5 grid size-9 shrink-0 place-items-center rounded-full bg-white/[0.05] ring-1 ring-white/10">
+      <span
+        className={cn(
+          "relative size-4 rounded-full",
+          status === "period" && "bg-cal-period shadow-[0_0_12px_rgb(255_77_132/0.7)]",
+          status === "predicted" && "border-2 border-dotted border-cal-period",
+          status === "fertile" && "bg-cal-peak/55 ring-1 ring-cal-peak",
+          status === "peak" && "bg-cal-peak shadow-[0_0_12px_rgb(111_224_210/0.8)]",
+          (status === "quiet" || !status) && "bg-white/20",
+        )}
+      />
+    </span>
   );
 }

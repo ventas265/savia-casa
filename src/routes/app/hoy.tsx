@@ -128,6 +128,7 @@ function HoyTab() {
         lastStart={data.profile.lastPeriodStart}
         periodLength={data.profile.periodLength}
         periodStarts={data.periodStarts}
+        sexMarks={data.sexMarks}
         nextPeriod={
           predictPeriod(
             data.profile.lastPeriodStart,

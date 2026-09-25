@@ -18,7 +18,7 @@ const PRIMARY: Stage = "cycle";
 const OTHER_STAGES: Stage[] = ["pregnancy", "postpartum", "peri", "meno"];
 
 function StepIcon({ step }: { step: number }) {
-  const wrap = "glass flex size-12 items-center justify-center rounded-full text-[#ff8fa8]";
+  const wrap = "glass flex size-12 items-center justify-center rounded-full text-[#ff8cb8]";
   if (step === 0) {
     return (
       <div className={wrap} aria-hidden>
@@ -207,7 +207,7 @@ function Onboarding() {
             autoFocus
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
-            className="mt-10 w-full border-0 border-b-2 border-[#ff6b8f] bg-transparent py-4 font-display text-3xl font-semibold outline-none placeholder:text-muted/50"
+            className="mt-10 w-full border-0 border-b-2 border-[#ff5f92] bg-transparent py-4 font-display text-3xl font-semibold outline-none placeholder:text-muted/50"
             placeholder={t.yourName}
           />
         </div>
@@ -335,7 +335,7 @@ function Onboarding() {
           />
           {left != null ? (
             <div className="mt-10">
-              <p className="kicker !text-[#ffb3c4]">{t.periodIn}</p>
+              <p className="kicker !text-[#ffb0cc]">{t.periodIn}</p>
               <p className="mt-2 font-display text-6xl font-semibold tracking-[-0.05em] text-fg">
                 {left} {left === 1 ? t.dayLeft : t.daysLeft}
               </p>

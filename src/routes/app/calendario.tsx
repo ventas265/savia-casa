@@ -12,7 +12,7 @@ import { SAVIA_BETA } from "@/lib/beta";
 import { localToday } from "@/lib/savia-local";
 import { getSelectedDay, setSelectedDay } from "@/lib/selected-day";
 import { useI18n } from "@/lib/i18n";
-import { isCycling, markForDate, periodDaysFromLogs, formatDay, weightedCycle, cycleDay, phaseForDay } from "@/lib/cycle";
+import { isConfirmedPeriodDay, isCycling, markForDate, periodDaysFromLogs, formatDay, weightedCycle, cycleDay, phaseForDay } from "@/lib/cycle";
 import type { DailyLog, TodaySnapshot } from "@/lib/types";
 
 export const Route = createFileRoute("/app/calendario")({ component: CalendarTab });
@@ -263,6 +263,14 @@ function CalendarTab() {
             periodStarts: data.periodStarts,
             periodDays: periodDaysFromLogs(data.recentLogs),
           })}
+          confirmedPeriod={isConfirmedPeriodDay(sheetDay, {
+            lastStart: data.profile.lastPeriodStart,
+            periodLength: data.profile.periodLength,
+            periodStarts: data.periodStarts,
+            periodDays: periodDaysFromLogs(data.recentLogs),
+            log: sheetLog,
+          })}
+          cycleDayNum={cycleDay(data.profile.lastPeriodStart, learned, sheetDay)}
           phase={phaseForDay(
             cycleDay(data.profile.lastPeriodStart, learned, sheetDay),
             data.profile.periodLength,

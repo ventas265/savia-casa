@@ -178,7 +178,7 @@ export function SymptomCheckSheet({
         <div className="mx-auto mt-2.5 h-1 w-10 rounded-full bg-white/20" aria-hidden />
         <div className="flex items-start justify-between gap-3 px-5 pt-3">
           <div>
-            <p className="kicker !text-[#ffb3c4]">
+            <p className="kicker !text-[#ffb0cc]">
               {formatDay(day, lang)}
             </p>
             <h2 id="sym-ask-title" className="mt-1 font-display text-[1.5rem] font-semibold leading-tight tracking-[-0.035em]">
@@ -232,7 +232,7 @@ export function SymptomCheckSheet({
                 data-testid="symptom-apply"
                 disabled={busy || (!none && picked.length === 0)}
                 onClick={() => void apply()}
-                className="press mt-4 flex h-14 w-full items-center justify-center rounded-full bg-grad text-base font-semibold text-primary-fg shadow-[0_10px_30px_-8px_rgb(255_79_123/0.6)] transition-opacity disabled:opacity-40"
+                className="press mt-4 flex h-14 w-full items-center justify-center rounded-full bg-grad text-base font-semibold text-primary-fg shadow-[0_10px_30px_-8px_rgb(242_66_126/0.6)] transition-opacity disabled:opacity-40"
               >
                 {t.symAskApply}
               </button>
@@ -242,7 +242,7 @@ export function SymptomCheckSheet({
                   markAsked(day, "more");
                   onClose();
                 }}
-                className="mt-2 flex min-h-11 items-center justify-center text-sm font-semibold text-[#ffb3c4]"
+                className="mt-2 flex min-h-11 items-center justify-center text-sm font-semibold text-[#ffb0cc]"
               >
                 {t.symAskMore}
               </Link>

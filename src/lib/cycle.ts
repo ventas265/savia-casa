@@ -330,3 +330,24 @@ export function weekStrip(iso = todayISO()) {
     return { iso: todayISO(x), date: x.getDate(), dow: i };
   });
 }
+
+export type DayStatus = "period" | "predicted" | "peak" | "fertile" | "quiet";
+
+/**
+ * One status per day for the calendar chip / day sheet: confirmed period wins,
+ * then an Ogino period estimate (predicted), then the fertile estimate.
+ */
+export function dayStatus(mark: DayMark | null, confirmed: boolean): DayStatus | null {
+  if (confirmed) return "period";
+  if (!mark) return null;
+  if (mark === "period") return "predicted";
+  return mark;
+}
+
+/** Fertile-window read for a sex log chip: higher vs lower chance (never "safe"). */
+export function sexChanceForMark(mark: DayMark | null): "peak" | "fertile" | "quiet" | null {
+  if (!mark) return null;
+  if (mark === "peak") return "peak";
+  if (mark === "fertile") return "fertile";
+  return "quiet";
+}

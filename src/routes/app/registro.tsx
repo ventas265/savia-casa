@@ -7,7 +7,7 @@ import { loadToday } from "@/lib/savia-api";
 import { SAVIA_BETA } from "@/lib/beta";
 import { localToday } from "@/lib/savia-local";
 import { useI18n } from "@/lib/i18n";
-import { todayISO, cycleDay, formatDay, phaseForDay } from "@/lib/cycle";
+import { isCycling, todayISO, cycleDay, formatDay, markForDate, periodDaysFromLogs, phaseForDay, weightedCycle } from "@/lib/cycle";
 import { isIsoDay, resolveRegistroDay, setSelectedDay } from "@/lib/selected-day";
 import type { TodaySnapshot } from "@/lib/types";
 
@@ -112,6 +112,13 @@ function Registro() {
           wrapUpPaid={data.profile.plan === "serena" || data.profile.plan === "year"}
           phase={phaseForDay(cycleDay(data.profile.lastPeriodStart, data.profile.cycleLength, focusDay), data.profile.periodLength, data.profile.cycleLength)}
           intention={data.profile.intention}
+          dayMark={isCycling(data.profile.stage) ? markForDate(focusDay, {
+            lastStart: data.profile.lastPeriodStart,
+            cycleLength: weightedCycle(data.periodStarts, data.profile.cycleLength),
+            periodLength: data.profile.periodLength,
+            periodStarts: data.periodStarts,
+            periodDays: periodDaysFromLogs(data.recentLogs),
+          }) : null}
           onSaved={(log) =>
             setData({
               ...data,
