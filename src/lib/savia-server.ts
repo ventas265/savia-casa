@@ -602,6 +602,7 @@ export type ChatTurn = { role: "user" | "assistant"; content: string };
 async function callGrok(
   apiKey: string,
   messages: { role: string; content: string }[],
+  opts: { maxTokens?: number; timeoutMs?: number } = {},
 ): Promise<string | null> {
   let res: Response;
   try {
@@ -614,10 +615,11 @@ async function callGrok(
       body: JSON.stringify({
         model: "grok-4.5",
         reasoning_effort: "low",
-        max_tokens: 4000,
+        max_tokens: opts.maxTokens ?? 4000,
         temperature: 0.7,
         messages,
       }),
+      signal: opts.timeoutMs ? AbortSignal.timeout(opts.timeoutMs) : undefined,
     });
   } catch (err) {
     console.error("[savia-ai] fetch failed:", (err as Error)?.message);
@@ -788,3 +790,42 @@ export const askSaviaOpen = createServerFn({ method: "POST" })
     return { ok: true as const, text, remaining: null as number | null };
   });
 
+
+/**
+ * Daily note from Savia (2-3 sentences). Optional: the client always has a
+ * template; this only upgrades it when xAI answers. Never throws.
+ */
+export const saviaNoteOpen = createServerFn({ method: "POST" })
+  .validator((input: { locale: string; facts: string; draft: string }) => ({
+    locale: input.locale === "en" ? "en" : "es",
+    facts: String(input.facts || "").slice(0, 1200),
+    draft: String(input.draft || "").slice(0, 600),
+  }))
+  .handler(async ({ data }) => {
+    const apiKey = process.env.XAI_API_KEY;
+    if (!apiKey) return { ok: false as const };
+    const lang = data.locale === "en" ? "English" : "neutral Latin American Spanish with tú (never voseo)";
+    const text = await callGrok(
+      apiKey,
+      [
+        {
+          role: "system",
+          content: `You are Savia, a warm friend-doctor inside a cycle-tracking app for young Latin American women. Write today's short note in ${lang}.
+Rules:
+- 2 or 3 short sentences, max 300 characters total. Plain text, no emoji, no greeting by name, no lists.
+- The FIRST sentence is a warm companion check-in (e.g. "¿Qué tal tu día?", "¿Cómo te sientes hoy?", "Estoy para ti."), adapted to her phase and logs (period + pain: gentler).
+- Then one cycle-first line using only the facts given (cycle day, phase, what she logged). Never invent data.
+- If fertile/ovulation: say there is more chance of pregnancy and, if she is not trying, to protect herself more. Never say any day is "seguro"/"safe". Never promise pregnancy.
+- If unprotected sex on a fertile day in the last 5 days: calmly mention emergency contraception works best the sooner.
+- Not a diagnosis. No moralizing.`,
+        },
+        {
+          role: "user",
+          content: `Facts:\n${data.facts}\n\nA template draft you may improve (keep its meaning):\n${data.draft}`,
+        },
+      ],
+      { maxTokens: 1500, timeoutMs: 12000 },
+    ).catch(() => null);
+    if (!text) return { ok: false as const };
+    return { ok: true as const, text: text.trim() };
+  });

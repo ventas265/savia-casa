@@ -9,10 +9,12 @@ import { DaySheet } from "@/components/day-sheet";
 import { Predictions } from "@/components/predictions";
 import { loadToday, writeProfile } from "@/lib/savia-api";
 import { SAVIA_BETA } from "@/lib/beta";
-import { localToday } from "@/lib/savia-local";
+import { localAllLogs, localToday } from "@/lib/savia-local";
+import { InsightsPanel } from "@/components/insights-card";
+import { computeInsights } from "@/lib/insights";
 import { getSelectedDay, setSelectedDay } from "@/lib/selected-day";
 import { useI18n } from "@/lib/i18n";
-import { isConfirmedPeriodDay, isCycling, markForDate, periodDaysFromLogs, formatDay, weightedCycle, cycleDay, phaseForDay } from "@/lib/cycle";
+import { todayISO, isConfirmedPeriodDay, isCycling, markForDate, periodDaysFromLogs, formatDay, weightedCycle, cycleDay, phaseForDay } from "@/lib/cycle";
 import type { DailyLog, TodaySnapshot } from "@/lib/types";
 
 export const Route = createFileRoute("/app/calendario")({ component: CalendarTab });
@@ -54,6 +56,13 @@ function CalendarTab() {
       alive = false;
     };
   }, []);
+
+  // «Ver todo» from Hoy lands on the insights section once data is painted.
+  useEffect(() => {
+    if (!data || typeof window === "undefined" || window.location.hash !== "#aprendio") return;
+    const id = window.setTimeout(() => document.getElementById("aprendio")?.scrollIntoView({ block: "start" }), 120);
+    return () => window.clearTimeout(id);
+  }, [data]);
 
   // Toast / registro handoff: open day sheet once for the selected ISO day.
   useEffect(() => {
@@ -251,6 +260,18 @@ function CalendarTab() {
           <p className="text-sm leading-relaxed text-muted">{t.calNote}</p>
         )}
       </div>
+      {cycling && !needsFum ? (
+        <InsightsPanel
+          result={computeInsights({
+            starts: data.periodStarts,
+            logs: SAVIA_BETA ? localAllLogs() : data.recentLogs,
+            periodLength: data.profile.periodLength,
+            cycleLength: learned,
+            today: todayISO(),
+          })}
+          paid={wrapUpPaid}
+        />
+      ) : null}
       {sheetDay && !needsFum ? (
         <DaySheet
           day={sheetDay}

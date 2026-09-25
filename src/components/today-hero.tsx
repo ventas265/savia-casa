@@ -22,6 +22,12 @@ import type { DailyLog, Intention, Phase, Stage } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Activity, ArrowRight, ArrowUpRight, Bell, Droplet } from "lucide-react";
 import { SegmentRing } from "@/components/cycle-ring";
+import { SaviaOrb } from "@/components/savia-orb";
+import { DailyNoteCard } from "@/components/daily-note-card";
+import { InsightsCompact } from "@/components/insights-card";
+import { buildNoteContext } from "@/lib/daily-note";
+import { computeInsights } from "@/lib/insights";
+import { toneFor, type SaviaTone } from "@/lib/savia-tone";
 import { phaseName, pick } from "@/lib/savia-content";
 import { CartaHoy } from "@/components/carta-hoy";
 import { ConsejosHoy } from "@/components/consejos-hoy";
@@ -53,6 +59,7 @@ export function TodayHero({
   wrapUpPaid = false,
   intention = null,
   sexMarks = [],
+  recentLogs = [],
 }: {
   stage: Stage;
   phase: Phase;
@@ -78,6 +85,8 @@ export function TodayHero({
   intention?: Intention | null;
   /** Logged sex days (any cycle) — hearts on the ring for this cycle. */
   sexMarks?: { day: string; kind: string }[];
+  /** Recent logs — daily note context + on-device insights. */
+  recentLogs?: DailyLog[];
 }) {
   const { t, lang } = useI18n();
   const [adjust, setAdjust] = useState(false);
@@ -199,6 +208,26 @@ export function TodayHero({
       : t.fertBodyAvoid
     : t.daySheetChanceLowSex;
   const nextShort = next ? formatDay(next, lang) : null;
+  const tone = toneFor(cycling ? phase : "none", todayMark, cycling && onPeriod);
+  const noteCtx = buildNoteContext({
+    today,
+    phase: cycling ? phase : "none",
+    cycleDay: cycling ? cycleDay : null,
+    mark: todayMark,
+    onPeriod: cycling && onPeriod,
+    nextPeriod: cycling ? next : null,
+    intention: intention ?? "track",
+    logs: log ? [log, ...recentLogs.filter((l) => l.day !== log.day)] : recentLogs,
+    markFor: (iso) =>
+      cycling ? markForDate(iso, { lastStart: lastStart ?? null, cycleLength, periodLength, periodStarts }) : null,
+  });
+  const insights = computeInsights({
+    starts: periodStarts,
+    logs: recentLogs,
+    periodLength,
+    cycleLength,
+    today,
+  });
   const ringSex =
     cycling && cycleDay != null
       ? (() => {
@@ -288,6 +317,8 @@ export function TodayHero({
         </SegmentRing>
       </div>
 
+      <DailyNoteCard ctx={noteCtx} day={today} tone={tone} log={log} paid={wrapUpPaid} onSaved={onLogSaved} />
+
       {cycling ? (
         <div className="mt-2 grid grid-cols-3 gap-2">
           <StatTile label={t.statDay}>
@@ -368,7 +399,9 @@ export function TodayHero({
         </button>
       </div>
 
-      <TalkSaviaCard onAsk={onAsk} wrapUpPaid={wrapUpPaid} />
+      {cycling ? <InsightsCompact result={insights} paid={wrapUpPaid} /> : null}
+
+      <TalkSaviaCard onAsk={onAsk} wrapUpPaid={wrapUpPaid} tone={tone} />
 
       {onCycleChange && adjust ? (
         <div className="glass mt-2 rounded-[22px] p-3">
@@ -446,7 +479,7 @@ function StatTile({
   return <div className="glass rounded-[18px] px-3 py-2.5">{body}</div>;
 }
 
-function TalkSaviaCard({ onAsk, wrapUpPaid }: { onAsk: () => void; wrapUpPaid: boolean }) {
+function TalkSaviaCard({ onAsk, wrapUpPaid, tone }: { onAsk: () => void; wrapUpPaid: boolean; tone: SaviaTone }) {
   const { t } = useI18n();
   return (
     <section className="glass mt-2 rounded-[22px] px-3.5 py-3.5" aria-label={t.talkSaviaTitle}>
@@ -458,7 +491,7 @@ function TalkSaviaCard({ onAsk, wrapUpPaid }: { onAsk: () => void; wrapUpPaid: b
         }}
         className="press flex w-full items-center gap-3.5 text-left"
       >
-        <span aria-hidden className="orb size-[46px] shrink-0 rounded-full" />
+        <SaviaOrb tone={tone} className="size-[46px]" />
         <span className="min-w-0 flex-1">
           <span className="block font-display text-[17px] font-semibold tracking-[-0.02em] text-fg">
             {t.talkSaviaTitle}

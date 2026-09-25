@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { CircleChip } from "@/components/circle-chip";
+import { EmergencyCard } from "@/components/emergency-card";
 import { useI18n } from "@/lib/i18n";
 import { writeLog } from "@/lib/savia-api";
 import { haptic } from "@/lib/haptic";
@@ -102,6 +103,7 @@ export function LogForm({
   phase = "none",
   intention = null,
   dayMark,
+  hideEmergency = false,
   variant = "page",
   onSaved,
 }: {
@@ -113,6 +115,8 @@ export function LogForm({
   intention?: Intention | null;
   /** Cycle estimate for this day — drives the fertile / non-fertile chip under Sexo. */
   dayMark?: DayMark | null;
+  /** Day sheet shows the emergency card itself (above the form). */
+  hideEmergency?: boolean;
   /** page = above the tab bar; sheet = inside a modal scroller. */
   variant?: "page" | "sheet";
   onSaved?: (log: DailyLog) => void;
@@ -422,6 +426,11 @@ export function LogForm({
               })}
             </ChipGrid>
             {sexKind !== "none" ? <SexChanceChip mark={dayMark ?? null} /> : null}
+            {!hideEmergency &&
+            (sexKind === "unprotected" || sexKind === "withdrawal") &&
+            (dayMark === "fertile" || dayMark === "peak") ? (
+              <EmergencyCard day={dayIso} />
+            ) : null}
             <SubLabel className="mt-5">{t.logSubDesire}</SubLabel>
             {symptomChips("sex")}
           </>

@@ -1,6 +1,9 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
+import type { CSSProperties } from "react";
+import { useSaviaTone } from "@/components/savia-orb";
+import { toneStyle } from "@/lib/savia-tone";
 
 /** Speech + spark: “talk to Savia”. */
 export function AskGlyph({ className }: { className?: string }) {
@@ -24,12 +27,14 @@ export function AskGlyph({ className }: { className?: string }) {
 export function AskFab() {
   const { t } = useI18n();
   const path = useRouterState({ select: (s) => s.location.pathname });
+  const tone = useSaviaTone();
   if (path.startsWith("/app/preguntar")) return null;
   return (
     <div className="pointer-events-none fixed bottom-0 left-1/2 z-30 w-full max-w-lg -translate-x-1/2 md:max-w-[28rem]">
       <Link
         to="/app/preguntar"
         aria-label={t.askTalk}
+        style={toneStyle(tone) as CSSProperties}
         className="orb pointer-events-auto absolute right-4 bottom-[calc(6rem+env(safe-area-inset-bottom))] flex size-14 items-center justify-center rounded-full"
       >
       </Link>

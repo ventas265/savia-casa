@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { SaviaOrb } from "@/components/savia-orb";
+import { EmergencyCard } from "@/components/emergency-card";
+import { toneFor } from "@/lib/savia-tone";
 import { ArrowUpRight, X } from "lucide-react";
 import { LogForm } from "@/components/log-form";
 import { SexHeart } from "@/components/cycle-calendar";
@@ -36,6 +39,7 @@ export function DaySheet({
   onSaved?: (log: DailyLog) => void;
 }) {
   const { t, lang } = useI18n();
+  const navigate = useNavigate();
   const [activeLog, setActiveLog] = useState(log);
 
   useEffect(() => {
@@ -175,7 +179,34 @@ export function DaySheet({
               {t.dsEditDay}
               <ArrowUpRight className="size-4" strokeWidth={1.8} />
             </Link>
+            <button
+              type="button"
+              data-testid="day-ask"
+              onClick={() => {
+                const info = [
+                  cycleDayNum ? `${t.dayOf} ${cycleDayNum}` : null,
+                  phase !== "none" ? pick(phaseName[phase], lang) : null,
+                  statusLabel,
+                ]
+                  .filter(Boolean)
+                  .join(", ");
+                const logs = [sexLabel, flowLabel, symptomsText].filter(Boolean).join(", ") || t.askDayNothing;
+                onClose();
+                void navigate({
+                  to: "/app/preguntar",
+                  search: {
+                    q: t.askDayPrefill.replace("{date}", formatLong(day, lang)).replace("{info}", info).replace("{logs}", logs),
+                    ctx: "day",
+                  },
+                });
+              }}
+              className="press mt-2 flex min-h-12 w-full items-center justify-center gap-2.5 rounded-full bg-white/[0.07] text-sm font-semibold ring-1 ring-white/12"
+            >
+              <SaviaOrb tone={toneFor(phase, dayMark, status === "period")} className="size-6" />
+              {t.askAboutDay}
+            </button>
           </section>
+          {hasSex && risky && highWindow ? <EmergencyCard day={day} onNavigate={onClose} /> : null}
           <p className="kicker mb-3 mt-6">{t.dsQuickEdit}</p>
           <LogForm
             key={day}
@@ -185,6 +216,7 @@ export function DaySheet({
             phase={phase}
             intention={intention}
             dayMark={dayMark}
+            hideEmergency
             variant="sheet"
             onSaved={(saved) => {
               setActiveLog(saved);

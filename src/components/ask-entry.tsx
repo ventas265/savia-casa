@@ -1,10 +1,12 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { AskGlyph } from "@/components/ask-fab";
 import { useI18n } from "@/lib/i18n";
+import { SaviaOrb, useSaviaTone } from "@/components/savia-orb";
 
 export function AskHeader() {
   const { t } = useI18n();
   const path = useRouterState({ select: (s) => s.location.pathname });
+  const tone = useSaviaTone();
   if (path.startsWith("/app/preguntar")) return null;
   return (
     <Link
@@ -12,7 +14,7 @@ export function AskHeader() {
       aria-label={t.askTalk}
       className="press glass flex h-10 items-center gap-2 rounded-full pl-1.5 pr-3.5 text-fg"
     >
-      <span aria-hidden className="orb size-7 rounded-full" />
+      <SaviaOrb tone={tone} className="size-7" />
       <span className="text-xs font-semibold">{t.askMark}</span>
     </Link>
   );

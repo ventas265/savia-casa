@@ -7,7 +7,7 @@ import { WelcomeStart } from "@/components/welcome-start";
 import { SymptomCheckSheet, useSymptomAsk } from "@/components/symptom-check-sheet";
 import { loadToday, markCameToday, setCycleLength } from "@/lib/savia-api";
 import { SAVIA_BETA } from "@/lib/beta";
-import { localToday } from "@/lib/savia-local";
+import { localAllLogs, localToday } from "@/lib/savia-local";
 import { isCycling, predictPeriod } from "@/lib/cycle";
 import { useI18n } from "@/lib/i18n";
 import type { TodaySnapshot } from "@/lib/types";
@@ -129,6 +129,7 @@ function HoyTab() {
         periodLength={data.profile.periodLength}
         periodStarts={data.periodStarts}
         sexMarks={data.sexMarks}
+        recentLogs={SAVIA_BETA ? localAllLogs() : data.recentLogs}
         nextPeriod={
           predictPeriod(
             data.profile.lastPeriodStart,

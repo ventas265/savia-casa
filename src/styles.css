@@ -56,6 +56,28 @@
   --spacing-hit: 2.75rem;
 }
 
+/* Registered so the Savia orb cross-fades between phase colours */
+@property --orb-tint {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #ffc6e0;
+}
+@property --orb-core {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #f2427e;
+}
+@property --orb-deep {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #9b5cff;
+}
+@property --orb-glow {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: rgb(242 66 126 / 0.55);
+}
+
 @layer base {
   html {
     -webkit-font-smoothing: antialiased;
@@ -172,15 +194,20 @@
     color: var(--color-muted);
   }
   .orb {
-    /* Pearl orb: soft specular + nacre sheen over the berry core */
+    /* Pearl orb: soft specular + nacre sheen over a core tinted by her phase */
     background:
-      radial-gradient(circle at 70% 78%, rgb(255 198 224 / 0.35) 0, transparent 34%),
-      radial-gradient(circle at 30% 30%, #fff 0, #ffc6e0 18%, #f2427e 45%, #9b5cff 80%);
+      radial-gradient(circle at 70% 78%, rgb(255 255 255 / 0.18) 0, transparent 34%),
+      radial-gradient(circle at 30% 30%, #fff 0, var(--orb-tint) 18%, var(--orb-core) 45%, var(--orb-deep) 80%);
     box-shadow:
-      0 0 24px rgb(242 66 126 / 0.5),
-      0 0 48px -8px rgb(155 92 255 / 0.45),
+      0 0 24px var(--orb-glow),
+      0 0 48px -8px rgb(155 92 255 / 0.4),
       inset -4px -6px 12px rgb(40 0 60 / 0.5),
       inset 2px 3px 6px rgb(255 255 255 / 0.25);
+    transition:
+      --orb-tint 1.2s ease,
+      --orb-core 1.2s ease,
+      --orb-deep 1.2s ease,
+      --orb-glow 1.2s ease;
     animation: orb-breathe 4.5s ease-in-out infinite;
   }
   .blob {
@@ -276,9 +303,11 @@
   0%,
   100% {
     transform: scale(1);
+    filter: brightness(1);
   }
   50% {
     transform: scale(1.05);
+    filter: brightness(1.08);
   }
 }
 

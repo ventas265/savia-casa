@@ -357,3 +357,8 @@ export function localSetUserNote(text: string) {
 }
 
 
+
+/** Every on-device log (insights need more than the 90-log snapshot window). */
+export function localAllLogs(): DailyLog[] {
+  return [...read().logs].sort((a, b) => b.day.localeCompare(a.day));
+}
