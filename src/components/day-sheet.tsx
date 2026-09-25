@@ -101,6 +101,7 @@ export function DaySheet({
             wrapUpPaid={wrapUpPaid}
             phase={phase}
             intention={intention}
+            variant="sheet"
             onSaved={(saved) => {
               setActiveLog(saved);
               onSaved?.(saved);

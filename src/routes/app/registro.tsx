@@ -7,7 +7,7 @@ import { loadToday } from "@/lib/savia-api";
 import { SAVIA_BETA } from "@/lib/beta";
 import { localToday } from "@/lib/savia-local";
 import { useI18n } from "@/lib/i18n";
-import { todayISO, cycleDay, phaseForDay } from "@/lib/cycle";
+import { todayISO, cycleDay, formatDay, phaseForDay } from "@/lib/cycle";
 import { isIsoDay, resolveRegistroDay, setSelectedDay } from "@/lib/selected-day";
 import type { TodaySnapshot } from "@/lib/types";
 
@@ -50,7 +50,7 @@ function RegistroEmpty() {
 }
 
 function Registro() {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const { day: searchDay } = Route.useSearch();
   const [data, setData] = useState<TodaySnapshot | null>(null);
   const [ready, setReady] = useState(false);
@@ -97,8 +97,14 @@ function Registro() {
 
   return (
     <>
-      <PageTitle kicker={focusDay} title={t.logToday} />
-      <div className="mt-6">
+      <div className="flex flex-col gap-2">
+        <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-sage-soft px-3 py-1 text-xs font-semibold text-sage-deep">
+          <span className="size-1.5 rounded-full bg-sage-deep" aria-hidden />
+          {formatDay(focusDay, lang)}
+        </span>
+        <PageTitle title={t.logToday} />
+      </div>
+      <div className="mt-5">
         <LogForm
           key={focusDay}
           day={focusDay}

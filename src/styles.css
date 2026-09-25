@@ -26,6 +26,14 @@
   --color-select: #6b3a46;
   --color-select-fg: #fffcfb;
   --color-select-ring: #2b181c;
+  /* Savia accents: salvia + rosa empolvado */
+  --color-sage: #a8b89a;
+  --color-sage-soft: #e6ecdf;
+  --color-sage-deep: #56704f;
+  --color-rose-dust: #d8a3a6;
+  --color-rose-dust-soft: #f5e1e0;
+  --shadow-soft: 0 1px 2px rgb(58 36 40 / 0.04), 0 6px 18px rgb(58 36 40 / 0.05);
+  --shadow-bar: 0 -6px 24px rgb(58 36 40 / 0.08);
   --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Fraunces", "Times New Roman", serif;
   --radius-sm: 10px;

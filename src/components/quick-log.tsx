@@ -165,15 +165,15 @@ function Card({
   return (
     <section
       className={cn(
-        "rounded-[1.6rem] p-5 shadow-card",
+        "rounded-[1.6rem] border border-border/50 p-5 shadow-soft",
         tone === "rose" && "bg-primary/10",
-        tone === "sand" && "bg-sand/50",
-        tone === "plum" && "bg-plum/10",
-        tone === "sage" && "bg-accent/35",
+        tone === "sand" && "bg-sand/40",
+        tone === "plum" && "bg-rose-dust-soft",
+        tone === "sage" && "bg-sage-soft",
       )}
     >
-      <p className="mb-4 flex items-center gap-2 text-sm font-semibold">
-        <span className="text-primary">{icon}</span>
+      <p className="mb-4 flex items-center gap-2 text-[15px] font-semibold tracking-[-0.01em]">
+        <span className="flex size-7 items-center justify-center rounded-full bg-surface text-primary shadow-soft">{icon}</span>
         {title}
       </p>
       {children}

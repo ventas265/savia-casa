@@ -4,6 +4,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { TodayHero } from "@/components/today-hero";
 import { RecoveryCard } from "@/components/recovery-card";
 import { WelcomeStart } from "@/components/welcome-start";
+import { SymptomCheckSheet, useSymptomAsk } from "@/components/symptom-check-sheet";
 import { loadToday, markCameToday, setCycleLength } from "@/lib/savia-api";
 import { SAVIA_BETA } from "@/lib/beta";
 import { localToday } from "@/lib/savia-local";
@@ -86,6 +87,11 @@ function HoyTab() {
     };
   }, []);
 
+  const onboarded = Boolean(
+    data?.profile.onboardingDone && (!isCycling(data.profile.stage) || data.profile.lastPeriodStart),
+  );
+  const symAsk = useSymptomAsk(ready && Boolean(data), onboarded, data?.log ?? null);
+
   useEffect(() => {
     if (!ready || !data) return;
     // Onboarded but missing FUM — finish notebook, never show marketing Registrarme.
@@ -148,6 +154,18 @@ function HoyTab() {
         }}
         wrapUpPaid={data.profile.plan === "serena" || data.profile.plan === "year"}
       />
+      {symAsk.open ? (
+        <SymptomCheckSheet
+          log={data.log}
+          phase={data.phase}
+          intention={data.profile.intention}
+          wrapUpPaid={data.profile.plan === "serena" || data.profile.plan === "year"}
+          onClose={symAsk.close}
+          onSaved={() => {
+            void loadToday().then(setData);
+          }}
+        />
+      ) : null}
     </>
   );
 }
