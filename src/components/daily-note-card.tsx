@@ -143,7 +143,10 @@ export function DailyNoteCard({
   onSaved,
   name,
   compact = false,
+  onNoteText,
 }: {
+  /** Reports the visible note text (Hoy hides its own contraception footnote if the note already says it). */
+  onNoteText?: (text: string) => void;
   /** Hoy above-the-fold: tighter spacing, body clamped to two lines (tap to expand). */
   compact?: boolean;
   ctx: NoteCtx;
@@ -161,6 +164,10 @@ export function DailyNoteCard({
   const [picked, setPicked] = useState<MoodReply | null>(moodOf(log?.mood));
   const [reply, setReply] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(false);
+  useEffect(() => {
+    onNoteText?.(note.text);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [note.text]);
   useEffect(() => {
     setPicked(moodOf(log?.mood));
   }, [log?.mood]);

@@ -121,6 +121,8 @@ export function TodayHero({
   const inWindow = !onPeriod && Boolean(pred.from && today >= pred.from);
   const [askDismissed, setAskDismissed] = useState(false);
   const [regOpen, setRegOpen] = useState(false);
+  // Only ONE «no es anticonceptivo» per screen: skip the footnote when the note already says it.
+  const [noteSaysContra, setNoteSaysContra] = useState(false);
   useEffect(() => {
     try {
       setAskDismissed(localStorage.getItem(`savia.periodAsk.${today}`) === "no");
@@ -398,6 +400,7 @@ export function TodayHero({
         onSaved={onLogSaved}
         name={name}
         compact
+        onNoteText={(txt) => setNoteSaysContra(/anticonceptiv|birth control|contracepti/i.test(txt))}
       />
 
       <div className="mt-2 grid grid-cols-2 gap-2">
@@ -483,9 +486,11 @@ export function TodayHero({
             </div>
           </div>
         ) : null}
-        <p className="px-2 text-center text-[11px] leading-snug text-muted" data-testid="contra-notice">
-          {t.notContraOnce}
-        </p>
+        {noteSaysContra ? null : (
+          <p className="px-2 text-center text-[11px] leading-snug text-muted" data-testid="contra-notice">
+            {t.notContraOnce}
+          </p>
+        )}
       </div>
       {regOpen ? (
         <RegisterPeriodSheet
