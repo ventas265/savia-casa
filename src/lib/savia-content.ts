@@ -7,7 +7,7 @@ export const pick = (c: Copy, lang: "es" | "en") => c[lang];
 export const phaseName: Record<Phase, Copy> = {
   menstrual: t("Menstruación", "Menstrual"),
   follicular: t("Folicular", "Follicular"),
-  ovulatory: t("Ovuladora", "Ovulatory"),
+  ovulatory: t("Ovulación", "Ovulation"),
   luteal: t("Lútea", "Luteal"),
   none: t("Sin ciclo ahora", "No cycle right now"),
 };
