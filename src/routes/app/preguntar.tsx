@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import type { Phase } from "@/lib/types";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { ArrowLeft, ArrowUp } from "lucide-react";
+import { ArrowUp, Stethoscope } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { type ChatTurn } from "@/lib/savia-server";
 import { askGuide } from "@/lib/savia-api";
@@ -26,6 +27,30 @@ export const Route = createFileRoute("/app/preguntar")({
   component: Preguntar,
 });
 
+/** Empty-state suggestions by phase (avoid-pregnancy framing, never trying-to-conceive). */
+const SUGGEST: Record<Phase, { es: string[]; en: string[] }> = {
+  menstrual: {
+    es: ["¿Qué alivia los cólicos sin pastillas?", "¿Cuánto sangrado es normal?", "¿Puedo hacer ejercicio con la regla?", "¿Por qué me siento tan cansada?"],
+    en: ["What eases cramps without pills?", "How much bleeding is normal?", "Can I exercise on my period?", "Why do I feel so tired?"],
+  },
+  follicular: {
+    es: ["¿Cuándo empiezan mis días fértiles?", "¿Qué método anticonceptivo me conviene?", "¿Por qué cambia mi flujo?", "¿Qué comer para tener energía?"],
+    en: ["When do my fertile days start?", "Which birth control could suit me?", "Why does my discharge change?", "What to eat for energy?"],
+  },
+  ovulatory: {
+    es: ["¿Qué tan probable es un embarazo hoy?", "Se rompió el condón, ¿qué hago?", "¿Cómo funciona la pastilla del día después?", "¿Es normal un dolor a un lado?"],
+    en: ["How likely is pregnancy today?", "The condom broke, what do I do?", "How does the morning-after pill work?", "Is a one-sided twinge normal?"],
+  },
+  luteal: {
+    es: ["¿Cómo calmo el síndrome premenstrual?", "¿Cuándo tiene sentido una prueba de embarazo?", "¿Por qué tengo antojos?", "¿Es normal sentirme más triste estos días?"],
+    en: ["How do I ease PMS?", "When does a pregnancy test make sense?", "Why do I have cravings?", "Is it normal to feel sadder these days?"],
+  },
+  none: {
+    es: ["¿Cómo empiezo a registrar mi ciclo?", "¿Qué método anticonceptivo me conviene?", "¿Qué es normal en un ciclo?", "¿Cuándo debería ir al ginecólogo?"],
+    en: ["How do I start tracking my cycle?", "Which birth control could suit me?", "What is normal in a cycle?", "When should I see a gynecologist?"],
+  },
+};
+
 /** Savia IA presence: the breathing pearl, tinted by her phase. */
 function Face({ className, tone }: { className?: string; tone: SaviaTone }) {
   return <SaviaOrb tone={tone} className={className} />;
@@ -41,6 +66,15 @@ function Preguntar() {
   const end = useRef<HTMLDivElement>(null);
   const canSend = q.trim().length > 0 && !busy;
   const [talkLine, setTalkLine] = useState<string | null>(null);
+  const [phase, setPhase] = useState<Phase>("none");
+  useEffect(() => {
+    if (!SAVIA_BETA) return;
+    try {
+      setPhase(localToday().phase);
+    } catch {
+      /* no local data */
+    }
+  }, []);
 
   useEffect(() => {
     if (ctx !== "talk") return;
@@ -52,8 +86,8 @@ function Preguntar() {
     end.current?.scrollIntoView({ block: "end" });
   }, [turns, busy]);
 
-  async function ask() {
-    const question = q.trim();
+  async function ask(preset?: string) {
+    const question = (preset ?? q).trim();
     if (question.length < 1 || busy) return;
     const history = turns.slice(-8);
     setQ("");
@@ -78,29 +112,41 @@ function Preguntar() {
   }
 
   return (
-    <div className="flex h-[calc(100dvh-5.5rem)] flex-col">
+    <div className="flex h-[calc(100dvh-12.5rem)] flex-col">
       <div className="flex shrink-0 items-center gap-3">
-        <Link
-          to="/app/hoy"
-          className="press glass flex size-11 shrink-0 items-center justify-center rounded-full text-fg"
-          aria-label={t.today}
-        >
-          <ArrowLeft className="size-5" strokeWidth={1.5} />
-        </Link>
         <Face tone={tone} className="size-11" />
         <div className="min-w-0">
           <p className="font-display text-xl font-semibold leading-none tracking-[-0.02em]">{t.askTitle}</p>
-          <p className="mt-1 flex items-center gap-1.5 text-sm text-muted"><span className="size-1.5 rounded-full bg-[#6fe0d2]" aria-hidden />{t.askHere}</p>
+          <p className="mt-1 flex items-center gap-1.5 text-sm text-muted"><span className="size-1.5 rounded-full bg-[#a8c5a0]" aria-hidden />{t.askHere}</p>
           <OrbCaption tone={tone} className="mt-0.5 block" />
         </div>
       </div>
 
       <div className="mt-4 min-h-0 flex-1 overflow-y-auto">
         {turns.length === 0 ? (
-          <div className="glass relative overflow-hidden rounded-[22px] p-5">
-            <Face tone={tone} className="size-16" />
-            <p className="mt-5 font-display text-[1.6rem] font-semibold leading-[1.1] tracking-[-0.035em] text-fg">
-              {talkLine ?? t.askEmpty}
+          <div data-testid="ask-empty">
+            <div className="glass relative overflow-hidden rounded-[22px] p-4">
+              <p className="font-display text-[1.3rem] font-semibold leading-[1.15] tracking-[-0.03em] text-fg">
+                {talkLine ?? t.askEmpty}
+              </p>
+            </div>
+            <p className="kicker mt-4 px-1">{t.askSuggestKicker}</p>
+            <ul className="mt-2 space-y-2" data-testid="ask-suggestions">
+              {SUGGEST[phase][lang].map((sq) => (
+                <li key={sq}>
+                  <button
+                    type="button"
+                    onClick={() => void ask(sq)}
+                    className="press glass flex min-h-12 w-full items-center rounded-[18px] px-4 py-2.5 text-left text-[14px] font-medium text-fg"
+                  >
+                    {sq}
+                  </button>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-3 flex items-start gap-2 px-1 text-[11.5px] leading-snug text-muted" data-testid="ask-disclaimer">
+              <Stethoscope className="mt-0.5 size-3.5 shrink-0" strokeWidth={1.7} aria-hidden />
+              {t.askMedDisclaimer}
             </p>
           </div>
         ) : (

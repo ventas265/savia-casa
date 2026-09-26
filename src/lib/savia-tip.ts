@@ -296,7 +296,7 @@ function buildRiskRecs(p: {
     out.push(
       pick(
         lang,
-        "Para la próxima: condón u otro método que tú elijas. El teal del mes no sustituye eso.",
+        "Para la próxima: condón u otro método que tú elijas. El lila del mes no sustituye eso.",
         "Next time: a condom or another method you choose. Teal on the month doesn’t replace that.",
       ),
     );

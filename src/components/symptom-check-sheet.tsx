@@ -12,6 +12,7 @@ import { pick, symptomLabel } from "@/lib/savia-content";
 import { tipAfterSave, type TipResult } from "@/lib/savia-tip";
 import { setSelectedDay } from "@/lib/selected-day";
 import { QUICK_SYMPTOMS, symptomIcon } from "@/lib/symptom-meta";
+import { symptomCare } from "@/lib/symptom-care";
 import type { DailyLog, Intention, Phase } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -76,6 +77,7 @@ export function SymptomCheckSheet({
   const [none, setNone] = useState(false);
   const [busy, setBusy] = useState(false);
   const [tip, setTip] = useState<TipResult | null>(null);
+  const [marked, setMarked] = useState<string[]>([]);
   const [shown, setShown] = useState(false);
 
   useEffect(() => {
@@ -135,6 +137,7 @@ export function SymptomCheckSheet({
             lang,
           }),
         );
+        setMarked(res.log.symptoms);
         onSaved?.(res.log);
       }
     } catch {
@@ -170,15 +173,19 @@ export function SymptomCheckSheet({
             <p className="kicker !text-[#ffb0cc]">
               {formatDay(day, lang)}
             </p>
-            <h2 id="sym-ask-title" className="mt-1 font-display text-[1.5rem] font-semibold leading-tight tracking-[-0.035em]">
-              {t.symAskTitle}
+            <h2
+              id="sym-ask-title"
+              data-testid="symptom-title"
+              className={cn("mt-1 font-display text-[1.5rem] font-semibold leading-tight tracking-[-0.035em]", tip && "save-pop")}
+            >
+              {tip ? t.symDoneTitle : t.symAskTitle}
             </h2>
             {!tip ? <p className="mt-1.5 text-sm leading-relaxed text-muted">{t.symAskSub}</p> : null}
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="press inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-white/[0.06] text-muted ring-1 ring-white/10"
+            className="press inline-flex size-11 shrink-0 items-center justify-center rounded-full bg-white/[0.06] text-muted ring-1 ring-white/10"
             aria-label={t.close}
           >
             <X className="size-5" strokeWidth={1.5} />
@@ -238,6 +245,19 @@ export function SymptomCheckSheet({
             </>
           ) : (
             <div className="mt-4 space-y-3">
+              {marked.length ? (
+                <section data-testid="symptom-care" className="glass rounded-[22px] p-4">
+                  <p className="kicker !text-label">{t.symCareKicker}</p>
+                  <ul className="mt-2 space-y-2">
+                    {symptomCare(marked, lang).map((c) => (
+                      <li key={c.id} className="text-[13.5px] leading-snug text-fg">
+                        <span className="font-semibold">{symptomLabel[c.id] ? pick(symptomLabel[c.id]!, lang) : c.id}:</span>{" "}
+                        <span className="text-soft">{c.text}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              ) : null}
               <WrapUpCard tip={tip} wrapUpPaid={wrapUpPaid} depth={wrapUpPaid ? "full" : "teaser"} />
               <button
                 type="button"

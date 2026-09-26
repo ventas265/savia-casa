@@ -9,7 +9,7 @@ import { requestNotify } from "@/lib/notify";
 import { useI18n } from "@/lib/i18n";
 import { type Intention, type Stage } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { daysUntil, formatLong, nextPeriodDate } from "@/lib/cycle";
+import { addDaysISO, daysUntil, formatLong, predictRange, predictionLabel, todayISO } from "@/lib/cycle";
 import { haptic } from "@/lib/haptic";
 import { companionName, greetingLine } from "@/lib/companion-messages";
 import { useLocalHour } from "@/components/daily-note-card";
@@ -87,6 +87,63 @@ function StepHeader({
   );
 }
 
+function Stepper({
+  label,
+  hint,
+  value,
+  unit,
+  min,
+  max,
+  onChange,
+  testId,
+}: {
+  label: string;
+  hint: string;
+  value: number;
+  unit: string;
+  min: number;
+  max: number;
+  onChange: (n: number) => void;
+  testId: string;
+}) {
+  return (
+    <div className="glass flex items-center gap-3 rounded-[18px] px-4 py-2.5" data-testid={testId}>
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-semibold">{label}</p>
+        <p className="text-[12px] leading-snug text-muted">{hint}</p>
+      </div>
+      <button
+        type="button"
+        aria-label={`${label}: menos`}
+        className="press grid size-11 place-items-center rounded-full bg-white/[0.06] ring-1 ring-white/10 disabled:opacity-40"
+        disabled={value <= min}
+        onClick={() => {
+          haptic();
+          onChange(Math.max(min, value - 1));
+        }}
+      >
+        <Minus className="size-4" strokeWidth={1.6} />
+      </button>
+      <p className="w-14 text-center font-display text-2xl font-semibold tabular-nums" aria-live="polite">
+        {value}
+        <span className="sr-only"> {unit}</span>
+      </p>
+      <button
+        type="button"
+        aria-label={`${label}: más`}
+        className="press grid size-11 place-items-center rounded-full bg-white/[0.06] ring-1 ring-white/10 disabled:opacity-40"
+        disabled={value >= max}
+        onClick={() => {
+          haptic();
+          onChange(Math.min(max, value + 1));
+        }}
+      >
+        <Plus className="size-4" strokeWidth={1.6} />
+      </button>
+    </div>
+  );
+}
+
 function Onboarding() {
   const { t, lang } = useI18n();
   const navigate = useNavigate();
@@ -96,7 +153,8 @@ function Onboarding() {
   const [stage, setStage] = useState<Stage>("cycle");
   const [showOtherStages, setShowOtherStages] = useState(false);
   const [cycleLength, setCycleLength] = useState(28);
-  const [periodLength] = useState(5);
+  const [periodLength, setPeriodLength] = useState(5);
+  const [approx, setApprox] = useState(false);
   const [lastPeriodStart, setLastPeriodStart] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [lastPeriodYear, setLastPeriodYear] = useState(new Date().getFullYear() - 2);
@@ -120,16 +178,19 @@ function Onboarding() {
         if (p.stage !== "cycle") setShowOtherStages(true);
       }
       if (p.cycleLength) setCycleLength(p.cycleLength);
+      if (p.periodLength) setPeriodLength(p.periodLength);
       if (p.lastPeriodStart) setLastPeriodStart(p.lastPeriodStart);
       if (p.dueDate) setDueDate(p.dueDate);
     });
   }, []);
 
   const cycling = stage === "cycle" || stage === "peri" || stage === "postpartum";
-  const next = useMemo(
-    () => (lastPeriodStart ? nextPeriodDate(lastPeriodStart, cycleLength) : null),
-    [lastPeriodStart, cycleLength],
+  // Same range + confidence words as Hoy and the calendar.
+  const pred = useMemo(
+    () => predictRange(lastPeriodStart || null, [], cycleLength, stage),
+    [lastPeriodStart, cycleLength, stage],
   );
+  const next = pred.next;
   const left = daysUntil(next);
   const total = cycling || stage === "pregnancy" || stage === "meno" ? 4 : 3;
 
@@ -267,44 +328,76 @@ function Onboarding() {
             hint={t.askLastBleedHint}
             progressLabel={progressLabel}
           />
+          <div className="mt-6 grid grid-cols-2 gap-2" role="group" aria-label={t.askLastBleed} data-testid="onb-shortcuts">
+            {[
+              { id: "today", label: t.onbToday, day: todayISO(), approx: false },
+              { id: "w1", label: t.onbWeek1, day: addDaysISO(todayISO(), -7), approx: false },
+              { id: "w2", label: t.onbWeek2, day: addDaysISO(todayISO(), -14), approx: false },
+              { id: "unsure", label: t.onbUnsure, day: addDaysISO(todayISO(), -14), approx: true },
+            ].map((o) => {
+              const on = lastPeriodStart === o.day && approx === o.approx;
+              return (
+                <button
+                  key={o.id}
+                  type="button"
+                  data-shortcut={o.id}
+                  aria-pressed={on}
+                  onClick={() => {
+                    haptic();
+                    setLastPeriodStart(o.day);
+                    setApprox(o.approx);
+                  }}
+                  className={cn(
+                    "press min-h-12 rounded-[18px] px-3 text-sm font-semibold",
+                    on ? "bg-grad text-primary-fg" : "glass text-fg",
+                  )}
+                >
+                  {o.label}
+                </button>
+              );
+            })}
+          </div>
+          <label htmlFor="onb-date" className="kicker mt-4 block">
+            {t.onbOtherDate}
+          </label>
           <input
+            id="onb-date"
             type="date"
             value={lastPeriodStart}
-            onChange={(e) => setLastPeriodStart(e.target.value)}
-            className="glass mt-8 min-h-14 w-full rounded-[22px] px-5 font-display text-xl font-semibold outline-none [color-scheme:dark]"
+            max={todayISO()}
+            onChange={(e) => {
+              setLastPeriodStart(e.target.value);
+              setApprox(false);
+            }}
+            className="glass mt-2 min-h-12 w-full rounded-[18px] px-4 font-display text-lg font-semibold outline-none [color-scheme:dark]"
           />
           {lastPeriodStart ? (
-            <p className="mt-3 text-sm text-muted">{formatLong(lastPeriodStart, lang)}</p>
+            <p className="mt-2 text-sm text-muted" data-testid="onb-date-text">
+              {approx ? t.onbUnsureHint : formatLong(lastPeriodStart, lang)}
+            </p>
           ) : null}
-          <p className="kicker mt-10">{t.askRhythm}</p>
-          <div className="mt-5 flex items-center justify-center gap-8">
-            <button
-              type="button"
-              aria-label="−"
-              className="press glass flex size-14 items-center justify-center rounded-full"
-              onClick={() => {
-                haptic();
-                setCycleLength((n) => Math.max(21, n - 1));
-              }}
-            >
-              <Minus className="size-5" strokeWidth={1.5} />
-            </button>
-            <p className="font-display text-7xl font-semibold tabular-nums tracking-[-0.05em] text-fg">{cycleLength}</p>
-            <button
-              type="button"
-              aria-label="+"
-              className="press glass flex size-14 items-center justify-center rounded-full"
-              onClick={() => {
-                haptic();
-                setCycleLength((n) => Math.min(45, n + 1));
-              }}
-            >
-              <Plus className="size-5" strokeWidth={1.5} />
-            </button>
+          <div className="mt-6 space-y-2">
+            <Stepper
+              label={t.onbCycleLen}
+              hint={t.onbCycleHint}
+              value={cycleLength}
+              unit={t.days}
+              min={21}
+              max={45}
+              onChange={setCycleLength}
+              testId="onb-cycle"
+            />
+            <Stepper
+              label={t.onbPeriodLen}
+              hint={t.onbPeriodLenHint}
+              value={periodLength}
+              unit={t.days}
+              min={2}
+              max={10}
+              onChange={setPeriodLength}
+              testId="onb-period"
+            />
           </div>
-          <p className="mt-2 text-center text-sm text-muted">
-            {t.days}. {t.askRhythmHint}
-          </p>
         </div>
       ) : null}
 
@@ -343,9 +436,13 @@ function Onboarding() {
           />
           {left != null ? (
             <div className="mt-10">
-              <p className="kicker !text-[#ffb0cc]">{t.periodIn}</p>
-              <p className="mt-2 font-display text-6xl font-semibold tracking-[-0.05em] text-fg">
-                {left} {left === 1 ? t.dayLeft : t.daysLeft}
+              <p className="kicker !text-[#ffb0cc]">{t.predNextRange}</p>
+              <p className="mt-2 font-display text-4xl font-semibold tracking-[-0.04em] text-fg" data-testid="onb-pred">
+                {pred.from && pred.to ? predictionLabel(pred, lang).split(" · ")[0] : ""}
+              </p>
+              <p className="mt-2 text-sm text-soft">{predictionLabel(pred, lang).split(" · ")[1]}</p>
+              <p className="mt-4 text-sm text-muted">
+                {left > 0 ? t.periodInDays.replace("{n}", String(left)) : t.periodComesToday}
               </p>
             </div>
           ) : (

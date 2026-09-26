@@ -9,18 +9,18 @@ import type { TabKey } from "@/components/tab-bar";
 export const Route = createFileRoute("/app")({ component: AppLayout });
 
 function tabFromPath(path: string): TabKey {
-  if (path.startsWith("/app/hoy")) return "hoy";
+  if (path.startsWith("/app/hoy") || path.startsWith("/app/registro")) return "hoy";
   if (path.startsWith("/app/calendario") || path.startsWith("/app/ciclo")) return "cal";
-  if (path.startsWith("/app/registro")) return "log";
-  if (path.startsWith("/app/sexo")) return "sexo";
-  return "mas";
+  if (path.startsWith("/app/preguntar")) return "ia";
+  // Tú: perfil, recordatorios, privacidad, código + guides (sexo, guía, pareja, informe, recuperar).
+  return "tu";
 }
 
 function AppLayout() {
   const { user, isPending } = useCurrentUserState();
   const path = useRouterState({ select: (s) => s.location.pathname });
   const current =
-    path.startsWith("/app/onboarding") || path.startsWith("/app/preguntar")
+    path.startsWith("/app/onboarding")
       ? "other"
       : tabFromPath(path);
 

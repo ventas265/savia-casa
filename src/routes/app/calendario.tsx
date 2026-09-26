@@ -1,4 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { ChevronRight } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -220,6 +221,7 @@ function CalendarTab() {
                   cycleLength={learned}
                   periodLength={data.profile.periodLength}
                   starts={data.periodStarts}
+                  periodDays={periodDays}
                   intention={data.profile.intention}
                   stage={data.profile.stage}
                 />
@@ -246,10 +248,11 @@ function CalendarTab() {
                   }}
                   onMonthChange={() => setSheetDay(null)}
                 />
-                <div className="mt-4 flex items-center justify-between gap-3">
+                <div className="mt-3 flex items-center justify-between gap-3">
                   <button
                     type="button"
-                    className="text-sm font-semibold text-primary"
+                    data-testid="change-last-period"
+                    className="inline-flex min-h-11 items-center text-sm font-semibold text-primary"
                     onClick={() => {
                       setEditingFum(true);
                       setFumDraft(data.profile.lastPeriodStart ?? "");
@@ -257,6 +260,14 @@ function CalendarTab() {
                   >
                     {t.calChangeLastPeriod}
                   </button>
+                  <Link
+                    to="/app/sexo"
+                    data-testid="cal-sexo"
+                    className="inline-flex min-h-11 items-center gap-1 text-sm font-semibold text-[#e2d0ff]"
+                  >
+                    {t.tuSexGuide}
+                    <ChevronRight className="size-4" aria-hidden />
+                  </Link>
                 </div>
                 {data.periodStarts.length ? (
                   <div className="mt-6">

@@ -3,7 +3,7 @@
 @import "tw-animate-css";
 
 @theme {
-  /* Dirección B · Nocturna — paleta V2 «Baya»: frambuesa → orquídea, brillo violeta, fértil turquesa */
+  /* Dirección B · Nocturna — paleta V2 «Baya»: frambuesa → orquídea, brillo violeta, fértil lila, resto salvia */
   --color-bg: #0e0911;
   --color-surface: rgb(255 255 255 / 0.055);
   --color-surface-2: rgb(255 255 255 / 0.09);
@@ -15,26 +15,28 @@
   --color-primary: #f2427e;
   --color-primary-2: #b65cff;
   --color-primary-fg: #ffffff;
-  --color-accent: #6fe0d2;
+  --color-accent: #c9a2ff;
   --color-sand: #b65cff;
   --color-plum: #c563a8;
   --color-violet: #9b5cff;
   --color-border: rgb(255 255 255 / 0.08);
   --color-danger: #ff6b6b;
   --color-ring: #ff6f9f;
-  /* Calendar: hot period vs cool teal fertile (estimate, not contraception) */
+  /* Fixed phase colours: period pink, fertile lilac, rest sage (estimate, not contraception) */
   --color-cal-period: #ff4d84;
-  --color-cal-peak: #6fe0d2;
-  --color-cal-fertile: rgb(111 224 210 / 0.24);
-  --color-cal-fertile-deep: #3fbdb0;
+  --color-cal-peak: #c9a2ff;
+  --color-cal-fertile: rgb(201 162 255 / 0.22);
+  --color-cal-fertile-deep: #a77bf0;
+  /* Rest of the cycle: sage */
+  --color-cal-rest: #a8c5a0;
   --color-cal-quiet: rgb(255 255 255 / 0.04);
   /* Selection affordance — light pill, distinct from period */
   --color-select: #f7f0f5;
   --color-select-fg: #140c17;
   --color-select-ring: #ff6f9f;
-  --color-sage: #6fe0d2;
-  --color-sage-soft: rgb(111 224 210 / 0.12);
-  --color-sage-deep: #6fe0d2;
+  --color-sage: #a8c5a0;
+  --color-sage-soft: rgb(168 197 160 / 0.12);
+  --color-sage-deep: #a8c5a0;
   --color-rose-dust: #ff8cb8;
   /* Kicker / label pink and pearl tint */
   --color-label: #ffb0cc;
@@ -163,10 +165,10 @@
     backdrop-filter: blur(20px);
     color: var(--color-fg);
   }
-  /* Fertile card: aqua → violet tint glass (estimate, never contraception) */
+  /* Fertile card: lilac tint glass (estimate, never contraception) */
   .card-fert {
-    background: linear-gradient(135deg, rgb(111 224 210 / 0.16), rgb(155 92 255 / 0.1));
-    border: 1px solid rgb(111 224 210 / 0.32);
+    background: linear-gradient(135deg, rgb(201 162 255 / 0.16), rgb(155 92 255 / 0.1));
+    border: 1px solid rgb(201 162 255 / 0.34);
     -webkit-backdrop-filter: blur(20px);
     backdrop-filter: blur(20px);
     color: var(--color-fg);
@@ -240,6 +242,24 @@
   }
   .ring-draw {
     animation: ring-in 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  /* Save micro-animation (Phase 1b): quick pop + glow when something is stored. */
+  .save-pop {
+    animation: save-pop 0.5s cubic-bezier(0.2, 1.6, 0.3, 1);
+  }
+}
+
+@keyframes save-pop {
+  0% {
+    transform: scale(0.94);
+    opacity: 0.6;
+  }
+  55% {
+    transform: scale(1.04);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
   }
 }
 

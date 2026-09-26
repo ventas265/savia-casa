@@ -190,7 +190,7 @@ export function PushReminders() {
               disabled={busy || support === "unsupported"}
               onClick={() => void toggle()}
               className={cn(
-                "relative mt-0.5 h-7 w-12 shrink-0 rounded-full transition-colors disabled:opacity-50",
+                "relative mt-0.5 h-7 w-12 shrink-0 rounded-full transition-colors before:absolute before:-inset-2 before:content-[''] disabled:opacity-50",
                 state.enabled ? "bg-grad" : "bg-white/15",
               )}
             >
@@ -209,7 +209,7 @@ export function PushReminders() {
               data-testid="push-hour"
               value={state.hour}
               onChange={(e) => void changeHour(Number(e.target.value))}
-              className="h-10 rounded-full bg-white/[0.08] px-4 text-sm font-semibold text-fg ring-1 ring-white/10 [color-scheme:dark]"
+              className="h-11 rounded-full bg-white/[0.08] px-4 text-sm font-semibold text-fg ring-1 ring-white/10 [color-scheme:dark]"
             >
               {PUSH_HOURS.map((h) => (
                 <option key={h} value={h}>
@@ -257,9 +257,9 @@ export function PushSoftPrompt() {
       <BellRing className="size-5 shrink-0 text-[#ffb0cc]" strokeWidth={1.6} />
       <p className="min-w-0 flex-1 text-[13px] leading-snug text-fg">{c.soft}</p>
       <Link
-        to="/app/mas"
+        to="/app/tu"
         hash="recordatorios"
-        className="press shrink-0 rounded-full bg-grad px-3.5 py-2 text-[12.5px] font-semibold text-white"
+        className="press inline-flex min-h-11 shrink-0 items-center rounded-full bg-grad px-3.5 text-[12.5px] font-semibold text-white"
       >
         {c.softCta}
       </Link>
@@ -274,7 +274,7 @@ export function PushSoftPrompt() {
           }
           setShow(false);
         }}
-        className="press grid size-8 shrink-0 place-items-center rounded-full text-muted"
+        className="press -mr-2 grid size-11 shrink-0 place-items-center rounded-full text-muted"
       >
         <X className="size-4" />
       </button>

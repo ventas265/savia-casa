@@ -66,7 +66,7 @@ export const TONE_CLS: Record<ChipTone, { idle: string; on: string; badge: strin
   rose: { idle: "", on: "", badge: "bg-grad text-primary-fg", icon: "bg-white/[0.06] ring-1 ring-white/10 text-[#ff8cb8]" },
   dust: { idle: "", on: "", badge: "bg-grad text-primary-fg", icon: "bg-white/[0.06] ring-1 ring-white/10 text-[#ffb0cc]" },
   sand: { idle: "", on: "", badge: "bg-grad text-primary-fg", icon: "bg-white/[0.06] ring-1 ring-white/10 text-[#f0b0e8]" },
-  sage: { idle: "", on: "", badge: "bg-grad text-primary-fg", icon: "bg-white/[0.06] ring-1 ring-white/10 text-[#6fe0d2]" },
+  sage: { idle: "", on: "", badge: "bg-grad text-primary-fg", icon: "bg-white/[0.06] ring-1 ring-white/10 text-[#a8c5a0]" },
   plum: { idle: "", on: "", badge: "bg-grad text-primary-fg", icon: "bg-white/[0.06] ring-1 ring-white/10 text-[#c7a6ff]" },
 };
 

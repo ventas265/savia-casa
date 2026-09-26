@@ -59,8 +59,8 @@ export const phases: Record<Exclude<Phase, "none">, { hormone: Copy; body: Copy;
       "Stretchy mucus, slightly tender breasts, sometimes a one-sided twinge (mittelschmerz). Libido often rises. A few days later estrogen dips and mood can drop.",
     ),
     do: t(
-      "Fibra, colores, agua. Si no buscas embarazo, este es el rato de ser más cuidadosa. Si lo buscas, aquí está el centro de la diana.",
-      "Fiber, color, water. If you’re not trying, this is when to be more careful. If you are, this is the bullseye.",
+      "Fibra, colores, agua. Son los días con más chance de embarazo: si no lo buscas, condón u otro método que tú elijas.",
+      "Fiber, color, water. These are the days with the highest pregnancy chance: if you don’t want that, use a condom or a method you choose.",
     ),
   },
   luteal: {

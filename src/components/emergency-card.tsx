@@ -25,7 +25,7 @@ export function EmergencyCard({ day, onNavigate }: { day: string; onNavigate?: (
       className="card-fert mt-4 rounded-[20px] px-4 py-3.5"
       aria-label={t.ecKicker}
     >
-      <p className="kicker flex items-center gap-1.5 !text-[#6FE0D2]">
+      <p className="kicker flex items-center gap-1.5 !text-[#C9A2FF]">
         <ShieldPlus className="size-3.5" strokeWidth={1.8} aria-hidden />
         {t.ecKicker}
       </p>

@@ -33,6 +33,7 @@ import { Route as AppPreguntarRouteImport } from './routes/app/preguntar'
 import { Route as AppRecuperarRouteImport } from './routes/app/recuperar'
 import { Route as AppRegistroRouteImport } from './routes/app/registro'
 import { Route as AppSexoRouteImport } from './routes/app/sexo'
+import { Route as AppTuRouteImport } from './routes/app/tu'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ApiCronPushRouteImport } from './routes/api/cron/push'
 import { Route as ApiPushHourRouteImport } from './routes/api/push/hour'
@@ -162,6 +163,11 @@ const AppSexoRoute = AppSexoRouteImport.update({
   path: '/sexo',
   getParentRoute: () => AppRoute,
 } as any)
+const AppTuRoute = AppTuRouteImport.update({
+  id: '/tu',
+  path: '/tu',
+  getParentRoute: () => AppRoute,
+} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
@@ -227,6 +233,7 @@ export interface FileRoutesByFullPath {
   '/app/recuperar': typeof AppRecuperarRoute
   '/app/registro': typeof AppRegistroRoute
   '/app/sexo': typeof AppSexoRoute
+  '/app/tu': typeof AppTuRoute
   '/app/': typeof AppIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/cron/push': typeof ApiCronPushRoute
@@ -260,6 +267,7 @@ export interface FileRoutesByTo {
   '/app/recuperar': typeof AppRecuperarRoute
   '/app/registro': typeof AppRegistroRoute
   '/app/sexo': typeof AppSexoRoute
+  '/app/tu': typeof AppTuRoute
   '/app': typeof AppIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/cron/push': typeof ApiCronPushRoute
@@ -295,6 +303,7 @@ export interface FileRoutesById {
   '/app/recuperar': typeof AppRecuperarRoute
   '/app/registro': typeof AppRegistroRoute
   '/app/sexo': typeof AppSexoRoute
+  '/app/tu': typeof AppTuRoute
   '/app/': typeof AppIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/cron/push': typeof ApiCronPushRoute
@@ -331,6 +340,7 @@ export interface FileRouteTypes {
     | '/app/recuperar'
     | '/app/registro'
     | '/app/sexo'
+    | '/app/tu'
     | '/app/'
     | '/api/auth/$'
     | '/api/cron/push'
@@ -364,6 +374,7 @@ export interface FileRouteTypes {
     | '/app/recuperar'
     | '/app/registro'
     | '/app/sexo'
+    | '/app/tu'
     | '/app'
     | '/api/auth/$'
     | '/api/cron/push'
@@ -398,6 +409,7 @@ export interface FileRouteTypes {
     | '/app/recuperar'
     | '/app/registro'
     | '/app/sexo'
+    | '/app/tu'
     | '/app/'
     | '/api/auth/$'
     | '/api/cron/push'
@@ -599,6 +611,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSexoRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/tu': {
+      id: '/app/tu'
+      path: '/tu'
+      fullPath: '/app/tu'
+      preLoaderRoute: typeof AppTuRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
@@ -673,6 +692,7 @@ interface AppRouteChildren {
   AppRecuperarRoute: typeof AppRecuperarRoute
   AppRegistroRoute: typeof AppRegistroRoute
   AppSexoRoute: typeof AppSexoRoute
+  AppTuRoute: typeof AppTuRoute
   AppIndexRoute: typeof AppIndexRoute
 }
 
@@ -691,6 +711,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppRecuperarRoute: AppRecuperarRoute,
   AppRegistroRoute: AppRegistroRoute,
   AppSexoRoute: AppSexoRoute,
+  AppTuRoute: AppTuRoute,
   AppIndexRoute: AppIndexRoute,
 }
 

@@ -142,7 +142,10 @@ export function DailyNoteCard({
   paid,
   onSaved,
   name,
+  compact = false,
 }: {
+  /** Hoy above-the-fold: tighter spacing, body clamped to two lines (tap to expand). */
+  compact?: boolean;
   ctx: NoteCtx;
   day: string;
   tone: SaviaTone;
@@ -157,6 +160,7 @@ export function DailyNoteCard({
   const note = useDailyNote(ctx, day, lang, name);
   const [picked, setPicked] = useState<MoodReply | null>(moodOf(log?.mood));
   const [reply, setReply] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState(false);
   useEffect(() => {
     setPicked(moodOf(log?.mood));
   }, [log?.mood]);
@@ -180,25 +184,42 @@ export function DailyNoteCard({
     <section
       data-testid="daily-note"
       data-source={note.fromAi ? "ai" : "template"}
-      className="glass relative mt-2 overflow-hidden rounded-[22px] px-4 pb-4 pt-3.5"
+      className={cn("glass relative mt-2 overflow-hidden rounded-[22px] px-4", compact ? "pb-3 pt-3" : "pb-4 pt-3.5")}
       aria-label={t.noteKicker}
     >
-      <div className="flex items-center gap-3">
-        <SaviaOrb tone={tone} className="size-10" />
+      <div className={cn("flex gap-3", compact ? "items-start" : "items-center")}>
+        <SaviaOrb tone={tone} className={compact ? "mt-0.5 size-8 shrink-0" : "size-10"} />
         <div className="min-w-0">
-          <p className="kicker !text-label">{t.noteKicker}</p>
-          <OrbCaption tone={tone} className="mt-0.5 block" />
+          {compact ? (
+            <p data-testid="note-checkin" className="font-display text-[16.5px] font-semibold leading-snug tracking-[-0.02em] text-fg">
+              {note.fromAi ? splitAiNote(note.text).head : note.template.checkIn}
+            </p>
+          ) : (
+            <>
+              <p className="kicker !text-label">{t.noteKicker}</p>
+              <OrbCaption tone={tone} className="mt-0.5 block" />
+            </>
+          )}
         </div>
       </div>
-      <p className="mt-3 font-display text-[18px] font-semibold leading-snug tracking-[-0.02em] text-fg">
-        {note.fromAi ? splitAiNote(note.text).head : note.template.checkIn}
-      </p>
-      <p className="mt-1.5 text-[13.5px] leading-relaxed text-soft">
+      {compact ? null : (
+        <p data-testid="note-checkin" className="mt-3 font-display text-[18px] font-semibold leading-snug tracking-[-0.02em] text-fg">
+          {note.fromAi ? splitAiNote(note.text).head : note.template.checkIn}
+        </p>
+      )}
+      <p
+        className={cn(
+          "text-soft",
+          compact ? "mt-1 text-[12.5px] leading-snug" : "mt-1.5 text-[13.5px] leading-relaxed",
+          compact && !expanded && "line-clamp-2 cursor-pointer",
+        )}
+        onClick={compact ? () => setExpanded(true) : undefined}
+      >
         {note.fromAi
           ? splitAiNote(note.text).rest
           : note.template.lines.slice(1).join(" ")}
       </p>
-      <div className="mt-3.5 grid grid-cols-4 gap-1.5" role="group" aria-label={t.moodAsk}>
+      <div className={cn("grid grid-cols-4 gap-1.5", compact ? "mt-2.5" : "mt-3.5")} role="group" aria-label={t.moodAsk}>
         {moods.map(({ id, label, Icon }) => (
           <button
             key={id}
@@ -207,7 +228,8 @@ export function DailyNoteCard({
             aria-pressed={picked === id}
             onClick={() => void saveMood(id)}
             className={cn(
-              "press flex h-[52px] flex-col items-center justify-center gap-0.5 rounded-[16px] text-[11.5px] font-medium",
+              "press flex flex-col items-center justify-center gap-0.5 rounded-[16px] text-[11.5px] font-medium",
+              compact ? "h-[46px]" : "h-[52px]",
               picked === id ? "bg-grad text-white shadow-[0_6px_18px_-6px_rgb(242_66_126/0.6)]" : "bg-white/[0.06] text-fg ring-1 ring-white/10",
             )}
           >
@@ -226,7 +248,10 @@ export function DailyNoteCard({
               search: { q: t.talkPrefill.replace("{ctx}", ctxLine), ctx: "talk" },
             });
           }}
-          className="press flex h-[52px] flex-col items-center justify-center gap-0.5 rounded-[16px] bg-white/[0.06] text-[11.5px] font-medium leading-tight text-fg ring-1 ring-white/10"
+          className={cn(
+            "press flex flex-col items-center justify-center gap-0.5 rounded-[16px] bg-white/[0.06] text-[11.5px] font-medium leading-tight text-fg ring-1 ring-white/10",
+            compact ? "h-[46px]" : "h-[52px]",
+          )}
         >
           <MessageCircleHeart className="size-[18px]" strokeWidth={1.6} />
           {t.moodTalk}
@@ -238,7 +263,7 @@ export function DailyNoteCard({
           {reply}
         </p>
       ) : null}
-      {!paid ? (
+      {!paid && !compact ? (
         <Link to="/pagar" className="mt-3 block text-[11.5px] font-medium text-rose-dust">
           {t.noteSerenaHook}
         </Link>

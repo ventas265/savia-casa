@@ -8,8 +8,8 @@ const HEART =
 
 /**
  * Nocturna cycle ring (V2 Baya): one rounded petal per cycle day.
- * Period days berry, estimated fertile window aqua (thicker, ovulation
- * day brightest), past days brighter, today = glowing pearl knob.
+ * Fixed colours: period pink, fertile window lilac (thicker, ovulation
+ * brightest), rest sage; days after today dotted (estimate); today = pearl knob.
  * Sex days: fine-line hearts just outside the ring (filled = unprotected).
  */
 export function SegmentRing({
@@ -21,7 +21,10 @@ export function SegmentRing({
   onClick,
   decorative = false,
   sexDays = [],
+  sizeClass = "size-[16.6rem]",
 }: {
+  /** Tailwind size class for the ring box. */
+  sizeClass?: string;
   cycleLength: number;
   periodLength: number;
   cycleDay: number | null;
@@ -50,19 +53,22 @@ export function SegmentRing({
     const y0 = cy + r * Math.sin(rad(a0));
     const x1 = cx + r * Math.cos(rad(a1));
     const y1 = cy + r * Math.sin(rad(a1));
-    let stroke = "rgba(255,255,255,.12)";
+    // Fixed phase colours: period pink, fertile lilac (ovulation brightest), rest sage.
+    // Days after today are estimates → dotted.
+    const future = cycleDay != null && d > cycleDay;
+    let stroke = cycleDay != null && d < cycleDay ? "rgba(168,197,160,.62)" : "rgba(168,197,160,.34)";
     let w = 7;
     let glow = false;
     if (d <= plen) stroke = "#FF4D84";
     else if (d === ov) {
-      stroke = "#6FE0D2";
+      stroke = "#C9A2FF";
       w = 10;
-      glow = true;
+      glow = !future;
     } else if (d >= ov - 5 && d <= ov + 1) {
       stroke = "url(#ring-fert)";
       w = 9;
-    } else if (cycleDay != null && d < cycleDay) stroke = "rgba(255,255,255,.34)";
-    return { d, path: `M${x0} ${y0} A${r} ${r} 0 0 1 ${x1} ${y1}`, stroke, w, glow };
+    }
+    return { d, path: `M${x0} ${y0} A${r} ${r} 0 0 1 ${x1} ${y1}`, stroke, w, glow, future };
   });
   const knob =
     cycleDay != null
@@ -83,8 +89,8 @@ export function SegmentRing({
     <svg viewBox="0 0 284 284" className="absolute inset-0 size-full overflow-visible" aria-hidden>
       <defs>
         <linearGradient id="ring-fert" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#6FE0D2" />
-          <stop offset="1" stopColor="#3FBDB0" />
+          <stop offset="0" stopColor="#C9A2FF" />
+          <stop offset="1" stopColor="#A77BF0" />
         </linearGradient>
         <filter id="ring-glow" x="-50%" y="-50%" width="200%" height="200%">
           <feGaussianBlur stdDeviation="3.2" result="b" />
@@ -102,6 +108,8 @@ export function SegmentRing({
           stroke={s.stroke}
           strokeWidth={s.w}
           strokeLinecap="round"
+          strokeDasharray={s.future ? "0.1 5.2" : undefined}
+          opacity={s.future ? 0.9 : 1}
           filter={s.glow ? "url(#ring-glow)" : undefined}
           className="seg-in"
           style={{ animationDelay: `${s.d * 16}ms` }}
@@ -144,7 +152,7 @@ export function SegmentRing({
   );
   if (decorative) {
     return (
-      <div aria-hidden className="relative mx-auto grid size-[16.6rem] place-items-center">
+      <div aria-hidden className={`relative mx-auto grid ${sizeClass} place-items-center`}>
         {svg}
         {inner}
       </div>
@@ -158,7 +166,7 @@ export function SegmentRing({
         onClick?.();
       }}
       aria-label={label}
-      className="press relative mx-auto grid size-[16.6rem] place-items-center focus-visible:outline-none"
+      className={`press relative mx-auto grid ${sizeClass} place-items-center focus-visible:outline-none`}
     >
       {svg}
       {inner}

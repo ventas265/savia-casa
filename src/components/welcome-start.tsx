@@ -15,6 +15,13 @@ export function WelcomeStart() {
         <Link to="/app/onboarding">{t.welcomeCta}</Link>
       </Button>
       <p className="mt-3 text-center text-xs text-muted">{t.welcomeNote}</p>
+      <Link
+        to="/app/recuperar"
+        data-testid="have-account"
+        className="mx-auto mt-1 flex min-h-11 w-fit items-center px-3 text-sm font-semibold text-rose-dust underline-offset-4 hover:underline"
+      >
+        {t.haveAccount}
+      </Link>
       <WelcomeHero />
     </div>
   );

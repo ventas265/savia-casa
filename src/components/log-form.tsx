@@ -21,6 +21,7 @@ import {
   Milk,
   Salad,
   ShieldCheck,
+  Check,
   Smile,
   Sparkles,
   Zap,
@@ -106,6 +107,7 @@ export function LogForm({
   hideEmergency = false,
   variant = "page",
   onSaved,
+  onDone,
 }: {
   day: string;
   initial: DailyLog | null;
@@ -120,6 +122,8 @@ export function LogForm({
   /** page = above the tab bar; sheet = inside a modal scroller. */
   variant?: "page" | "sheet";
   onSaved?: (log: DailyLog) => void;
+  /** Sheet only: «Listo» closes the sheet (data is already saved). */
+  onDone?: () => void;
 }) {
   const { t, lang } = useI18n();
   const navigate = useNavigate();
@@ -135,6 +139,8 @@ export function LogForm({
   const [mucus, setMucus] = useState<Mucus>(initial?.mucus || "none");
   const [sexKind, setSexKind] = useState<SexKind>(initial?.sexKind || (initial?.sex ? "unprotected" : "none"));
   const [busy, setBusy] = useState(false);
+  const [savedPulse, setSavedPulse] = useState(false);
+  const pulseTimer = useRef<number | null>(null);
   const [tip, setTip] = useState<TipResult | null>(null);
   const [openCat, setOpenCat] = useState<CatKey | null>("flow");
   const tipRef = useRef<HTMLDivElement>(null);
@@ -241,7 +247,10 @@ export function LogForm({
             }
             onSaved?.(res.log);
             if (gen === saveGen.current) {
-              toastSaved();
+              setSavedPulse(true);
+              if (pulseTimer.current) window.clearTimeout(pulseTimer.current);
+              pulseTimer.current = window.setTimeout(() => setSavedPulse(false), 1800);
+              if (variant === "page") toastSaved();
               if (scrollTipOnSave.current) {
                 scrollTipOnSave.current = false;
                 requestAnimationFrame(() =>
@@ -549,31 +558,64 @@ export function LogForm({
         </div>
       ) : null}
 
-      {variant === "page" ? <div className="h-20" aria-hidden /> : null}
-      <div
-        className={cn(
-          "z-30",
-          // Page: fixed above the tab bar (+ its raised plus button) and safe-area.
-          // Sheet: sticky to the bottom of the modal scroller (no tab bar there).
-          variant === "page"
-            ? "fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] left-1/2 w-full max-w-lg -translate-x-1/2 px-4 md:max-w-[28rem]"
-            : "sticky bottom-0 -mx-1 pb-3 pt-3",
-        )}
-      >
-        <button
-          type="button"
-          data-testid="log-save"
-          className="press flex h-14 w-full items-center justify-center gap-2 rounded-full bg-grad text-base font-semibold text-primary-fg shadow-[0_10px_30px_-8px_rgb(242_66_126/0.6)] ring-4 ring-bg/80 transition-opacity disabled:opacity-70"
-          onClick={() => {
-            scrollTipOnSave.current = true;
-            persist({ notes: live.current.notes });
-          }}
-          disabled={busy}
-          aria-busy={busy}
-        >
-          {t.logSaveDay}
-        </button>
-      </div>
+      {variant === "page" ? (
+        <>
+          <div className="h-20" aria-hidden />
+          <div className="fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] left-1/2 z-30 w-full max-w-lg -translate-x-1/2 px-4 md:max-w-[28rem]">
+            <button
+              type="button"
+              data-testid="log-save"
+              className={cn(
+                "press flex h-14 w-full items-center justify-center gap-2 rounded-full bg-grad text-base font-semibold text-primary-fg shadow-[0_10px_30px_-8px_rgb(242_66_126/0.6)] ring-4 ring-bg/80 transition-opacity disabled:opacity-70",
+                savedPulse && "save-pop",
+              )}
+              onClick={() => {
+                scrollTipOnSave.current = true;
+                persist({ notes: live.current.notes });
+              }}
+              disabled={busy}
+              aria-busy={busy}
+            >
+              {savedPulse ? <Check className="size-5" strokeWidth={2.2} aria-hidden /> : null}
+              {t.logDone}
+            </button>
+          </div>
+        </>
+      ) : (
+        // Sheet: every tap saves instantly — no fixed button covering rows.
+        <div className="pb-8 pt-4">
+          <p
+            data-testid="sheet-saved"
+            role="status"
+            aria-live="polite"
+            className={cn(
+              "flex min-h-6 items-center justify-center gap-1.5 text-[13px] font-medium",
+              busy ? "text-muted" : savedPulse ? "save-pop text-[#d6e6d0]" : "text-muted",
+            )}
+          >
+            {busy ? (
+              t.logSaving
+            ) : savedPulse ? (
+              <>
+                <Check className="size-4" strokeWidth={2.2} aria-hidden />
+                {t.logSavedInstant}
+              </>
+            ) : (
+              t.logAutoSave
+            )}
+          </p>
+          {onDone ? (
+            <button
+              type="button"
+              data-testid="sheet-done"
+              onClick={onDone}
+              className="press glass mt-3 flex min-h-12 w-full items-center justify-center rounded-full text-sm font-semibold"
+            >
+              {t.logDone}
+            </button>
+          ) : null}
+        </div>
+      )}
     </div>
   );
 }
@@ -680,7 +722,7 @@ function SexChanceChip({ mark }: { mark: DayMark | null }) {
       className={cn(
         "mt-4 flex items-start gap-2.5 rounded-[18px] border px-3.5 py-2.5 text-[13px] font-medium leading-snug",
         hot
-          ? "border-[rgb(111_224_210/0.35)] bg-[rgb(111_224_210/0.12)] text-[#d2f7f2]"
+          ? "border-[rgb(201_162_255/0.35)] bg-[rgb(201_162_255/0.12)] text-[#ede1ff]"
           : "border-white/10 bg-white/[0.05] text-soft",
       )}
     >
@@ -689,7 +731,7 @@ function SexChanceChip({ mark }: { mark: DayMark | null }) {
         className={cn(
           "mt-[5px] size-2 shrink-0 rounded-full",
           chance === "peak"
-            ? "bg-cal-peak shadow-[0_0_10px_rgb(111_224_210/0.9)]"
+            ? "bg-cal-peak shadow-[0_0_10px_rgb(201_162_255/0.9)]"
             : chance === "fertile"
               ? "bg-cal-peak/70"
               : "bg-white/35",

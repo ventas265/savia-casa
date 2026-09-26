@@ -182,13 +182,15 @@ export function CycleCalendar({
             ? "card-fert"
             : status === "period" || status === "predicted"
               ? "border-[rgb(255_77_132/0.3)] bg-[linear-gradient(135deg,rgb(255_77_132/0.16),rgb(155_92_255/0.08))]"
-              : "glass",
+              : status === "quiet"
+                ? "border-[rgb(168_197_160/0.22)] bg-[rgb(168_197_160/0.07)]"
+                : "glass",
         )}
         aria-live="polite"
       >
         <StatusDot status={status} />
         <div className="min-w-0 flex-1">
-          <p className={cn("kicker", hot ? "!text-[#6FE0D2]" : status === "period" || status === "predicted" ? "!text-label" : "")}>
+          <p className={cn("kicker", hot ? "!text-[#C9A2FF]" : status === "period" || status === "predicted" ? "!text-label" : "")}>
             {picked === today ? `${t.calStatusToday} · ` : ""}
             {formatDay(picked, lang)}
             {dayNum ? ` · ${t.dayOf} ${dayNum}` : ""}
@@ -211,7 +213,6 @@ export function CycleCalendar({
                   : t.relationsUnprotected}
             </p>
           ) : null}
-          <p className="mt-1.5 text-[11px] leading-snug text-muted">{t.calShortDisclaimer}</p>
         </div>
       </div>
       <div className="flex items-center justify-between">
@@ -219,7 +220,7 @@ export function CycleCalendar({
           type="button"
           className="inline-flex size-11 items-center justify-center rounded-full ring-1 ring-white/10 hover:bg-surface-2"
           onClick={() => moveMonth(-1)}
-          aria-label="prev"
+          aria-label={lang === "es" ? "Mes anterior" : "Previous month"}
         >
           <ChevronLeft className="size-5" strokeWidth={1.5} />
         </button>
@@ -230,7 +231,7 @@ export function CycleCalendar({
           type="button"
           className="inline-flex size-11 items-center justify-center rounded-full ring-1 ring-white/10 hover:bg-surface-2"
           onClick={() => moveMonth(1)}
-          aria-label="next"
+          aria-label={lang === "es" ? "Mes siguiente" : "Next month"}
         >
           <ChevronRight className="size-5" strokeWidth={1.5} />
         </button>
@@ -256,6 +257,9 @@ export function CycleCalendar({
           const isPredicted = m === "period" && !isConfirmed;
           const isPeak = m === "peak" && !isConfirmed;
           const isFertile = m === "fertile" && !isConfirmed;
+          const isQuiet = m === "quiet" && !isConfirmed;
+          // Projected (after today) = dotted; past/today estimates keep the fill.
+          const projected = cell.iso > today;
           // Period fill already says "flow": only show the dot for spotting / off-period flow.
           const hasFlowMark = hasLoggedFlow && !isConfirmed;
           const hasMood = Boolean(
@@ -269,7 +273,8 @@ export function CycleCalendar({
               key={cell.iso}
               type="button"
               onClick={() => choose(cell.iso)}
-              aria-label={cell.iso}
+              aria-label={`${formatDay(cell.iso, lang)}${statusWord(dayStatus(m, isConfirmed), t) ? ` · ${statusWord(dayStatus(m, isConfirmed), t)}` : ""}`}
+              data-day={cell.iso}
               aria-current={isToday ? "date" : undefined}
               aria-pressed={isPicked}
               data-status={dayStatus(m, isConfirmed) ?? "none"}
@@ -287,12 +292,18 @@ export function CycleCalendar({
                     "bg-cal-period font-semibold text-white shadow-[0_0_16px_-4px_rgb(255_77_132/0.7)]",
                   // Predicted period — dotted outline, never filled
                   isPredicted && "border-2 border-dotted border-cal-period bg-transparent font-medium text-rose-dust",
-                  // Fertile window — aqua tint; ovulation stronger (solid ring + marker)
-                  isFertile && "bg-cal-fertile font-semibold text-[#8ff0e4] ring-1 ring-inset ring-cal-peak/35",
+                  // Fertile window — lilac; projected days dotted, ovulation stronger (ring + marker)
+                  isFertile &&
+                    (projected
+                      ? "border-2 border-dotted border-cal-peak/80 font-semibold text-[#e6d6ff]"
+                      : "bg-cal-fertile font-semibold text-[#e6d6ff] ring-1 ring-inset ring-cal-peak/35"),
                   isPeak &&
-                    "bg-cal-peak/30 font-semibold text-white ring-2 ring-cal-peak shadow-[0_0_16px_-4px_rgb(111_224_210/0.75)]",
-                  // Non-fertile / quiet days stay neutral
-                  !isConfirmed && !isPredicted && !isFertile && !isPeak && "text-fg/80",
+                    (projected
+                      ? "border-2 border-dotted border-cal-peak bg-cal-peak/20 font-semibold text-white"
+                      : "bg-cal-peak/30 font-semibold text-white ring-2 ring-cal-peak shadow-[0_0_16px_-4px_rgb(201_162_255/0.75)]"),
+                  // Rest of the cycle — sage text
+                  isQuiet && "text-cal-rest",
+                  !isConfirmed && !isPredicted && !isFertile && !isPeak && !isQuiet && "text-fg/60",
                   isToday && !isConfirmed && !isPredicted && !isFertile && !isPeak && "bg-white/[0.1] font-semibold text-white",
                   isToday && "font-semibold",
                   // Selected — pearl outline (always)
@@ -336,7 +347,10 @@ export function CycleCalendar({
               <span className="size-3 rounded-full bg-cal-fertile ring-1 ring-cal-peak/50" /> {t.legendFertileShort}
             </li>
             <li className="inline-flex items-center gap-1.5">
-              <SexHeart kind="unprotected" /> {t.legendSexUnprotected}
+              <span className="size-3 rounded-full bg-cal-rest/35 ring-1 ring-cal-rest/70" /> {t.legendRest}
+            </li>
+            <li className="inline-flex items-center gap-1.5">
+              <span className="size-3 rounded-full border-2 border-dotted border-white/60" /> {t.legendProjected}
             </li>
           </ul>
           <button
@@ -360,6 +374,9 @@ export function CycleCalendar({
                 <span className="absolute -right-1 -top-1 size-1.5 rounded-full bg-cal-peak" />
               </span>
               {t.legendPeak}
+            </li>
+            <li className="inline-flex items-center gap-1.5">
+              <SexHeart kind="unprotected" /> {t.legendSexUnprotected}
             </li>
             <li className="inline-flex items-center gap-1.5">
               <SexHeart kind="protected" /> {t.legendSexProtectedFull}
@@ -390,6 +407,14 @@ export function CycleCalendar({
   );
 }
 
+function statusWord(st: ReturnType<typeof dayStatus>, t: { legendPeriod: string; legendPeriodPredicted: string; legendPeak: string; legendFertileShort: string }): string {
+  if (st === "period") return t.legendPeriod;
+  if (st === "predicted") return t.legendPeriodPredicted;
+  if (st === "peak") return t.legendPeak;
+  if (st === "fertile") return t.legendFertileShort;
+  return "";
+}
+
 /** Fine-line heart: filled = unprotected (or withdrawal, softer), outline = protected. */
 export function SexHeart({ kind, className }: { kind: string; className?: string }) {
   const filled = kind !== "protected";
@@ -416,8 +441,9 @@ function StatusDot({ status }: { status: ReturnType<typeof dayStatus> }) {
           status === "period" && "bg-cal-period shadow-[0_0_12px_rgb(255_77_132/0.7)]",
           status === "predicted" && "border-2 border-dotted border-cal-period",
           status === "fertile" && "bg-cal-peak/55 ring-1 ring-cal-peak",
-          status === "peak" && "bg-cal-peak shadow-[0_0_12px_rgb(111_224_210/0.8)]",
-          (status === "quiet" || !status) && "bg-white/20",
+          status === "peak" && "bg-cal-peak shadow-[0_0_12px_rgb(201_162_255/0.8)]",
+          status === "quiet" && "bg-cal-rest/70",
+          !status && "bg-white/20",
         )}
       />
     </span>

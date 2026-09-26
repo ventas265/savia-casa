@@ -170,7 +170,7 @@ function Card({
             tone === "rose" && "text-[#ff8cb8]",
             tone === "sand" && "text-[#f0b0e8]",
             tone === "plum" && "text-[#c7a6ff]",
-            tone === "sage" && "text-[#6fe0d2]",
+            tone === "sage" && "text-[#a8c5a0]",
           )}
         >
           {icon}

@@ -3,7 +3,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { SaviaOrb } from "@/components/savia-orb";
 import { EmergencyCard } from "@/components/emergency-card";
 import { toneFor } from "@/lib/savia-tone";
-import { ArrowUpRight, X } from "lucide-react";
+import { ArrowUpRight, ChevronDown, X } from "lucide-react";
 import { LogForm } from "@/components/log-form";
 import { SexHeart } from "@/components/cycle-calendar";
 import { useI18n } from "@/lib/i18n";
@@ -126,7 +126,7 @@ export function DaySheet({
             <X className="size-5" strokeWidth={1.5} />
           </button>
         </div>
-        <div className="overflow-y-auto px-5 py-4 pb-10">
+        <div className="overflow-y-auto overscroll-contain px-5 py-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
           <section
             data-testid="day-summary"
             data-status={status ?? "none"}
@@ -139,12 +139,17 @@ export function DaySheet({
                   : "glass",
             )}
           >
-            <p className={cn("kicker", hot ? "!text-[#6FE0D2]" : "!text-label")}>
+            <p className={cn("kicker", hot ? "!text-[#C9A2FF]" : "!text-label")}>
               {cycleDayNum ? `${t.dayOf} ${cycleDayNum}` : t.dsChance}
             </p>
             <p className="mt-1 font-display text-[19px] font-semibold leading-tight tracking-[-0.02em]">{statusLabel}</p>
             {hasSex && chance ? <p className="mt-1 text-[13px] leading-snug text-soft">{chance}</p> : null}
-            <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 border-t border-white/[0.07] pt-3 text-sm">
+            <details data-testid="day-summary-details" className="group mt-3 border-t border-white/[0.07] pt-2">
+              <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between text-sm font-semibold text-soft [&::-webkit-details-marker]:hidden">
+                {t.dsSummary}
+                <ChevronDown className="size-4 transition-transform group-open:rotate-180" aria-hidden />
+              </summary>
+            <dl className="mt-1 grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 pb-1 text-sm">
               <dt className="text-muted">{t.dsPhase}</dt>
               <dd className="text-right font-medium">{phase !== "none" ? pick(phaseName[phase], lang) : "—"}</dd>
               <dt className="text-muted">{t.dsSex}</dt>
@@ -165,7 +170,8 @@ export function DaySheet({
                 {symptomsText || <span className="font-normal text-muted">{t.dsNothing}</span>}
               </dd>
             </dl>
-            <p className="mt-3 text-[11px] leading-relaxed text-muted">{t.daySheetCalDisclaimer}</p>
+            </details>
+            {hot ? <p className="mt-2 text-[11px] leading-relaxed text-muted">{t.daySheetCalDisclaimer}</p> : null}
             <Link
               to="/app/registro"
               search={{ day }}
@@ -218,6 +224,7 @@ export function DaySheet({
             dayMark={dayMark}
             hideEmergency
             variant="sheet"
+            onDone={onClose}
             onSaved={(saved) => {
               setActiveLog(saved);
               onSaved?.(saved);

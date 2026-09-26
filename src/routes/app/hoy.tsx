@@ -97,6 +97,7 @@ function HoyTab() {
     setCode(takeRecovery() || "");
   }, []);
   const symAsk = useSymptomAsk(ready && Boolean(data) && code === "", onboarded, data?.log ?? null);
+  const [symManual, setSymManual] = useState(false);
 
   useEffect(() => {
     if (!ready || !data) return;
@@ -149,6 +150,7 @@ function HoyTab() {
         onGuia={() => void navigate({ to: "/app/guia" })}
         onAsk={() => void navigate({ to: "/app/preguntar" })}
         onPeriodChange={setData}
+        onSymptoms={() => setSymManual(true)}
         onCycleChange={(n) => {
           void setCycleLength(n).then(setData);
         }}
@@ -161,13 +163,16 @@ function HoyTab() {
         wrapUpPaid={data.profile.plan === "serena" || data.profile.plan === "year"}
         intention={data.profile.intention}
       />
-      {symAsk.open ? (
+      {symAsk.open || symManual ? (
         <SymptomCheckSheet
           log={data.log}
           phase={data.phase}
           intention={data.profile.intention}
           wrapUpPaid={data.profile.plan === "serena" || data.profile.plan === "year"}
-          onClose={symAsk.close}
+          onClose={() => {
+            setSymManual(false);
+            if (symAsk.open) symAsk.close();
+          }}
           onSaved={() => {
             void loadToday().then(setData);
           }}
