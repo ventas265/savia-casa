@@ -62,7 +62,7 @@ export function UserButton() {
           className="h-8 w-8 rounded-full object-cover"
         />
       ) : (
-        <span className="grid h-8 w-8 place-items-center rounded-full bg-white/15 text-sm font-medium">
+        <span className="grid h-8 w-8 place-items-center rounded-full bg-sand-2 text-sm font-medium">
           {label.charAt(0).toUpperCase()}
         </span>
       )}

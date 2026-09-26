@@ -39,21 +39,21 @@ export function Predictions({
   return (
     <div className="mb-4" data-testid="predictions">
       <div className="grid grid-cols-3 gap-2">
-        <div className="rounded-[18px] border border-[rgb(242_66_126/0.35)] bg-[rgb(242_66_126/0.14)] px-2.5 py-3 backdrop-blur-xl">
-          <p className="kicker !text-[9px] !tracking-[0.08em] !text-[#ffb0cc]">{t.predNext}</p>
+        <div className="rounded-[18px] border border-regla-50 bg-regla-50 px-2.5 py-3 backdrop-blur-xl">
+          <p className="kicker !text-[9px] !tracking-[0.08em] !text-accent">{t.predNext}</p>
           <p className="mt-1.5 font-display text-[15px] font-semibold leading-tight tracking-[-0.02em]" data-testid="pred-range">
             {pred.from && pred.to ? formatRange(pred.from, pred.to, lang) : "—"}
           </p>
           <p className="mt-1 text-[10.5px] leading-tight text-soft">{confidenceLabel(pred, lang)}</p>
         </div>
-        <div className="rounded-[18px] border border-[rgb(201_162_255/0.35)] bg-[rgb(201_162_255/0.12)] px-2.5 py-3 backdrop-blur-xl">
-          <p className="kicker !text-[9px] !tracking-[0.08em] !text-[#e2d0ff]">{t.predFertile}</p>
+        <div className="rounded-[18px] border border-ovu-300 bg-ovu-50 px-2.5 py-3 backdrop-blur-xl">
+          <p className="kicker !text-[9px] !tracking-[0.08em] !text-ovu-ink">{t.predFertile}</p>
           <p className="mt-1.5 font-display text-[15px] font-semibold leading-tight tracking-[-0.02em]">
             {win ? formatRange(win.start, win.end, lang) : "—"}
           </p>
         </div>
         <div className="rounded-[18px] border border-[rgb(168_197_160/0.3)] bg-[rgb(168_197_160/0.08)] px-2.5 py-3 backdrop-blur-xl">
-          <p className="kicker !text-[9px] !tracking-[0.08em] !text-[#cfe0c9]">{t.predAvg}</p>
+          <p className="kicker !text-[9px] !tracking-[0.08em] !text-lut-ink">{t.predAvg}</p>
           <p className="mt-1.5 font-display text-[15px] font-semibold leading-tight tracking-[-0.02em]">
             {pred.len} {t.daysWord}
           </p>

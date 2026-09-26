@@ -61,7 +61,7 @@ export function SegmentRing({
     let glow = false;
     if (d <= plen) stroke = "#FF4D84";
     else if (d === ov) {
-      stroke = "#C9A2FF";
+      stroke = "#8E57A5";
       w = 10;
       glow = !future;
     } else if (d >= ov - 5 && d <= ov + 1) {
@@ -89,7 +89,7 @@ export function SegmentRing({
     <svg viewBox="0 0 284 284" className="absolute inset-0 size-full overflow-visible" aria-hidden>
       <defs>
         <linearGradient id="ring-fert" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#C9A2FF" />
+          <stop offset="0" stopColor="#8E57A5" />
           <stop offset="1" stopColor="#A77BF0" />
         </linearGradient>
         <filter id="ring-glow" x="-50%" y="-50%" width="200%" height="200%">

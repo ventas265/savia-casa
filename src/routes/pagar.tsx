@@ -10,7 +10,11 @@ import { Disclaimer } from "@/components/disclaimer";
 import { whopFor } from "@/lib/pay-links";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 
-export const Route = createFileRoute("/pagar")({ component: Pagar });
+export const Route = createFileRoute("/pagar")({
+  validateSearch: (search: Record<string, unknown>): { plan?: "serena" | "year" } =>
+    search.plan === "year" || search.plan === "serena" ? { plan: search.plan } : {},
+  component: Pagar,
+});
 
 type Method = "zinli" | "pm" | "usdt" | "card" | "paypal" | "bank" | "binance";
 
@@ -19,7 +23,8 @@ function Pagar() {
   const navigate = useNavigate();
   const { user, isPending } = useCurrentUserState();
   const [email, setEmail] = useState("");
-  const [plan, setPlan] = useState<"serena" | "year">("serena");
+  const { plan: planFromSheet } = Route.useSearch();
+  const [plan, setPlan] = useState<"serena" | "year">(planFromSheet ?? "serena");
   const [method, setMethod] = useState<Method>("card");
   const [pay, setPay] = useState<PaySettings | null>(null);
   const [busy, setBusy] = useState(false);
@@ -197,7 +202,7 @@ function Pagar() {
                   aria-checked={plan === id}
                   data-plan={id}
                   onClick={() => setPlan(id)}
-                  className={`press rounded-[22px] p-4 text-left ${plan === id ? "card-hot ring-2 ring-white/70" : "glass"}`}
+                  className={`press rounded-[22px] p-4 text-left ${plan === id ? "card-hot ring-2 ring-accent" : "glass"}`}
                 >
                   <p className="text-sm opacity-80">{name}</p>
                   <p className="mt-1 font-display text-3xl font-semibold">{price}</p>

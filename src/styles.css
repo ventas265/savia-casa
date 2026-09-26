@@ -1,60 +1,75 @@
-@import url("https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700&family=Inter:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap");
 @import "tailwindcss";
 @import "tw-animate-css";
+/* v4 «Tus cuatro estaciones»: fuentes self-hosted (sin Google Fonts) */
+@import "@fontsource-variable/newsreader/opsz.css";
+@import "@fontsource-variable/newsreader/opsz-italic.css";
+@import "@fontsource-variable/onest/wght.css";
+@import "./v4.css";
 
 @theme {
-  /* Dirección B · Nocturna — paleta V2 «Baya»: frambuesa → orquídea, brillo violeta, fértil lila, resto salvia */
-  --color-bg: #0e0911;
-  --color-surface: rgb(255 255 255 / 0.055);
-  --color-surface-2: rgb(255 255 255 / 0.09);
-  /* Opaque surface for sheets, dialogs and bars that sit over content */
-  --color-elevated: #1b131e;
-  --color-ink: #f7f0f5;
-  --color-fg: #f7f0f5;
-  --color-muted: #aa9cad;
-  --color-primary: #f2427e;
-  --color-primary-2: #b65cff;
+  /* v4 · nácar (fondo) · cacao (tinta) · granada (único acento). Tokens en redesign-v4/src/tokens.css */
+  --color-bg: #f6f1ec;
+  --color-surface: #ffffff;
+  --color-surface-2: #eee6de;
+  --color-elevated: #f6f1ec;
+  --color-ink: #2b2124;
+  --color-fg: #2b2124;
+  --color-ink-2: #54464a;
+  --color-muted: #6b5c60;
+  --color-line: #e4d9d0;
+  --color-primary: #8e2a3f;
+  --color-primary-2: #8e2a3f;
   --color-primary-fg: #ffffff;
-  --color-accent: #c9a2ff;
-  --color-sand: #b65cff;
-  --color-plum: #c563a8;
-  --color-violet: #9b5cff;
-  --color-border: rgb(255 255 255 / 0.08);
-  --color-danger: #ff6b6b;
-  --color-ring: #ff6f9f;
-  /* Fixed phase colours: period pink, fertile lilac, rest sage (estimate, not contraception) */
-  --color-cal-period: #ff4d84;
-  --color-cal-peak: #c9a2ff;
-  --color-cal-fertile: rgb(201 162 255 / 0.22);
-  --color-cal-fertile-deep: #a77bf0;
-  /* Rest of the cycle: sage */
-  --color-cal-rest: #a8c5a0;
-  --color-cal-quiet: rgb(255 255 255 / 0.04);
-  /* Selection affordance — light pill, distinct from period */
-  --color-select: #f7f0f5;
-  --color-select-fg: #140c17;
-  --color-select-ring: #ff6f9f;
-  --color-sage: #a8c5a0;
-  --color-sage-soft: rgb(168 197 160 / 0.12);
-  --color-sage-deep: #a8c5a0;
-  --color-rose-dust: #ff8cb8;
-  /* Kicker / label pink and pearl tint */
-  --color-label: #ffb0cc;
-  --color-pearl: #ffc6e0;
-  --color-soft: #dccbdb;
-  --color-rose-dust-soft: rgb(242 66 126 / 0.12);
-  --shadow-soft: 0 0 0 1px rgb(255 255 255 / 0.06);
-  --shadow-bar: 0 20px 40px -10px rgb(0 0 0 / 0.6);
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Bricolage Grotesque", "Inter", ui-sans-serif, sans-serif;
-  --font-mono: "Geist Mono", ui-monospace, monospace;
-  --radius-sm: 10px;
-  --radius-md: 16px;
-  --radius-lg: 20px;
-  --radius-xl: 22px;
-  --radius-2xl: 28px;
-  --shadow-card: 0 0 0 1px rgb(255 255 255 / 0.08), 0 12px 32px -12px rgb(0 0 0 / 0.5);
-  --shadow-border: 0 0 0 1px rgb(255 255 255 / 0.1);
+  --color-accent: #8e2a3f;
+  --color-accent-50: #f6e7e9;
+  --color-sand: #eee6de;
+  --color-sand-2: #e6dcd2;
+  --color-plum: #8e2a3f;
+  --color-violet: #8e57a5;
+  --color-border: #e4d9d0;
+  --color-danger: #a1263b;
+  --color-ring: #8e2a3f;
+  /* Fase: regla granada, fértil orquídea (estimación, no anticonceptivo), resto neutro */
+  --color-regla: #ab3549;
+  --color-regla-50: #f3dadd;
+  --color-foli: #e3a07a;
+  --color-foli-50: #fae6da;
+  --color-ovu: #8e57a5;
+  --color-ovu-300: #d7bce3;
+  --color-ovu-50: #f1e6f5;
+  --color-ovu-ink: #6b3a80;
+  --color-lut: #b98556;
+  --color-lut-50: #f1e3d3;
+  --color-lut-ink: #6e4a2a;
+  --color-cal-period: #ab3549;
+  --color-cal-peak: #8e57a5;
+  --color-cal-fertile: #f1e6f5;
+  --color-cal-fertile-deep: #8e57a5;
+  --color-cal-rest: #54464a;
+  --color-cal-quiet: #eee6de;
+  --color-select: #2b2124;
+  --color-select-fg: #ffffff;
+  --color-select-ring: #2b2124;
+  --color-sage: #6e4a2a;
+  --color-sage-soft: #f1e3d3;
+  --color-sage-deep: #6e4a2a;
+  --color-rose-dust: #8e2a3f;
+  --color-label: #8e2a3f;
+  --color-pearl: #f6e7e9;
+  --color-soft: #54464a;
+  --color-rose-dust-soft: #f6e7e9;
+  --shadow-soft: 0 1px 1px rgb(60 30 30 / 0.04), 0 10px 30px -14px rgb(60 30 30 / 0.22);
+  --shadow-bar: 0 -1px 0 #e4d9d0;
+  --font-sans: "Onest Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Newsreader Variable", Georgia, serif;
+  --font-mono: "Onest Variable", ui-sans-serif, system-ui, sans-serif;
+  --radius-sm: 12px;
+  --radius-md: 18px;
+  --radius-lg: 26px;
+  --radius-xl: 26px;
+  --radius-2xl: 34px;
+  --shadow-card: 0 1px 1px rgb(60 30 30 / 0.04), 0 10px 30px -14px rgb(60 30 30 / 0.22);
+  --shadow-border: 0 0 0 1px #e4d9d0;
   --spacing-hit: 2.75rem;
 }
 
@@ -84,7 +99,7 @@
   html {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    color-scheme: dark;
+    color-scheme: light;
     background: var(--color-bg);
   }
 
@@ -95,22 +110,10 @@
     min-height: 100dvh;
   }
 
-  /* Ambient atmosphere: violet + rose glow, never behind text as a color cue */
-  body::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    z-index: -1;
-    pointer-events: none;
-    background:
-      radial-gradient(22rem 22rem at 105% 10%, rgb(155 92 255 / 0.4), transparent 70%),
-      radial-gradient(26rem 22rem at 5% 26%, rgb(242 66 126 / 0.32), transparent 70%),
-      radial-gradient(20rem 16rem at 55% 44%, rgb(224 64 160 / 0.14), transparent 70%);
-  }
 
   ::selection {
-    background: rgb(242 66 126 / 0.45);
-    color: #fff;
+    background: #f3dadd;
+    color: #2b2124;
   }
 
   input,
@@ -121,7 +124,7 @@
 
   input::placeholder,
   textarea::placeholder {
-    color: rgb(170 156 173 / 0.8);
+    color: #6b5c60;
   }
 
   h1,
@@ -129,8 +132,9 @@
   h3 {
     text-wrap: balance;
     font-family: var(--font-display);
-    font-weight: 600;
-    letter-spacing: -0.035em;
+    font-weight: 400;
+    font-variation-settings: "opsz" 48;
+    letter-spacing: -0.015em;
   }
 
   p {
@@ -144,56 +148,60 @@
 }
 
 @layer utilities {
-  /* Glass card: translucent surface, hairline border, blur */
+  /* v4: «glass» = tarjeta blanca con sombra única (el vidrio real solo va sobre foto: .glass-photo) */
   .glass {
-    background: rgb(255 255 255 / 0.055);
-    border: 1px solid rgb(255 255 255 / 0.08);
-    -webkit-backdrop-filter: blur(20px) saturate(1.2);
-    backdrop-filter: blur(20px) saturate(1.2);
+    background: #ffffff;
+    border: 1px solid transparent;
+    box-shadow: 0 1px 1px rgb(60 30 30 / 0.04), 0 10px 30px -14px rgb(60 30 30 / 0.22);
   }
   .glass-strong {
-    background: rgb(32 22 36 / 0.78);
-    border: 1px solid rgb(255 255 255 / 0.09);
-    -webkit-backdrop-filter: blur(24px) saturate(1.4);
-    backdrop-filter: blur(24px) saturate(1.4);
+    background: rgb(246 241 236 / 0.94);
+    border-top: 1px solid #e4d9d0;
+    -webkit-backdrop-filter: blur(18px);
+    backdrop-filter: blur(18px);
   }
-  /* Highlight card: rose→violet tint glass (replaces solid plum/ink blocks) */
+  .glass-photo {
+    background: rgb(255 250 246 / 0.8);
+    -webkit-backdrop-filter: blur(18px);
+    backdrop-filter: blur(18px);
+  }
   .card-hot {
-    background: linear-gradient(135deg, rgb(242 66 126 / 0.2), rgb(155 92 255 / 0.13));
-    border: 1px solid rgb(242 66 126 / 0.3);
-    -webkit-backdrop-filter: blur(20px);
-    backdrop-filter: blur(20px);
+    background: #f6e7e9;
+    border: 1px solid transparent;
     color: var(--color-fg);
   }
-  /* Fertile card: lilac tint glass (estimate, never contraception) */
   .card-fert {
-    background: linear-gradient(135deg, rgb(201 162 255 / 0.16), rgb(155 92 255 / 0.1));
-    border: 1px solid rgb(201 162 255 / 0.34);
-    -webkit-backdrop-filter: blur(20px);
-    backdrop-filter: blur(20px);
+    background: #f1e6f5;
+    border: 1px solid transparent;
     color: var(--color-fg);
   }
   .bg-grad {
-    background-image: linear-gradient(135deg, #f2427e, #b65cff);
+    background-color: #8e2a3f;
+    background-image: none;
   }
   .text-grad {
-    background-image: linear-gradient(135deg, #f2427e, #b65cff);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+    color: #8e2a3f;
   }
   .ring-grad {
-    background:
-      linear-gradient(var(--color-elevated), var(--color-elevated)) padding-box,
-      linear-gradient(135deg, #f2427e, #b65cff) border-box;
-    border: 2px solid transparent;
+    background: #ffffff;
+    border: 2px solid #2b2124;
   }
   .kicker {
-    font-family: var(--font-mono);
-    font-size: 10.5px;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
+    font-family: var(--font-sans);
+    font-size: 12.5px;
+    font-weight: 600;
+    letter-spacing: 0;
+    text-transform: none;
     color: var(--color-muted);
+  }
+  .font-display {
+    font-variation-settings: "opsz" 48;
+  }
+  .opsz-72 {
+    font-variation-settings: "opsz" 72;
+  }
+  .shadow-v4 {
+    box-shadow: 0 1px 1px rgb(60 30 30 / 0.04), 0 10px 30px -14px rgb(60 30 30 / 0.22);
   }
   .orb {
     /* Pearl orb: soft specular + nacre sheen over a core tinted by her phase */

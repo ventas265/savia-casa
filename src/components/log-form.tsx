@@ -42,10 +42,10 @@ import { cn } from "@/lib/utils";
 import { symptomIcon, TONE_CLS, type ChipTone } from "@/lib/symptom-meta";
 
 const FLOW_DOT: { id: Flow; cls: string; drops: number }[] = [
-  { id: "spotting", cls: "text-[#ffb0cc]", drops: 1 },
-  { id: "light", cls: "text-[#ff8cb8]", drops: 1 },
-  { id: "medium", cls: "text-[#ff5f92]", drops: 2 },
-  { id: "heavy", cls: "text-[#ff4d84]", drops: 3 },
+  { id: "spotting", cls: "text-[#c9687b]", drops: 1 },
+  { id: "light", cls: "text-[#b84459]", drops: 1 },
+  { id: "medium", cls: "text-regla", drops: 2 },
+  { id: "heavy", cls: "text-[#7a1f33]", drops: 3 },
 ];
 
 type CatKey = "flow" | "pain" | "mood" | "gut" | "skin" | "sex" | "other";
@@ -465,7 +465,7 @@ export function LogForm({
                     "press h-11 min-w-12 rounded-full px-3 text-sm font-semibold transition-colors",
                     sleepHours === h
                       ? "bg-grad text-primary-fg"
-                      : "bg-white/[0.06] text-fg ring-1 ring-white/10",
+                      : "bg-white text-fg ring-1 ring-line",
                   )}
                 >
                   {h} h
@@ -474,7 +474,7 @@ export function LogForm({
             </div>
             <SubLabel className="mt-5">{t.notes}</SubLabel>
             <textarea
-              className="min-h-24 w-full resize-none rounded-2xl border border-border bg-bg/60 px-4 py-3 text-sm outline-none transition-colors focus:border-[rgb(242_66_126/0.5)]"
+              className="min-h-24 w-full resize-none rounded-2xl border border-border bg-bg/60 px-4 py-3 text-sm outline-none transition-colors focus:border-[rgb(142_42_63/0.5)]"
               value={notes}
               onChange={(e) => {
                 setNotes(e.target.value);
@@ -506,8 +506,8 @@ export function LogForm({
               key={c.key}
               data-cat={c.key}
               className={cn(
-                "overflow-hidden rounded-[22px] border bg-white/[0.045] backdrop-blur-xl transition-[border-color,background-color] duration-300",
-                open ? "border-[rgb(242_66_126/0.32)] bg-white/[0.06]" : "border-white/[0.08]",
+                "overflow-hidden rounded-[22px] border bg-white backdrop-blur-xl transition-[border-color,background-color] duration-300",
+                open ? "border-accent/30 bg-white" : "border-line",
               )}
             >
               <button
@@ -544,7 +544,7 @@ export function LogForm({
                 inert={!open}
               >
                 <div className="min-h-0 overflow-hidden">
-                  <div className="border-t border-white/[0.07] px-4 pb-5 pt-4">{body(c.key)}</div>
+                  <div className="border-t border-line px-4 pb-5 pt-4">{body(c.key)}</div>
                 </div>
               </div>
             </section>
@@ -566,7 +566,7 @@ export function LogForm({
               type="button"
               data-testid="log-save"
               className={cn(
-                "press flex h-14 w-full items-center justify-center gap-2 rounded-full bg-grad text-base font-semibold text-primary-fg shadow-[0_10px_30px_-8px_rgb(242_66_126/0.6)] ring-4 ring-bg/80 transition-opacity disabled:opacity-70",
+                "press flex h-14 w-full items-center justify-center gap-2 rounded-full bg-grad text-base font-semibold text-primary-fg shadow-[0_10px_30px_-8px_rgb(142_42_63/0.45)] ring-4 ring-bg/80 transition-opacity disabled:opacity-70",
                 savedPulse && "save-pop",
               )}
               onClick={() => {
@@ -590,7 +590,7 @@ export function LogForm({
             aria-live="polite"
             className={cn(
               "flex min-h-6 items-center justify-center gap-1.5 text-[13px] font-medium",
-              busy ? "text-muted" : savedPulse ? "save-pop text-[#d6e6d0]" : "text-muted",
+              busy ? "text-muted" : savedPulse ? "save-pop text-lut-ink" : "text-muted",
             )}
           >
             {busy ? (
@@ -648,10 +648,10 @@ export function WrapUpCard({
 
   return (
     <section
-      className="rounded-[22px] border border-[rgb(242_66_126/0.28)] bg-[linear-gradient(135deg,rgb(242_66_126/0.16),rgb(155_92_255/0.1))] p-4 backdrop-blur-xl"
+      className="rounded-[22px] border border-accent/20 bg-accent-50 p-4 backdrop-blur-xl"
       aria-live="polite"
     >
-      <p className="kicker !text-[#ffb0cc]">{t.saviaTipLabel}</p>
+      <p className="kicker !text-accent">{t.saviaTipLabel}</p>
       <p className="mt-2 text-sm leading-relaxed text-fg">{tip.conclusion}</p>
 
       {visible.length > 0 ? (
@@ -666,7 +666,7 @@ export function WrapUpCard({
       ) : null}
 
       {!wrapUpPaid && locked.length > 0 ? (
-        <div className="relative mt-3 overflow-hidden rounded-2xl bg-black/25 px-3 py-3">
+        <div className="relative mt-3 overflow-hidden rounded-2xl bg-ink/10 px-3 py-3">
           <ul className="space-y-2 blur-[3px] select-none" aria-hidden>
             {locked.map((rec) => (
               <li key={rec} className="flex gap-2 text-sm leading-snug text-fg">
@@ -676,7 +676,7 @@ export function WrapUpCard({
             ))}
           </ul>
           <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-t from-black/40 via-black/10 to-transparent px-3">
-            <p className="inline-flex items-center gap-1.5 rounded-full bg-elevated px-3 py-1.5 text-xs font-semibold text-fg ring-1 ring-white/10">
+            <p className="inline-flex items-center gap-1.5 rounded-full bg-elevated px-3 py-1.5 text-xs font-semibold text-fg ring-1 ring-line">
               <Lock className="size-3.5 shrink-0" aria-hidden />
               {t.saviaTipSerenaLock}
             </p>
@@ -685,7 +685,7 @@ export function WrapUpCard({
       ) : null}
 
       {!wrapUpPaid ? (
-        <div className="mt-4 rounded-2xl bg-white/[0.05] px-3 py-3 ring-1 ring-white/[0.07]">
+        <div className="mt-4 rounded-2xl bg-white px-3 py-3 ring-1 ring-line">
           <p className="text-sm leading-snug text-fg">{t.saviaTipSerenaTeaser}</p>
           <Link
             to="/pagar"
@@ -709,7 +709,7 @@ export function WrapUpCard({
 }
 
 /** Inline fertile-window read under Sexo: more vs less chance, never "safe". */
-function SexChanceChip({ mark }: { mark: DayMark | null }) {
+export function SexChanceChip({ mark }: { mark: DayMark | null }) {
   const { t } = useI18n();
   const chance = sexChanceForMark(mark);
   if (!chance) return null;
@@ -722,8 +722,8 @@ function SexChanceChip({ mark }: { mark: DayMark | null }) {
       className={cn(
         "mt-4 flex items-start gap-2.5 rounded-[18px] border px-3.5 py-2.5 text-[13px] font-medium leading-snug",
         hot
-          ? "border-[rgb(201_162_255/0.35)] bg-[rgb(201_162_255/0.12)] text-[#ede1ff]"
-          : "border-white/10 bg-white/[0.05] text-soft",
+          ? "border-ovu-300 bg-ovu-50 text-ovu-ink"
+          : "border-line bg-white text-soft",
       )}
     >
       <span
@@ -731,10 +731,10 @@ function SexChanceChip({ mark }: { mark: DayMark | null }) {
         className={cn(
           "mt-[5px] size-2 shrink-0 rounded-full",
           chance === "peak"
-            ? "bg-cal-peak shadow-[0_0_10px_rgb(201_162_255/0.9)]"
+            ? "bg-cal-peak "
             : chance === "fertile"
               ? "bg-cal-peak/70"
-              : "bg-white/35",
+              : "bg-sand-2",
         )}
       />
       {chance === "peak" ? t.sexChipPeak : chance === "fertile" ? t.sexChipFertile : t.sexChipQuiet}

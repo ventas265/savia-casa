@@ -3,26 +3,37 @@ import { ChevronRight } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
-import { PageTitle } from "@/components/color-blobs";
 import { CycleCalendar } from "@/components/cycle-calendar";
 import { DaySheet } from "@/components/day-sheet";
-import { Predictions } from "@/components/predictions";
 import { correctLastPeriod, loadToday, writeProfile } from "@/lib/savia-api";
 import { BottomSheet } from "@/components/bottom-sheet";
 import { SAVIA_BETA } from "@/lib/beta";
-import { localAllLogs, localToday } from "@/lib/savia-local";
-import { InsightsPanel } from "@/components/insights-card";
-import { computeInsights } from "@/lib/insights";
+import { localToday } from "@/lib/savia-local";
 import { getSelectedDay, setSelectedDay } from "@/lib/selected-day";
 import { useI18n } from "@/lib/i18n";
-import { todayISO, dayInfo, isCycling, periodDaysFromLogs, formatDay, formatLong, predictPeriod } from "@/lib/cycle";
+import {
+  addDaysISO,
+  todayISO,
+  dayInfo,
+  isCycling,
+  periodDaysFromLogs,
+  formatDay,
+  formatLong,
+  formatRange,
+  predictPeriod,
+  predictionLabel,
+  upcomingFertile,
+} from "@/lib/cycle";
+import { fill, useV4 } from "@/lib/i18n-v4";
+import { SEASONS } from "@/lib/v4-content";
+import { pick, symptomLabel } from "@/lib/savia-content";
 import type { DailyLog, TodaySnapshot } from "@/lib/types";
 
 export const Route = createFileRoute("/app/calendario")({ component: CalendarTab });
 
 function CalendarTab() {
   const { t, lang } = useI18n();
+  const { v } = useV4();
   const [data, setData] = useState<TodaySnapshot | null>(null);
   const [err, setErr] = useState(false);
   const [sheetDay, setSheetDay] = useState<string | null>(null);
@@ -167,143 +178,168 @@ function CalendarTab() {
   const needsFum = cycling && !data.profile.lastPeriodStart;
   const showFumForm = needsFum;
 
+  const todayIso = todayISO();
+  const pred = predictPeriod(data.profile.lastPeriodStart, data.periodStarts, data.profile.cycleLength, data.profile.stage);
+  const markOpts = {
+    lastStart: data.profile.lastPeriodStart,
+    cycleLength: learned,
+    periodLength: data.profile.periodLength,
+    periodStarts: data.periodStarts,
+    periodDays,
+    today: todayIso,
+  };
+  const todayInfo = dayInfo(todayIso, markOpts);
+  const fert = upcomingFertile(markOpts, addDaysISO(todayIso, -(todayInfo.cycleDay ?? 1) + 1));
+  const fertState = fert ? (fert.end < todayIso ? v.fertilePast : fert.start <= todayIso ? v.fertileNow : v.fertileNext) : "";
+  const todayLog = data.recentLogs.find((l) => l.day === todayIso) ?? null;
+  const season = todayInfo.phase !== "none" ? SEASONS[todayInfo.phase] : null;
+  const todaySyms = todayLog
+    ? todayLog.symptoms.map((id) => pick(symptomLabel[id] ?? { es: id, en: id }, lang).toLowerCase())
+    : [];
+  const todaySummary = todaySyms.length
+    ? todaySyms.slice(0, 3).join(", ").replace(/^./, (c) => c.toUpperCase())
+    : v.nothingLogged;
+
   return (
     <div>
-      <PageTitle title={t.navCal} />
-      <div className="mt-4 rounded-[1.6rem] bg-surface p-4 shadow-card">
-        {cycling ? (
-          <>
-            {showFumForm ? (
-              <div className="mb-4 rounded-[1.4rem] bg-primary/12 p-4 ring-1 ring-primary/20">
-                <p className="font-display text-xl font-semibold tracking-[-0.03em]">
-                  {needsFum ? t.needLastPeriod : t.calChangeLastPeriod}
-                </p>
-                <p className="mt-1 text-sm leading-relaxed text-muted">{t.calLastPeriodHint}</p>
-                <p className="mt-3 text-sm font-semibold">{t.calSetLastPeriod}</p>
-                <input
-                  type="date"
-                  value={fumDraft}
-                  onChange={(e) => setFumDraft(e.target.value)}
-                  className="mt-2 min-h-12 w-full rounded-[1.25rem] bg-surface px-4 text-base font-semibold shadow-card outline-none"
-                />
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <Button
-                    className="min-h-12 flex-1 rounded-full bg-grad text-primary-fg"
-                    disabled={!fumDraft || savingFum}
-                    onClick={() => void saveLastPeriod()}
-                  >
-                    {t.calSaveLastPeriod}
-                  </Button>
-                  {editingFum && !needsFum ? (
-                    <Button
-                      variant="ghost"
-                      className="min-h-12 rounded-full"
-                      type="button"
-                      onClick={() => {
-                        setEditingFum(false);
-                        setFumDraft("");
-                      }}
-                    >
-                      {t.back}
-                    </Button>
-                  ) : null}
-                </div>
-                {needsFum ? (
-                  <p className="mt-3 text-xs text-muted">{t.calEmpty}</p>
-                ) : null}
+      {cycling ? (
+        <>
+          {showFumForm ? (
+            <div className="v4-card mb-4 mt-2 p-4">
+              <p className="v4-h2 !text-[24px]">{needsFum ? t.needLastPeriod : t.calChangeLastPeriod}</p>
+              <p className="mt-1 text-sm leading-relaxed text-muted">{t.calLastPeriodHint}</p>
+              <p className="mt-3 text-sm font-semibold">{t.calSetLastPeriod}</p>
+              <input
+                type="date"
+                value={fumDraft}
+                onChange={(e) => setFumDraft(e.target.value)}
+                className="mt-2 min-h-12 w-full rounded-[18px] border border-line bg-bg px-4 text-base font-semibold outline-none"
+              />
+              <div className="mt-3 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  className="v4-cta flex-1"
+                  disabled={!fumDraft || savingFum}
+                  onClick={() => void saveLastPeriod()}
+                >
+                  {t.calSaveLastPeriod}
+                </button>
               </div>
-            ) : null}
+              {needsFum ? <p className="mt-3 text-xs text-muted">{t.calEmpty}</p> : null}
+            </div>
+          ) : null}
 
-            {!needsFum ? (
-              <>
-                <Predictions
-                  lastStart={data.profile.lastPeriodStart}
-                  cycleLength={learned}
-                  periodLength={data.profile.periodLength}
-                  starts={data.periodStarts}
-                  periodDays={periodDays}
-                  intention={data.profile.intention}
-                  stage={data.profile.stage}
-                />
-                <CycleCalendar
-                  lastStart={data.profile.lastPeriodStart}
-                  cycleLength={learned}
-                  periodLength={data.profile.periodLength}
-                  periodStarts={data.periodStarts}
-                  periodDays={periodDays}
-                  logs={data.recentLogs.map((l) => ({
-                    day: l.day,
-                    flow: l.flow,
-                    symptoms: l.symptoms,
-                    mood: l.mood,
-                    sex: l.sex,
-                  }))}
-                  sexDays={data.sexMarks.map((s) => s.day)}
-                  sexMarks={data.sexMarks}
-                  showFertile
-                  focusDay={sheetDay}
-                  onSelect={(iso) => {
-                    setSelectedDay(iso);
-                    setSheetDay(iso);
-                  }}
-                  onMonthChange={() => setSheetDay(null)}
-                />
-                <div className="mt-3 flex items-center justify-between gap-3">
-                  <button
-                    type="button"
-                    data-testid="change-last-period"
-                    className="inline-flex min-h-11 items-center text-sm font-semibold text-primary"
-                    onClick={() => {
-                      setEditingFum(true);
-                      setFumDraft(data.profile.lastPeriodStart ?? "");
-                    }}
-                  >
-                    {t.calChangeLastPeriod}
-                  </button>
-                  <Link
-                    to="/app/sexo"
-                    data-testid="cal-sexo"
-                    className="inline-flex min-h-11 items-center gap-1 text-sm font-semibold text-[#e2d0ff]"
-                  >
-                    {t.tuSexGuide}
-                    <ChevronRight className="size-4" aria-hidden />
-                  </Link>
+          {!needsFum ? (
+            <>
+              <CycleCalendar
+                lastStart={data.profile.lastPeriodStart}
+                cycleLength={learned}
+                periodLength={data.profile.periodLength}
+                periodStarts={data.periodStarts}
+                periodDays={periodDays}
+                logs={data.recentLogs.map((l) => ({
+                  day: l.day,
+                  flow: l.flow,
+                  symptoms: l.symptoms,
+                  mood: l.mood,
+                  sex: l.sex,
+                }))}
+                sexDays={data.sexMarks.map((s) => s.day)}
+                sexMarks={data.sexMarks}
+                showFertile
+                focusDay={sheetDay}
+                onSelect={(iso) => {
+                  setSelectedDay(iso);
+                  setSheetDay(iso);
+                }}
+                onMonthChange={() => setSheetDay(null)}
+              />
+              <div className="v4-sum" data-testid="cal-summary">
+                <div data-testid="pred-card">
+                  <small>{v.nextPeriod}</small>
+                  <b>{pred.next ? formatDay(pred.next, lang).replace(/\.$/, "") : "—"}</b>
+                  <span title={predictionLabel(pred, lang)}>{pred.next ? `±${pred.pad} ${lang === "es" ? "días" : "days"}` : ""}</span>
                 </div>
-                {data.periodStarts.length ? (
-                  <div className="mt-6">
-                    <p className="text-sm font-semibold">{t.history}</p>
-                    <ul className="mt-2 space-y-1.5">
-                      {[...data.periodStarts]
-                        .sort((a, b) => b.localeCompare(a))
-                        .slice(0, 8)
-                        .map((d) => (
-                          <li key={d} className="flex justify-between text-sm">
-                            <span>{formatDay(d, lang)}</span>
-                            <span className="size-2.5 self-center rounded-full bg-cal-period" />
-                          </li>
-                        ))}
-                    </ul>
-                  </div>
-                ) : null}
-              </>
-            ) : null}
-          </>
-        ) : (
-          <p className="text-sm leading-relaxed text-muted">{t.calNote}</p>
-        )}
-      </div>
-      {cycling && !needsFum ? (
-        <InsightsPanel
-          result={computeInsights({
-            starts: data.periodStarts,
-            logs: SAVIA_BETA ? localAllLogs() : data.recentLogs,
-            periodLength: data.profile.periodLength,
-            cycleLength: learned,
-            today: todayISO(),
-          })}
-          paid={wrapUpPaid}
-        />
-      ) : null}
+                <div data-testid="fert-card">
+                  <small>{v.fertileWin}</small>
+                  <b>{fert ? formatRange(fert.start, fert.end, lang) : "—"}</b>
+                  <span>{fertState}</span>
+                </div>
+                <div>
+                  <small>{v.yourCycle}</small>
+                  <b>{fill(v.cycleDays, { n: learned })}</b>
+                  <span>{pred.n >= 2 ? (pred.irregular ? v.irregular : v.regular) : v.learning}</span>
+                </div>
+              </div>
+              <button
+                type="button"
+                className="v4-dcard"
+                data-testid="cal-today-card"
+                onClick={() => {
+                  setSelectedDay(todayIso);
+                  setSheetDay(todayIso);
+                }}
+              >
+                <img src={(season ?? SEASONS.follicular).thumb} alt="" width={64} height={64} />
+                <span className="flex min-w-0 flex-1 flex-col gap-[5px]">
+                  <span className="text-[13px] font-semibold leading-tight text-muted">
+                    {todayInfo.cycleDay ? fill(v.todayDay, { n: todayInfo.cycleDay }) : t.calStatusToday}
+                    {season ? ` · ${pick(season.short, lang)}` : ""}
+                  </span>
+                  <span className="text-[15px] font-semibold leading-tight">{todaySummary}</span>
+                  <span className="text-[13px] font-medium leading-tight text-muted">{v.tapToEdit}</span>
+                </span>
+                <span className="v4-edit">{v.edit}</span>
+              </button>
+              <p className="mt-3 px-2 text-[12px] leading-snug text-muted" data-testid="cal-contra">
+                {v.notContra} {predictionLabel(pred, lang) ? `${t.predNextRange}: ${predictionLabel(pred, lang)}.` : ""}
+              </p>
+              <div className="mt-1 flex flex-wrap items-center justify-between gap-x-3 px-2">
+                <button
+                  type="button"
+                  data-testid="change-last-period"
+                  className="inline-flex min-h-11 items-center text-sm font-semibold text-accent"
+                  onClick={() => {
+                    setEditingFum(true);
+                    setFumDraft(data.profile.lastPeriodStart ?? "");
+                  }}
+                >
+                  {t.calChangeLastPeriod}
+                </button>
+                <Link
+                  to="/app/sexo"
+                  data-testid="cal-sexo"
+                  className="inline-flex min-h-11 items-center gap-1 text-sm font-semibold text-ink-2"
+                >
+                  {t.tuSexGuide}
+                  <ChevronRight className="size-4" aria-hidden />
+                </Link>
+              </div>
+              {data.periodStarts.length ? (
+                <details className="v4-card mt-3 px-4 py-1">
+                  <summary className="flex min-h-11 cursor-pointer items-center text-sm font-semibold">{t.history}</summary>
+                  <ul className="space-y-1.5 pb-3">
+                    {[...data.periodStarts]
+                      .sort((a, b) => b.localeCompare(a))
+                      .slice(0, 8)
+                      .map((d) => (
+                        <li key={d} className="flex justify-between text-sm">
+                          <span>{formatDay(d, lang)}</span>
+                          <span className="size-2.5 self-center rounded-full bg-regla" />
+                        </li>
+                      ))}
+                  </ul>
+                </details>
+              ) : null}
+            </>
+          ) : null}
+        </>
+      ) : (
+        <div className="px-2 pt-2.5">
+          <h1 className="v4-h1">{t.navCal}</h1>
+          <p className="mt-3 text-sm leading-relaxed text-muted">{t.calNote}</p>
+        </div>
+      )}
       {editingFum && !needsFum ? (
         <BottomSheet
           title={t.lastPeriodSheetTitle}
@@ -324,15 +360,16 @@ function CalendarTab() {
             value={fumDraft}
             max={todayISO()}
             onChange={(e) => setFumDraft(e.target.value)}
-            className="glass mt-2 min-h-14 w-full rounded-[22px] px-5 font-display text-xl font-semibold outline-none [color-scheme:dark]"
+            className="mt-2 min-h-14 w-full rounded-[22px] border border-line bg-white px-5 font-display text-xl outline-none"
           />
-          <Button
-            className="mt-4 h-14 w-full rounded-full bg-grad text-base text-primary-fg"
+          <button
+            type="button"
+            className="v4-cta mt-4"
             disabled={!fumDraft || savingFum}
             onClick={() => void saveLastPeriod()}
           >
             {t.calSaveLastPeriod}
-          </Button>
+          </button>
         </BottomSheet>
       ) : null}
       {sheetDay && !needsFum ? (

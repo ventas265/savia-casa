@@ -25,7 +25,7 @@ export function EmergencyCard({ day, onNavigate }: { day: string; onNavigate?: (
       className="card-fert mt-4 rounded-[20px] px-4 py-3.5"
       aria-label={t.ecKicker}
     >
-      <p className="kicker flex items-center gap-1.5 !text-[#C9A2FF]">
+      <p className="kicker flex items-center gap-1.5 !text-ovu-ink">
         <ShieldPlus className="size-3.5" strokeWidth={1.8} aria-hidden />
         {t.ecKicker}
       </p>
@@ -52,7 +52,7 @@ export function EmergencyCard({ day, onNavigate }: { day: string; onNavigate?: (
             search: { q: t.ecPrefill.replace("{date}", formatLong(day, lang)), ctx: "ec" },
           });
         }}
-        className="press mt-3 flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-white/[0.08] text-sm font-semibold ring-1 ring-white/15"
+        className="press mt-3 flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-white text-sm font-semibold ring-1 ring-line"
       >
         <MessageCircleHeart className="size-4" strokeWidth={1.8} aria-hidden />
         {t.ecAsk}

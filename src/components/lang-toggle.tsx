@@ -14,7 +14,7 @@ export function LangToggle() {
           aria-label={l === "es" ? "Español" : "English"}
           className={cn(
             "grid h-10 min-w-11 place-items-center rounded-full px-2.5",
-            lang === l ? "bg-white/90 text-[#130d12]" : "text-muted",
+            lang === l ? "bg-ink text-white" : "text-muted",
           )}
           onClick={() => setLang(l)}
         >

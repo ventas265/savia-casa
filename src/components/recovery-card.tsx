@@ -13,7 +13,7 @@ export function RecoveryCard({ code, onDone }: { code: string; onDone: () => voi
       <p className="mt-2 text-sm opacity-90">{t.keepCodeBody}</p>
       <button
         type="button"
-        className="press mt-4 h-11 w-full rounded-full bg-white text-sm font-semibold text-[#130d12]"
+        className="press mt-4 h-11 w-full rounded-full bg-ink text-sm font-semibold text-white"
         onClick={() => {
           void navigator.clipboard.writeText(code).then(
             () => toast.success(t.copiedCode),
@@ -27,7 +27,7 @@ export function RecoveryCard({ code, onDone }: { code: string; onDone: () => voi
         type="button"
         data-testid="recovery-done"
         onClick={onDone}
-        className="press mt-2 h-11 w-full rounded-full bg-white/10 text-sm font-semibold ring-1 ring-white/15"
+        className="press mt-2 h-11 w-full rounded-full bg-sand-2 text-sm font-semibold ring-1 ring-line"
       >
         {t.keepCodeDone}
       </button>

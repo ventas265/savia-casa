@@ -167,8 +167,8 @@ export function renderWebManifest(hostHeader) {
       start_url: "/",
       scope: "/",
       display: "standalone",
-      background_color: "#0e0911",
-      theme_color: "#0e0911",
+      background_color: "#f6f1ec",
+      theme_color: "#f6f1ec",
       icons: [
         {
           src: "/__grok/icon-180.png",
@@ -196,7 +196,7 @@ export function grokPwaHeadTags(appName = DEFAULT_APP_NAME) {
       "apple-mobile-web-app-status-bar-style",
       '<meta name="apple-mobile-web-app-status-bar-style" content="black">',
     ],
-    ["theme-color", '<meta name="theme-color" content="#0e0911">'],
+    ["theme-color", '<meta name="theme-color" content="#f6f1ec">'],
   ];
 }
 

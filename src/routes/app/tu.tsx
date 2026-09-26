@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useSerenaSheet } from "@/lib/serena-sheet";
 import { useEffect, useState } from "react";
 import { BookOpen, ChevronRight, FileText, Heart, KeyRound, ShieldCheck, Sparkles, UserRound } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
@@ -20,6 +21,7 @@ type ToolTo = "/app/sexo" | "/app/guia" | "/app/pareja" | "/app/informe" | "/app
 
 function TuTab() {
   const { t, lang } = useI18n();
+  const showSerena = useSerenaSheet((s) => s.show);
   // Client-only storage is read in effects, never during render (SSR hydration #418).
   const [profile, setProfile] = useState<SaviaProfile | null>(null);
   const [paid, setPaid] = useState(false);
@@ -68,19 +70,20 @@ function TuTab() {
           </div>
         </div>
       ) : (
-        <Link
-          to="/pagar"
+        <button
+          type="button"
+          onClick={showSerena}
           data-testid="plan-banner"
           data-plan="free"
-          className="press mt-4 flex min-h-14 items-center gap-3 rounded-[22px] border border-[rgb(242_66_126/0.35)] bg-[linear-gradient(135deg,rgb(242_66_126/0.18),rgb(182_92_255/0.14))] px-4 py-3.5"
+          className="press card-hot mt-4 flex min-h-14 w-full items-center gap-3 rounded-[22px] px-4 py-3.5 text-left"
         >
-          <Sparkles className="size-5 shrink-0 text-[#ffb0cc]" strokeWidth={1.7} aria-hidden />
+          <Sparkles className="size-5 shrink-0 text-accent" strokeWidth={1.7} aria-hidden />
           <div className="min-w-0 flex-1">
             <p className="font-display text-[16px] font-semibold tracking-[-0.02em]">{t.tuPlanFree}</p>
             <p className="text-[12.5px] text-soft">{t.tuPlanFreeSub}</p>
           </div>
           <ChevronRight className="size-4 text-muted" aria-hidden />
-        </Link>
+        </button>
       )}
 
       <section className="glass mt-4 rounded-[22px] p-5" data-testid="tu-perfil" aria-labelledby="tu-perfil-h">
@@ -148,7 +151,7 @@ function TuTab() {
         <p className="mt-2 text-sm leading-relaxed text-soft">{t.tuRecoveryBody}</p>
         <Link
           to="/app/recuperar"
-          className="press mt-3 flex min-h-12 items-center justify-between rounded-full bg-white/[0.06] px-4 text-sm font-semibold ring-1 ring-white/10"
+          className="press mt-3 flex min-h-12 items-center justify-between rounded-full bg-white px-4 text-sm font-semibold ring-1 ring-line"
         >
           {t.recoverTitle}
           <ChevronRight className="size-4" aria-hidden />
@@ -174,7 +177,7 @@ function Tool({ to, label, icon: Icon, testId }: { to: ToolTo; label: string; ic
         className="press glass flex min-h-14 items-center justify-between rounded-[20px] px-4 text-sm font-semibold"
       >
         <span className="flex items-center gap-3">
-          <Icon className="size-5 text-[#ffb0cc]" strokeWidth={1.7} aria-hidden />
+          <Icon className="size-5 text-accent" strokeWidth={1.7} aria-hidden />
           {label}
         </span>
         <ChevronRight className="size-4 text-muted" aria-hidden />

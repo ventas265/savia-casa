@@ -157,20 +157,20 @@ export function SymptomCheckSheet({
     >
       <button
         type="button"
-        className={cn("absolute inset-0 bg-black/60 backdrop-blur-[2px] transition-opacity duration-300", shown ? "opacity-100" : "opacity-0")}
+        className={cn("absolute inset-0 bg-[rgb(43_33_36/0.45)] backdrop-blur-[2px] transition-opacity duration-300", shown ? "opacity-100" : "opacity-0")}
         aria-label={t.close}
         onClick={onClose}
       />
       <div
         className={cn(
-          "relative z-10 flex max-h-[88vh] w-full max-w-lg flex-col rounded-t-[1.75rem] border-t border-white/10 bg-elevated shadow-bar transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+          "relative z-10 flex max-h-[88vh] w-full max-w-lg flex-col rounded-t-[1.75rem] border-t border-line bg-elevated shadow-bar transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
           shown ? "translate-y-0" : "translate-y-full",
         )}
       >
-        <div className="mx-auto mt-2.5 h-1 w-10 rounded-full bg-white/20" aria-hidden />
+        <div className="mx-auto mt-2.5 h-1 w-10 rounded-full bg-sand-2" aria-hidden />
         <div className="flex items-start justify-between gap-3 px-5 pt-3">
           <div>
-            <p className="kicker !text-[#ffb0cc]">
+            <p className="kicker !text-accent">
               {formatDay(day, lang)}
             </p>
             <h2
@@ -185,7 +185,7 @@ export function SymptomCheckSheet({
           <button
             type="button"
             onClick={onClose}
-            className="press inline-flex size-11 shrink-0 items-center justify-center rounded-full bg-white/[0.06] text-muted ring-1 ring-white/10"
+            className="press inline-flex size-11 shrink-0 items-center justify-center rounded-full bg-white text-muted ring-1 ring-line"
             aria-label={t.close}
           >
             <X className="size-5" strokeWidth={1.5} />
@@ -228,7 +228,7 @@ export function SymptomCheckSheet({
                 data-testid="symptom-apply"
                 disabled={busy || (!none && picked.length === 0)}
                 onClick={() => void apply()}
-                className="press mt-4 flex h-14 w-full items-center justify-center rounded-full bg-grad text-base font-semibold text-primary-fg shadow-[0_10px_30px_-8px_rgb(242_66_126/0.6)] transition-opacity disabled:opacity-40"
+                className="press mt-4 flex h-14 w-full items-center justify-center rounded-full bg-grad text-base font-semibold text-primary-fg shadow-[0_10px_30px_-8px_rgb(142_42_63/0.45)] transition-opacity disabled:opacity-40"
               >
                 {t.symAskApply}
               </button>
@@ -238,7 +238,7 @@ export function SymptomCheckSheet({
                   markAsked(day, "more");
                   onClose();
                 }}
-                className="mt-2 flex min-h-11 items-center justify-center text-sm font-semibold text-[#ffb0cc]"
+                className="mt-2 flex min-h-11 items-center justify-center text-sm font-semibold text-accent"
               >
                 {t.symAskMore}
               </Link>
@@ -262,7 +262,7 @@ export function SymptomCheckSheet({
               <button
                 type="button"
                 onClick={onClose}
-                className="press flex h-12 w-full items-center justify-center rounded-full bg-white/[0.06] text-sm font-semibold ring-1 ring-white/10"
+                className="press flex h-12 w-full items-center justify-center rounded-full bg-white text-sm font-semibold ring-1 ring-line"
               >
                 {t.symAskDone}
               </button>

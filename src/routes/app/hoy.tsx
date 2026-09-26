@@ -9,7 +9,9 @@ import { loadToday, setCycleLength } from "@/lib/savia-api";
 import { takeRecovery } from "@/lib/device";
 import { SAVIA_BETA } from "@/lib/beta";
 import { localAllLogs, localToday } from "@/lib/savia-local";
-import { isCycling, predictPeriod } from "@/lib/cycle";
+import { dayInfo, isCycling, periodDaysFromLogs, predictPeriod, todayISO } from "@/lib/cycle";
+import { computeInsights, type Insight } from "@/lib/insights";
+import { AnotarSheet } from "@/components/v4/anotar-sheet";
 import { useI18n } from "@/lib/i18n";
 import type { TodaySnapshot } from "@/lib/types";
 
@@ -98,6 +100,7 @@ function HoyTab() {
   }, []);
   const symAsk = useSymptomAsk(ready && Boolean(data) && code === "", onboarded, data?.log ?? null);
   const [symManual, setSymManual] = useState(false);
+  const [anotar, setAnotar] = useState(false);
 
   useEffect(() => {
     if (!ready || !data) return;
@@ -146,7 +149,7 @@ function HoyTab() {
           ).next
         }
         onCal={() => void navigate({ to: "/app/calendario" })}
-        onLog={() => void navigate({ to: "/app/registro" })}
+        onLog={() => setAnotar(true)}
         onGuia={() => void navigate({ to: "/app/guia" })}
         onAsk={() => void navigate({ to: "/app/preguntar" })}
         onPeriodChange={setData}
@@ -163,6 +166,7 @@ function HoyTab() {
         wrapUpPaid={data.profile.plan === "serena" || data.profile.plan === "year"}
         intention={data.profile.intention}
       />
+      {anotar ? <Anotar data={data} onClose={() => setAnotar(false)} onSaved={() => void loadToday().then(setData)} /> : null}
       {symAsk.open || symManual ? (
         <SymptomCheckSheet
           log={data.log}
@@ -179,5 +183,41 @@ function HoyTab() {
         />
       ) : null}
     </>
+  );
+}
+
+/** «Anotar mi día» v2 over Hoy, fed from the same snapshot (today’s row, phase, estimate, her repeat symptom). */
+function Anotar({ data, onClose, onSaved }: { data: TodaySnapshot; onClose: () => void; onSaved: () => void }) {
+  const p = data.profile;
+  const today = todayISO();
+  const logs = SAVIA_BETA ? localAllLogs() : data.recentLogs;
+  const pred = predictPeriod(p.lastPeriodStart, data.periodStarts, p.cycleLength, p.stage);
+  const info = dayInfo(today, {
+    lastStart: p.lastPeriodStart,
+    cycleLength: pred.len,
+    periodLength: p.periodLength,
+    periodStarts: data.periodStarts,
+    periodDays: periodDaysFromLogs(data.recentLogs),
+    today,
+  });
+  const ins = computeInsights({ starts: data.periodStarts, logs, periodLength: p.periodLength, cycleLength: pred.len, today });
+  const rep = ins.items.find((i): i is Extract<Insight, { id: "symptomBefore" }> => i.id === "symptomBefore");
+  const cycling = isCycling(p.stage);
+  const log = logs.find((l) => l.day === today) ?? (data.log?.day === today ? data.log : null);
+  return (
+    <AnotarSheet
+      day={today}
+      log={log}
+      name={p.displayName}
+      phase={cycling ? data.phase : "none"}
+      cycleDay={cycling ? data.cycleDay : null}
+      dayMark={cycling ? info.mark : null}
+      nextPeriod={cycling ? pred.next : null}
+      repeatSymptom={rep?.symptom ?? null}
+      intention={p.intention}
+      wrapUpPaid={p.plan === "serena" || p.plan === "year"}
+      onClose={onClose}
+      onSaved={onSaved}
+    />
   );
 }

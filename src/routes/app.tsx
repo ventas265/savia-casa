@@ -11,8 +11,10 @@ export const Route = createFileRoute("/app")({ component: AppLayout });
 function tabFromPath(path: string): TabKey {
   if (path.startsWith("/app/hoy") || path.startsWith("/app/registro")) return "hoy";
   if (path.startsWith("/app/calendario") || path.startsWith("/app/ciclo")) return "cal";
+  if (path.startsWith("/app/patrones")) return "pat";
   if (path.startsWith("/app/preguntar")) return "ia";
-  // Tú: perfil, recordatorios, privacidad, código + guides (sexo, guía, pareja, informe, recuperar).
+  if (path.startsWith("/app/estaciones")) return "hoy";
+  // Perfil (desde el avatar de Hoy) + guías: ninguna pestaña activa.
   return "tu";
 }
 

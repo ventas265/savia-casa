@@ -1,16 +1,18 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import type { Phase } from "@/lib/types";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { ArrowUp, Stethoscope } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ArrowUp, Lock, Sparkles } from "lucide-react";
+import { useV4 } from "@/lib/i18n-v4";
+import { useSerenaSheet } from "@/lib/serena-sheet";
+import { computeInsights, insightText } from "@/lib/insights";
+import { localAllLogs } from "@/lib/savia-local";
+import { predictPeriod } from "@/lib/cycle";
 import { type ChatTurn } from "@/lib/savia-server";
 import { askGuide } from "@/lib/savia-api";
 import { SAVIA_BETA } from "@/lib/beta";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
-import { OrbCaption, SaviaOrb, useSaviaTone } from "@/components/savia-orb";
-import type { SaviaTone } from "@/lib/savia-tone";
 import { localToday } from "@/lib/savia-local";
 import { todayISO } from "@/lib/cycle";
 import { talkOpener } from "@/lib/companion-messages";
@@ -51,15 +53,11 @@ const SUGGEST: Record<Phase, { es: string[]; en: string[] }> = {
   },
 };
 
-/** Savia IA presence: the breathing pearl, tinted by her phase. */
-function Face({ className, tone }: { className?: string; tone: SaviaTone }) {
-  return <SaviaOrb tone={tone} className={className} />;
-}
-
 function Preguntar() {
   const { t, lang } = useI18n();
   const { q: prefill, ctx } = Route.useSearch();
-  const tone = useSaviaTone();
+  const { v } = useV4();
+  const showSerena = useSerenaSheet((st) => st.show);
   const [q, setQ] = useState(prefill ?? "");
   const [turns, setTurns] = useState<ChatTurn[]>([]);
   const [busy, setBusy] = useState(false);
@@ -67,14 +65,25 @@ function Preguntar() {
   const canSend = q.trim().length > 0 && !busy;
   const [talkLine, setTalkLine] = useState<string | null>(null);
   const [phase, setPhase] = useState<Phase>("none");
+  const [dataLine, setDataLine] = useState<string | null>(null);
   useEffect(() => {
     if (!SAVIA_BETA) return;
     try {
-      setPhase(localToday().phase);
+      const snap = localToday();
+      setPhase(snap.phase);
+      // «En tus datos»: one real, on-device insight (never invented).
+      const p = snap.profile;
+      const len = predictPeriod(p.lastPeriodStart, snap.periodStarts, p.cycleLength, p.stage).len;
+      const res = computeInsights({ starts: snap.periodStarts, logs: localAllLogs(), periodLength: p.periodLength, cycleLength: len, today: todayISO() });
+      const first = res.items.find((i) => i.id === "symptomBefore") ?? res.items[0];
+      if (first) {
+        const txt = insightText(first, lang);
+        setDataLine(`${txt.title} ${txt.detail}`.trim());
+      }
     } catch {
       /* no local data */
     }
-  }, []);
+  }, [lang]);
 
   useEffect(() => {
     if (ctx !== "talk") return;
@@ -111,90 +120,74 @@ function Preguntar() {
     }
   }
 
+  const quick = SUGGEST[phase][lang].slice(0, 3);
   return (
-    <div className="flex h-[calc(100dvh-12.5rem)] flex-col">
-      <div className="flex shrink-0 items-center gap-3">
-        <Face tone={tone} className="size-11" />
-        <div className="min-w-0">
-          <p className="font-display text-xl font-semibold leading-none tracking-[-0.02em]">{t.askTitle}</p>
-          <p className="mt-1 flex items-center gap-1.5 text-sm text-muted"><span className="size-1.5 rounded-full bg-[#a8c5a0]" aria-hidden />{t.askHere}</p>
-          <OrbCaption tone={tone} className="mt-0.5 block" />
+    <div className="-mx-3 -mt-[max(12px,env(safe-area-inset-top))] flex h-[calc(100dvh-5.5rem)] flex-col">
+      <div className="flex shrink-0 items-center gap-3 border-b border-line px-5 pb-3 pt-[max(14px,env(safe-area-inset-top))]">
+        <img src="/v4/savia-avatar.webp" alt="" width={44} height={44} className="size-11 rounded-full object-cover" />
+        <div className="min-w-0 flex-1">
+          <p className="text-[17px] font-semibold leading-tight">{t.askTitle}</p>
+          <p className="mt-0.5 text-[13px] font-medium text-muted">{v.chatSub}</p>
+        </div>
+        <span className="v4-lock" aria-label={v.onlyYouAria}>
+          <Lock className="size-[14px]" strokeWidth={1.8} aria-hidden />
+          {v.private}
+        </span>
+      </div>
+
+      <div className="min-h-0 flex-1 overflow-y-auto px-3.5 pt-3">
+        <div className="flex flex-col gap-1.5">
+          <p className="mb-1 self-center text-[12px] font-semibold text-muted">{v.chatToday}</p>
+          {turns.length === 0 ? (
+            <div data-testid="ask-empty" className="flex flex-col gap-1.5">
+              <div className="v4-m sv">{talkLine ?? t.askEmpty}</div>
+              {dataLine ? (
+                <div className="v4-m sv data" data-testid="ask-data">
+                  <p className="v4-eyebrow acc mb-1.5">
+                    <Sparkles className="size-3.5" strokeWidth={1.8} aria-hidden />
+                    {v.inYourData}
+                  </p>
+                  {dataLine}
+                </div>
+              ) : null}
+            </div>
+          ) : (
+            turns.map((m, i) => (
+              <div key={`${m.role}-${i}`} className={cn("v4-m", m.role === "user" ? "me" : "sv")}>
+                {m.content}
+              </div>
+            ))
+          )}
+          {busy ? (
+            <div className="flex gap-1 self-start rounded-[22px] rounded-bl-md bg-white px-[15px] py-[13px]" aria-label="…">
+              <span className="size-[7px] animate-bounce rounded-full bg-muted [animation-delay:0ms]" />
+              <span className="size-[7px] animate-bounce rounded-full bg-muted [animation-delay:120ms]" />
+              <span className="size-[7px] animate-bounce rounded-full bg-muted [animation-delay:240ms]" />
+            </div>
+          ) : null}
+          <div ref={end} />
         </div>
       </div>
 
-      <div className="mt-4 min-h-0 flex-1 overflow-y-auto">
-        {turns.length === 0 ? (
-          <div data-testid="ask-empty">
-            <div className="glass relative overflow-hidden rounded-[22px] p-4">
-              <p className="font-display text-[1.3rem] font-semibold leading-[1.15] tracking-[-0.03em] text-fg">
-                {talkLine ?? t.askEmpty}
-              </p>
-            </div>
-            <p className="kicker mt-4 px-1">{t.askSuggestKicker}</p>
-            <ul className="mt-2 space-y-2" data-testid="ask-suggestions">
-              {SUGGEST[phase][lang].map((sq) => (
-                <li key={sq}>
-                  <button
-                    type="button"
-                    onClick={() => void ask(sq)}
-                    className="press glass flex min-h-12 w-full items-center rounded-[18px] px-4 py-2.5 text-left text-[14px] font-medium text-fg"
-                  >
-                    {sq}
-                  </button>
-                </li>
-              ))}
-            </ul>
-            <p className="mt-3 flex items-start gap-2 px-1 text-[11.5px] leading-snug text-muted" data-testid="ask-disclaimer">
-              <Stethoscope className="mt-0.5 size-3.5 shrink-0" strokeWidth={1.7} aria-hidden />
-              {t.askMedDisclaimer}
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {turns.map((m, i) => (
-              <div
-                key={`${m.role}-${i}`}
-                className={cn("flex items-end gap-2", m.role === "user" ? "justify-end" : "justify-start")}
-              >
-                {m.role === "assistant" ? <Face tone={tone} className="size-8 shrink-0" /> : null}
-                <div
-                  className={cn(
-                    "max-w-[78%] whitespace-pre-wrap px-4 py-3 text-sm leading-relaxed",
-                    m.role === "user"
-                      ? "rounded-[1.4rem] rounded-br-md bg-grad text-primary-fg"
-                      : "glass rounded-[1.4rem] rounded-bl-md text-fg",
-                  )}
-                >
-                  {m.content}
-                </div>
-              </div>
-            ))}
-            {busy ? (
-              <div className="flex items-end gap-2">
-                <Face tone={tone} className="size-8" />
-                <div className="glass flex gap-1 rounded-[1.4rem] rounded-bl-md px-4 py-3">
-                  <span className="size-1.5 animate-bounce rounded-full bg-grad [animation-delay:0ms]" />
-                  <span className="size-1.5 animate-bounce rounded-full bg-grad [animation-delay:120ms]" />
-                  <span className="size-1.5 animate-bounce rounded-full bg-grad [animation-delay:240ms]" />
-                </div>
-              </div>
-            ) : null}
-            <div ref={end} />
-          </div>
-        )}
-      </div>
-
       {SAVIA_BETA ? null : (
-        <p className="mt-2 shrink-0 text-xs text-muted">
+        <p className="shrink-0 px-5 pt-1 text-xs text-muted">
           {t.asksLeft}: 3 ·{" "}
-          <Link to="/pagar" className="underline">
+          <button type="button" className="underline" onClick={showSerena}>
             {t.navPricing}
-          </Link>
+          </button>
         </p>
       )}
 
+      <div className="flex shrink-0 gap-2 overflow-x-auto px-3.5 pb-1 pt-2" data-testid="ask-suggestions">
+        {quick.map((sq) => (
+          <button key={sq} type="button" onClick={() => void ask(sq)} className="v4-quick press max-w-[16rem] text-left">
+            {sq}
+          </button>
+        ))}
+      </div>
+
       <form
-        className="mt-3 flex shrink-0 items-end gap-2"
+        className="flex shrink-0 items-end gap-2 px-3.5 pt-2"
         onSubmit={(e) => {
           e.preventDefault();
           void ask();
@@ -207,11 +200,12 @@ function Preguntar() {
           autoCorrect="on"
           enterKeyHint="send"
           data-testid="chat-input"
+          aria-label={v.askPlaceholder}
           className={cn(
-            "glass min-h-14 min-w-0 flex-1 resize-none px-5 py-4 text-base leading-snug text-fg outline-none focus:border-[rgb(242_66_126/0.5)]",
-            q.length > 60 ? "rounded-[22px] text-[15px]" : "rounded-full",
+            "min-h-12 min-w-0 flex-1 resize-none border border-line bg-white px-[18px] py-3 text-[15px] leading-snug text-ink outline-none placeholder:text-muted focus:border-accent",
+            q.length > 60 ? "rounded-[22px]" : "rounded-full",
           )}
-          placeholder={t.askHint}
+          placeholder={v.askPlaceholder}
           value={q}
           onChange={(e) => setQ(e.target.value)}
           onKeyDown={(e) => {
@@ -221,20 +215,23 @@ function Preguntar() {
             }
           }}
         />
-        <Button
+        <button
           type="submit"
-          className="size-14 shrink-0 rounded-full p-0 disabled:opacity-40"
+          className="grid size-12 shrink-0 place-items-center rounded-full bg-accent text-white disabled:opacity-60"
           disabled={!canSend}
           aria-label={t.askCta}
           title={t.askCta}
         >
           {busy ? (
-            <span className="size-4 animate-spin rounded-full border-2 border-primary-fg/40 border-t-primary-fg" />
+            <span className="size-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
           ) : (
             <ArrowUp className="size-5" strokeWidth={2} />
           )}
-        </Button>
+        </button>
       </form>
+      <p className="shrink-0 pb-2 pt-1.5 text-center text-[11.5px] font-medium text-muted" data-testid="ask-disclaimer">
+        {v.disclaimer}
+      </p>
     </div>
   );
 }

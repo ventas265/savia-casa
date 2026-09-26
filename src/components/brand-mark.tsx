@@ -11,8 +11,8 @@ export function BrandMark({ className }: { className?: string }) {
       <svg viewBox="0 0 32 32" className="size-[72%]">
         <defs>
           <linearGradient id="brand-s" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stopColor="#f2427e" />
-            <stop offset="1" stopColor="#b65cff" />
+            <stop offset="0" stopColor="#ab3549" />
+            <stop offset="1" stopColor="#8e2a3f" />
           </linearGradient>
         </defs>
         <path fill="url(#brand-s)" d={S_PATH} />

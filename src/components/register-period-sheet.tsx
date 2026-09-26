@@ -88,7 +88,7 @@ export function RegisterPeriodSheet({
             data-testid="reg-today"
             disabled={busy}
             onClick={() => void save(today)}
-            className="press flex h-14 w-full items-center justify-center gap-2.5 rounded-full bg-grad text-base font-semibold text-primary-fg shadow-[0_10px_30px_-8px_rgb(242_66_126/0.6)] disabled:opacity-60"
+            className="press flex h-14 w-full items-center justify-center gap-2.5 rounded-full bg-grad text-base font-semibold text-primary-fg shadow-[0_10px_30px_-8px_rgb(142_42_63/0.45)] disabled:opacity-60"
           >
             <Droplet className="size-5" strokeWidth={1.8} aria-hidden />
             {t.regToday}

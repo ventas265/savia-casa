@@ -61,13 +61,13 @@ export function symptomIcon(id: string, className = "size-[22px]"): ReactNode {
 
 export type ChipTone = "rose" | "dust" | "sand" | "sage" | "plum";
 
-/** Nocturna: glass circles; tone only tints the category icon. */
+/** v4: soft category tiles; tone tints the tile (ánimo = orquídea, cuerpo = durazno). */
 export const TONE_CLS: Record<ChipTone, { idle: string; on: string; badge: string; icon: string }> = {
-  rose: { idle: "", on: "", badge: "bg-grad text-primary-fg", icon: "bg-white/[0.06] ring-1 ring-white/10 text-[#ff8cb8]" },
-  dust: { idle: "", on: "", badge: "bg-grad text-primary-fg", icon: "bg-white/[0.06] ring-1 ring-white/10 text-[#ffb0cc]" },
-  sand: { idle: "", on: "", badge: "bg-grad text-primary-fg", icon: "bg-white/[0.06] ring-1 ring-white/10 text-[#f0b0e8]" },
-  sage: { idle: "", on: "", badge: "bg-grad text-primary-fg", icon: "bg-white/[0.06] ring-1 ring-white/10 text-[#a8c5a0]" },
-  plum: { idle: "", on: "", badge: "bg-grad text-primary-fg", icon: "bg-white/[0.06] ring-1 ring-white/10 text-[#c7a6ff]" },
+  rose: { idle: "", on: "", badge: "bg-accent text-white", icon: "bg-regla-50 text-[#7a1f33]" },
+  dust: { idle: "", on: "", badge: "bg-accent text-white", icon: "bg-foli-50 text-[#7a3f1e]" },
+  sand: { idle: "", on: "", badge: "bg-accent text-white", icon: "bg-lut-50 text-lut-ink" },
+  sage: { idle: "", on: "", badge: "bg-accent text-white", icon: "bg-sand text-ink-2" },
+  plum: { idle: "", on: "", badge: "bg-accent text-white", icon: "bg-ovu-50 text-ovu-ink" },
 };
 
 /** Frequent symptoms for the Hoy quick check (order matters). */

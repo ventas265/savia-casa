@@ -20,9 +20,9 @@ export const Route = createRootRoute({
       { title: APP_NAME },
       { name: "description", content: "Calendario del ciclo, peri y menopausia. En español, para Latinoamérica." },
       { name: "apple-mobile-web-app-title", content: APP_NAME },
-      { name: "theme-color", content: "#0e0911" },
-      { name: "color-scheme", content: "dark" },
-      { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
+      { name: "theme-color", content: "#f6f1ec" },
+      { name: "color-scheme", content: "light" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "default" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "mobile-web-app-capable", content: "yes" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -52,7 +52,7 @@ export const Route = createRootRoute({
     ],
   }),
   component: () => (
-    <html lang="es" className="dark antialiased" style={{ backgroundColor: "#0e0911" }} suppressHydrationWarning>
+    <html lang="es" className="antialiased" style={{ backgroundColor: "#f6f1ec" }} suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>
@@ -62,21 +62,20 @@ export const Route = createRootRoute({
           <I18nProvider>
             <Outlet />
             <Toaster
-              theme="dark"
+              theme="light"
               richColors={false}
               position="top-center"
               toastOptions={{
                 style: {
-                  background: "rgba(32,22,36,0.92)",
-                  color: "#f7f0f5",
-                  border: "1px solid rgba(255,255,255,0.1)",
-                  backdropFilter: "blur(20px)",
+                  background: "#2b2124",
+                  color: "#ffffff",
+                  border: "0",
                   borderRadius: "18px",
-                  fontFamily: "Inter, system-ui, sans-serif",
+                  fontFamily: "'Onest Variable', system-ui, sans-serif",
                 },
                 actionButtonStyle: {
-                  background: "linear-gradient(135deg,#f2427e,#b65cff)",
-                  color: "#ffffff",
+                  background: "#ffffff",
+                  color: "#8e2a3f",
                   borderRadius: "999px",
                   fontWeight: 600,
                 },

@@ -98,8 +98,8 @@ export function IosPushGuide({ old = false }: { old?: boolean }) {
               </span>
               <span className="pt-0.5">
                 {s}
-                {i === 1 ? <Share className="ml-1 inline size-4 align-[-3px] text-[#ffb0cc]" strokeWidth={1.8} /> : null}
-                {i === 2 ? <SquarePlus className="ml-1 inline size-4 align-[-3px] text-[#ffb0cc]" strokeWidth={1.8} /> : null}
+                {i === 1 ? <Share className="ml-1 inline size-4 align-[-3px] text-accent" strokeWidth={1.8} /> : null}
+                {i === 2 ? <SquarePlus className="ml-1 inline size-4 align-[-3px] text-accent" strokeWidth={1.8} /> : null}
               </span>
             </li>
           ))}
@@ -176,7 +176,7 @@ export function PushReminders() {
           <div className="mt-3 flex items-start justify-between gap-4 rounded-[1.25rem] bg-bg px-4 py-3.5">
             <div className="min-w-0">
               <p className="flex items-center gap-2 text-sm font-semibold">
-                <BellRing className="size-4 text-[#ffb0cc]" strokeWidth={1.8} />
+                <BellRing className="size-4 text-accent" strokeWidth={1.8} />
                 {c.title}
               </p>
               <p className="mt-1 text-xs leading-relaxed text-muted">{c.hint}</p>
@@ -191,7 +191,7 @@ export function PushReminders() {
               onClick={() => void toggle()}
               className={cn(
                 "relative mt-0.5 h-7 w-12 shrink-0 rounded-full transition-colors before:absolute before:-inset-2 before:content-[''] disabled:opacity-50",
-                state.enabled ? "bg-grad" : "bg-white/15",
+                state.enabled ? "bg-grad" : "bg-sand-2",
               )}
             >
               <span
@@ -209,7 +209,7 @@ export function PushReminders() {
               data-testid="push-hour"
               value={state.hour}
               onChange={(e) => void changeHour(Number(e.target.value))}
-              className="h-11 rounded-full bg-white/[0.08] px-4 text-sm font-semibold text-fg ring-1 ring-white/10 [color-scheme:dark]"
+              className="h-11 rounded-full bg-white px-4 text-sm font-semibold text-fg ring-1 ring-line [color-scheme:dark]"
             >
               {PUSH_HOURS.map((h) => (
                 <option key={h} value={h}>
@@ -224,7 +224,7 @@ export function PushReminders() {
               data-testid="push-test"
               disabled={busy}
               onClick={() => void test()}
-              className="press mt-2 flex min-h-12 w-full items-center justify-center rounded-full bg-white/[0.06] text-sm font-semibold text-fg ring-1 ring-white/10"
+              className="press mt-2 flex min-h-12 w-full items-center justify-center rounded-full bg-white text-sm font-semibold text-fg ring-1 ring-line"
             >
               {c.test}
             </button>
@@ -254,7 +254,7 @@ export function PushSoftPrompt() {
   if (!show) return null;
   return (
     <div data-testid="push-soft" className="glass mt-2 flex items-center gap-3 rounded-[18px] px-4 py-3">
-      <BellRing className="size-5 shrink-0 text-[#ffb0cc]" strokeWidth={1.6} />
+      <BellRing className="size-5 shrink-0 text-accent" strokeWidth={1.6} />
       <p className="min-w-0 flex-1 text-[13px] leading-snug text-fg">{c.soft}</p>
       <Link
         to="/app/tu"

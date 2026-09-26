@@ -25,7 +25,7 @@ const PRIMARY: Stage = "cycle";
 const OTHER_STAGES: Stage[] = ["pregnancy", "postpartum", "peri", "meno"];
 
 function StepIcon({ step }: { step: number }) {
-  const wrap = "glass flex size-12 items-center justify-center rounded-full text-[#ff8cb8]";
+  const wrap = "glass flex size-12 items-center justify-center rounded-full text-regla";
   if (step === 0) {
     return (
       <div className={wrap} aria-hidden>
@@ -115,7 +115,7 @@ function Stepper({
       <button
         type="button"
         aria-label={`${label}: menos`}
-        className="press grid size-11 place-items-center rounded-full bg-white/[0.06] ring-1 ring-white/10 disabled:opacity-40"
+        className="press grid size-11 place-items-center rounded-full bg-white ring-1 ring-line disabled:opacity-40"
         disabled={value <= min}
         onClick={() => {
           haptic();
@@ -131,7 +131,7 @@ function Stepper({
       <button
         type="button"
         aria-label={`${label}: más`}
-        className="press grid size-11 place-items-center rounded-full bg-white/[0.06] ring-1 ring-white/10 disabled:opacity-40"
+        className="press grid size-11 place-items-center rounded-full bg-white ring-1 ring-line disabled:opacity-40"
         disabled={value >= max}
         onClick={() => {
           haptic();
@@ -276,7 +276,7 @@ function Onboarding() {
             autoFocus
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
-            className="mt-10 w-full border-0 border-b-2 border-[#ff5f92] bg-transparent py-4 font-display text-3xl font-semibold outline-none placeholder:text-muted/50"
+            className="mt-10 w-full border-0 border-b-2 border-accent bg-transparent py-4 font-display text-3xl font-semibold outline-none placeholder:text-muted/50"
             placeholder={t.yourName}
           />
         </div>
@@ -436,7 +436,7 @@ function Onboarding() {
           />
           {left != null ? (
             <div className="mt-10">
-              <p className="kicker !text-[#ffb0cc]">{t.predNextRange}</p>
+              <p className="kicker !text-accent">{t.predNextRange}</p>
               <p className="mt-2 font-display text-4xl font-semibold tracking-[-0.04em] text-fg" data-testid="onb-pred">
                 {pred.from && pred.to ? predictionLabel(pred, lang).split(" · ")[0] : ""}
               </p>

@@ -23,12 +23,14 @@ import { Route as AppCalendarioRouteImport } from './routes/app/calendario'
 import { Route as AppCicloRouteImport } from './routes/app/ciclo'
 import { Route as AppCuadernoRouteImport } from './routes/app/cuaderno'
 import { Route as AppCuadernosRouteImport } from './routes/app/cuadernos'
+import { Route as AppEstacionesRouteImport } from './routes/app/estaciones'
 import { Route as AppGuiaRouteImport } from './routes/app/guia'
 import { Route as AppHoyRouteImport } from './routes/app/hoy'
 import { Route as AppInformeRouteImport } from './routes/app/informe'
 import { Route as AppMasRouteImport } from './routes/app/mas'
 import { Route as AppOnboardingRouteImport } from './routes/app/onboarding'
 import { Route as AppParejaRouteImport } from './routes/app/pareja'
+import { Route as AppPatronesRouteImport } from './routes/app/patrones'
 import { Route as AppPreguntarRouteImport } from './routes/app/preguntar'
 import { Route as AppRecuperarRouteImport } from './routes/app/recuperar'
 import { Route as AppRegistroRouteImport } from './routes/app/registro'
@@ -113,6 +115,11 @@ const AppCuadernosRoute = AppCuadernosRouteImport.update({
   path: '/cuadernos',
   getParentRoute: () => AppRoute,
 } as any)
+const AppEstacionesRoute = AppEstacionesRouteImport.update({
+  id: '/estaciones',
+  path: '/estaciones',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppGuiaRoute = AppGuiaRouteImport.update({
   id: '/guia',
   path: '/guia',
@@ -141,6 +148,11 @@ const AppOnboardingRoute = AppOnboardingRouteImport.update({
 const AppParejaRoute = AppParejaRouteImport.update({
   id: '/pareja',
   path: '/pareja',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPatronesRoute = AppPatronesRouteImport.update({
+  id: '/patrones',
+  path: '/patrones',
   getParentRoute: () => AppRoute,
 } as any)
 const AppPreguntarRoute = AppPreguntarRouteImport.update({
@@ -223,12 +235,14 @@ export interface FileRoutesByFullPath {
   '/app/ciclo': typeof AppCicloRoute
   '/app/cuaderno': typeof AppCuadernoRoute
   '/app/cuadernos': typeof AppCuadernosRoute
+  '/app/estaciones': typeof AppEstacionesRoute
   '/app/guia': typeof AppGuiaRoute
   '/app/hoy': typeof AppHoyRoute
   '/app/informe': typeof AppInformeRoute
   '/app/mas': typeof AppMasRoute
   '/app/onboarding': typeof AppOnboardingRoute
   '/app/pareja': typeof AppParejaRoute
+  '/app/patrones': typeof AppPatronesRoute
   '/app/preguntar': typeof AppPreguntarRoute
   '/app/recuperar': typeof AppRecuperarRoute
   '/app/registro': typeof AppRegistroRoute
@@ -257,12 +271,14 @@ export interface FileRoutesByTo {
   '/app/ciclo': typeof AppCicloRoute
   '/app/cuaderno': typeof AppCuadernoRoute
   '/app/cuadernos': typeof AppCuadernosRoute
+  '/app/estaciones': typeof AppEstacionesRoute
   '/app/guia': typeof AppGuiaRoute
   '/app/hoy': typeof AppHoyRoute
   '/app/informe': typeof AppInformeRoute
   '/app/mas': typeof AppMasRoute
   '/app/onboarding': typeof AppOnboardingRoute
   '/app/pareja': typeof AppParejaRoute
+  '/app/patrones': typeof AppPatronesRoute
   '/app/preguntar': typeof AppPreguntarRoute
   '/app/recuperar': typeof AppRecuperarRoute
   '/app/registro': typeof AppRegistroRoute
@@ -293,12 +309,14 @@ export interface FileRoutesById {
   '/app/ciclo': typeof AppCicloRoute
   '/app/cuaderno': typeof AppCuadernoRoute
   '/app/cuadernos': typeof AppCuadernosRoute
+  '/app/estaciones': typeof AppEstacionesRoute
   '/app/guia': typeof AppGuiaRoute
   '/app/hoy': typeof AppHoyRoute
   '/app/informe': typeof AppInformeRoute
   '/app/mas': typeof AppMasRoute
   '/app/onboarding': typeof AppOnboardingRoute
   '/app/pareja': typeof AppParejaRoute
+  '/app/patrones': typeof AppPatronesRoute
   '/app/preguntar': typeof AppPreguntarRoute
   '/app/recuperar': typeof AppRecuperarRoute
   '/app/registro': typeof AppRegistroRoute
@@ -330,12 +348,14 @@ export interface FileRouteTypes {
     | '/app/ciclo'
     | '/app/cuaderno'
     | '/app/cuadernos'
+    | '/app/estaciones'
     | '/app/guia'
     | '/app/hoy'
     | '/app/informe'
     | '/app/mas'
     | '/app/onboarding'
     | '/app/pareja'
+    | '/app/patrones'
     | '/app/preguntar'
     | '/app/recuperar'
     | '/app/registro'
@@ -364,12 +384,14 @@ export interface FileRouteTypes {
     | '/app/ciclo'
     | '/app/cuaderno'
     | '/app/cuadernos'
+    | '/app/estaciones'
     | '/app/guia'
     | '/app/hoy'
     | '/app/informe'
     | '/app/mas'
     | '/app/onboarding'
     | '/app/pareja'
+    | '/app/patrones'
     | '/app/preguntar'
     | '/app/recuperar'
     | '/app/registro'
@@ -399,12 +421,14 @@ export interface FileRouteTypes {
     | '/app/ciclo'
     | '/app/cuaderno'
     | '/app/cuadernos'
+    | '/app/estaciones'
     | '/app/guia'
     | '/app/hoy'
     | '/app/informe'
     | '/app/mas'
     | '/app/onboarding'
     | '/app/pareja'
+    | '/app/patrones'
     | '/app/preguntar'
     | '/app/recuperar'
     | '/app/registro'
@@ -541,6 +565,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCuadernosRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/estaciones': {
+      id: '/app/estaciones'
+      path: '/estaciones'
+      fullPath: '/app/estaciones'
+      preLoaderRoute: typeof AppEstacionesRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/guia': {
       id: '/app/guia'
       path: '/guia'
@@ -581,6 +612,13 @@ declare module '@tanstack/react-router' {
       path: '/pareja'
       fullPath: '/app/pareja'
       preLoaderRoute: typeof AppParejaRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/patrones': {
+      id: '/app/patrones'
+      path: '/patrones'
+      fullPath: '/app/patrones'
+      preLoaderRoute: typeof AppPatronesRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/preguntar': {
@@ -682,12 +720,14 @@ interface AppRouteChildren {
   AppCicloRoute: typeof AppCicloRoute
   AppCuadernoRoute: typeof AppCuadernoRoute
   AppCuadernosRoute: typeof AppCuadernosRoute
+  AppEstacionesRoute: typeof AppEstacionesRoute
   AppGuiaRoute: typeof AppGuiaRoute
   AppHoyRoute: typeof AppHoyRoute
   AppInformeRoute: typeof AppInformeRoute
   AppMasRoute: typeof AppMasRoute
   AppOnboardingRoute: typeof AppOnboardingRoute
   AppParejaRoute: typeof AppParejaRoute
+  AppPatronesRoute: typeof AppPatronesRoute
   AppPreguntarRoute: typeof AppPreguntarRoute
   AppRecuperarRoute: typeof AppRecuperarRoute
   AppRegistroRoute: typeof AppRegistroRoute
@@ -701,12 +741,14 @@ const AppRouteChildren: AppRouteChildren = {
   AppCicloRoute: AppCicloRoute,
   AppCuadernoRoute: AppCuadernoRoute,
   AppCuadernosRoute: AppCuadernosRoute,
+  AppEstacionesRoute: AppEstacionesRoute,
   AppGuiaRoute: AppGuiaRoute,
   AppHoyRoute: AppHoyRoute,
   AppInformeRoute: AppInformeRoute,
   AppMasRoute: AppMasRoute,
   AppOnboardingRoute: AppOnboardingRoute,
   AppParejaRoute: AppParejaRoute,
+  AppPatronesRoute: AppPatronesRoute,
   AppPreguntarRoute: AppPreguntarRoute,
   AppRecuperarRoute: AppRecuperarRoute,
   AppRegistroRoute: AppRegistroRoute,

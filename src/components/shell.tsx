@@ -18,8 +18,8 @@ export function Shell({
   return (
     <div className="min-h-dvh">
       <div className={`relative mx-auto min-h-dvh overflow-x-hidden bg-transparent ${APP_COL}`}>
-        {header ? <header className="sticky top-0 z-20 bg-bg/70 backdrop-blur-xl">{header}</header> : null}
-        <main className={footer ? "relative px-4 py-4 pb-32" : "relative px-4 py-4"}>{children}</main>
+        {header ? <header className="sticky top-0 z-20 bg-bg/90 backdrop-blur-xl">{header}</header> : null}
+        <main className={footer ? "relative px-3 pb-32 pt-[max(12px,env(safe-area-inset-top))]" : "relative px-3 py-4"}>{children}</main>
         {footer ? (
           <div className={`fixed bottom-0 left-1/2 z-20 -translate-x-1/2 ${APP_COL}`}>
             {footer}

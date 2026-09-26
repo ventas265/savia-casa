@@ -36,15 +36,15 @@ export function CircleChip({
           "relative flex items-center justify-center rounded-full leading-none transition-[background-color,box-shadow,color] duration-200",
           size === "md" ? "size-14" : "size-[3.25rem]",
           on
-            ? "bg-grad text-primary-fg shadow-[0_6px_22px_-4px_rgb(242_66_126/0.65)]"
-            : cn("bg-white/[0.055] text-fg/85 ring-1 ring-white/10 backdrop-blur-md", circleClassName),
+            ? "bg-grad text-primary-fg shadow-[0_6px_22px_-4px_rgb(142_42_63/0.45)]"
+            : cn("bg-white text-fg/85 ring-1 ring-line backdrop-blur-md", circleClassName),
         )}
       >
         <span aria-hidden className="flex items-center justify-center">
           {icon}
         </span>
         {on ? (
-          <span className="absolute -right-0.5 -bottom-0.5 flex size-5 items-center justify-center rounded-full bg-white text-[#130d12] ring-2 ring-[#1b131e]">
+          <span className="absolute -right-0.5 -bottom-0.5 flex size-5 items-center justify-center rounded-full bg-white text-[#130d12] ring-2 ring-bg">
             <Check className="size-3" strokeWidth={3} />
           </span>
         ) : null}

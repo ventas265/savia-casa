@@ -110,9 +110,9 @@ export function DaySheet({
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center" role="dialog" aria-modal="true" aria-label={t.daySheet}>
-      <button type="button" className="absolute inset-0 bg-black/60" aria-label={t.close} onClick={onClose} />
+      <button type="button" className="absolute inset-0 bg-[rgb(43_33_36/0.45)]" aria-label={t.close} onClick={onClose} />
       <div className="relative z-10 flex max-h-[88vh] w-full max-w-lg flex-col rounded-t-[1.75rem] bg-elevated shadow-card sm:rounded-[1.75rem]">
-        <div className="flex items-start justify-between gap-3 border-b border-white/[0.07] px-5 pb-3 pt-4">
+        <div className="flex items-start justify-between gap-3 border-b border-line px-5 pb-3 pt-4">
           <div>
             <p className="kicker">{t.daySheet}</p>
             <p className="mt-1 font-display text-xl font-semibold tracking-[-0.03em]">{formatLong(day, lang)}</p>
@@ -120,7 +120,7 @@ export function DaySheet({
           <button
             type="button"
             onClick={onClose}
-            className="press inline-flex size-11 shrink-0 items-center justify-center rounded-full bg-white/[0.06] ring-1 ring-white/10"
+            className="press inline-flex size-11 shrink-0 items-center justify-center rounded-full bg-white ring-1 ring-line"
             aria-label={t.close}
           >
             <X className="size-5" strokeWidth={1.5} />
@@ -135,16 +135,16 @@ export function DaySheet({
               hot
                 ? "card-fert"
                 : status === "period" || status === "predicted"
-                  ? "border-[rgb(255_77_132/0.3)] bg-[linear-gradient(135deg,rgb(255_77_132/0.14),rgb(155_92_255/0.08))]"
+                  ? "border-regla-50 bg-regla-50"
                   : "glass",
             )}
           >
-            <p className={cn("kicker", hot ? "!text-[#C9A2FF]" : "!text-label")}>
+            <p className={cn("kicker", hot ? "!text-ovu-ink" : "!text-label")}>
               {cycleDayNum ? `${t.dayOf} ${cycleDayNum}` : t.dsChance}
             </p>
             <p className="mt-1 font-display text-[19px] font-semibold leading-tight tracking-[-0.02em]">{statusLabel}</p>
             {hasSex && chance ? <p className="mt-1 text-[13px] leading-snug text-soft">{chance}</p> : null}
-            <details data-testid="day-summary-details" className="group mt-3 border-t border-white/[0.07] pt-2">
+            <details data-testid="day-summary-details" className="group mt-3 border-t border-line pt-2">
               <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between text-sm font-semibold text-soft [&::-webkit-details-marker]:hidden">
                 {t.dsSummary}
                 <ChevronDown className="size-4 transition-transform group-open:rotate-180" aria-hidden />
@@ -180,7 +180,7 @@ export function DaySheet({
                 onClose();
               }}
               data-testid="day-edit"
-              className="press mt-3 flex min-h-12 items-center justify-center gap-2 rounded-full bg-grad text-sm font-semibold text-white shadow-[0_8px_24px_-8px_rgb(242_66_126/0.6)]"
+              className="press mt-3 flex min-h-12 items-center justify-center gap-2 rounded-full bg-grad text-sm font-semibold text-white shadow-[0_8px_24px_-8px_rgb(142_42_63/0.45)]"
             >
               {t.dsEditDay}
               <ArrowUpRight className="size-4" strokeWidth={1.8} />
@@ -206,7 +206,7 @@ export function DaySheet({
                   },
                 });
               }}
-              className="press mt-2 flex min-h-12 w-full items-center justify-center gap-2.5 rounded-full bg-white/[0.07] text-sm font-semibold ring-1 ring-white/12"
+              className="press mt-2 flex min-h-12 w-full items-center justify-center gap-2.5 rounded-full bg-white text-sm font-semibold ring-1 ring-line"
             >
               <SaviaOrb tone={toneFor(phase, dayMark, status === "period")} className="size-6" />
               {t.askAboutDay}

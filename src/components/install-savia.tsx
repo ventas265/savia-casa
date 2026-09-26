@@ -56,7 +56,7 @@ export function InstallSavia() {
         <button
           type="button"
           onClick={() => void install()}
-          className="press mt-4 flex h-12 w-full items-center justify-center rounded-full bg-white text-sm font-semibold text-[#130d12]"
+          className="press mt-4 flex h-12 w-full items-center justify-center rounded-full bg-ink text-sm font-semibold text-white"
         >
           {t.installCta}
         </button>

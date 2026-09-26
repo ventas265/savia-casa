@@ -31,7 +31,7 @@ export function InsightsCompact({ result, paid }: { result: InsightResult; paid:
       {rest > 0 ? (
         paid ? (
           <Link
-            to="/app/calendario"
+            to="/app/patrones"
             hash="aprendio"
             className="mt-2.5 inline-flex min-h-9 items-center gap-1 text-xs font-semibold text-rose-dust"
           >

@@ -22,12 +22,12 @@ import { useClientTodayISO } from "@/lib/use-today";
 import type { DailyLog, Intention, Phase, Stage, TodaySnapshot } from "@/lib/types";
 import { RegisterPeriodSheet } from "@/components/register-period-sheet";
 import { cn } from "@/lib/utils";
-import { Activity, ArrowRight, Bell, Droplet } from "lucide-react";
-import { SegmentRing } from "@/components/cycle-ring";
+import { Activity, ChevronRight, Coffee, Droplet, Footprints, Heart, Leaf, Lock, Moon, Plus, ShieldCheck, Sun } from "lucide-react";
+import { SEASONS, phaseSegments } from "@/lib/v4-content";
+import { fill, useV4 } from "@/lib/i18n-v4";
 import { DailyNoteCard, useLocalHour } from "@/components/daily-note-card";
 import { PushSoftPrompt } from "@/components/push-reminders";
 import { companionName } from "@/lib/companion-messages";
-import { InsightsCompact } from "@/components/insights-card";
 import { buildNoteContext } from "@/lib/daily-note";
 import { computeInsights } from "@/lib/insights";
 import { toneFor } from "@/lib/savia-tone";
@@ -35,6 +35,14 @@ import { phaseName, phases, pick } from "@/lib/savia-content";
 import { haptic } from "@/lib/haptic";
 import { maybeNotify, periodAlert } from "@/lib/notify";
 import { armReminders, remindPlan } from "@/lib/reminders";
+
+function longWithWeekday(iso: string, lang: "es" | "en") {
+  try {
+    return new Intl.DateTimeFormat(lang === "es" ? "es" : "en", { weekday: "long", day: "numeric", month: "long" }).format(fromISO(iso));
+  } catch {
+    return formatLong(iso, lang);
+  }
+}
 
 export function TodayHero({
   stage,
@@ -95,6 +103,7 @@ export function TodayHero({
   recentLogs?: DailyLog[];
 }) {
   const { t, lang } = useI18n();
+  const { v } = useV4();
   const [adjust, setAdjust] = useState(false);
   const hour = useLocalHour();
   const today = useClientTodayISO() ?? todayISO();
@@ -218,7 +227,6 @@ export function TodayHero({
       ? t.fertileTry
       : t.fertBodyAvoid
     : t.daySheetChanceLowSex;
-  const nextShort = next ? formatDay(next, lang) : null;
   const tone = toneFor(cycling ? livePhase : "none", todayMark, cycling && onPeriod);
   const noteCtx = buildNoteContext({
     today,
@@ -231,253 +239,225 @@ export function TodayHero({
     logs: log ? [log, ...recentLogs.filter((l) => l.day !== log.day)] : recentLogs,
     markFor: (iso) => (cycling ? markForDate(iso, markOpts) : null),
   });
-  const insights = computeInsights({
-    starts: periodStarts,
-    logs: recentLogs,
-    periodLength,
-    cycleLength,
-    today,
-  });
-  const ringSex =
-    cycling && dayNum != null
-      ? (() => {
-          const start = addDaysISO(today, -(dayNum - 1));
-          return sexMarks
-            .filter((m) => m.day >= start && m.day <= today)
-            .map((m) => ({ n: differenceInCalendarDays(fromISO(m.day), fromISO(start)) + 1, kind: m.kind }));
-        })()
-      : [];
 
   const phaseLabel = livePhase !== "none" ? pick(phaseName[livePhase], lang) : "";
-  const countdown =
-    onPeriod || left == null
-      ? null
-      : left > 1
-        ? t.ringNextIn.replace("{n}", String(left))
-        : left === 1
-          ? t.ringNextInOne
-          : null;
 
   const predLine = cycling ? predictionLabel(pred, lang) : "";
-  const tipBody = livePhase !== "none" ? pick(phases[livePhase].do, lang) : "";
-  const chipTone = onPeriod ? "period" : fertHot ? "fertile" : "rest";
+
+  const season = cycling && livePhase !== "none" ? SEASONS[livePhase] : null;
+  const segs = cycling ? phaseSegments(pred.len, periodLength) : [];
+  const segNow = cycling && dayNum != null ? Math.min(dayNum, segs.length) : 0;
+  const firstName = (name ?? "").trim().split(/\s+/)[0] ?? "";
+  const nextLine = (() => {
+    if (!cycling) return null;
+    if (onPeriod && dayNum != null) return <>{fill(v.periodNow, { n: dayNum })}</>;
+    if (lateDays > 0) return <>{lateDays === 1 ? v.periodLateOne : fill(v.periodLate, { n: lateDays })}</>;
+    if (left === 0 || inWindow) return <>{v.periodTodayMaybe}</>;
+    if (left != null && left > 0)
+      return (
+        <>
+          {v.periodIn} <b>{left === 1 ? v.periodInDay : fill(v.periodInDays, { n: left })}</b>
+        </>
+      );
+    return null;
+  })();
+  const TIP_ICON = { moon: Moon, cup: Coffee, drop: Droplet, walk: Footprints, leaf: Leaf, heart: Heart, sun: Sun, shield: ShieldCheck };
 
   return (
     <div className="relative pb-4" data-testid="hoy">
-      <header className="flex items-center justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-2.5">
-          <span
-            aria-hidden
-            className="size-9 shrink-0 rounded-full p-[1.5px]"
-            style={{ background: "conic-gradient(from 200deg,#f2427e,#b65cff,#9b5cff,#f2427e)" }}
-          >
-            <span className="grid size-full place-items-center rounded-full bg-[#1b131e] text-[14px] font-semibold">
-              {initial}
-            </span>
-          </span>
-          <div className="min-w-0">
-            <p className="kicker !text-label">{t.today}</p>
-            <p className="truncate font-display text-[15px] font-medium tracking-[-0.01em] first-letter:uppercase">
-              {formatLong(today, lang)}
-            </p>
-          </div>
+      <header className="v4-hd">
+        <div className="v4-hd-t">
+          <span className="v4-date">{longWithWeekday(today, lang)}</span>
+          <b className="truncate">{firstName ? fill(v.hello, { name: firstName }) : v.helloAnon}</b>
         </div>
-        <Link
-          to="/app/tu"
-          hash="recordatorios"
-          aria-label={t.hoyBellAria}
-          className="press glass grid size-11 shrink-0 place-items-center rounded-full text-fg"
-        >
-          <Bell className="size-[18px]" strokeWidth={1.5} />
+        <span className="v4-lock" aria-label={v.onlyYouAria}>
+          <Lock className="size-[15px]" strokeWidth={1.8} aria-hidden />
+          {v.onlyYou}
+        </span>
+        <Link to="/app/tu" aria-label={v.profileAria} className="v4-meav" data-testid="hoy-avatar">
+          {initial}
         </Link>
       </header>
 
-      <div className="relative mt-1">
-        <SegmentRing
-          cycleLength={pred.len}
-          periodLength={periodLength}
-          cycleDay={cycling ? dayNum : null}
-          sizeClass="size-[14.5rem]"
-          label={asking ? t.ringAskTitle : dayNum != null ? t.ringDayPhase.replace("{n}", String(dayNum)).replace("{phase}", phaseLabel) : heroTitle}
-          onClick={onCal}
-          sexDays={ringSex}
-          decorative={asking}
-        >
+      <div className="v4-hero" data-testid="hoy-hero" data-phase={season?.key ?? "none"}>
+        <button type="button" onClick={onCal} aria-label={v.heroAria} className="absolute inset-0 z-0">
+          <img
+            key={season?.photo ?? "none"}
+            src={season?.photo ?? SEASONS.follicular.photo}
+            alt={season ? pick(season.alt, lang) : ""}
+            width={800}
+            height={860}
+            decoding="async"
+            fetchPriority="high"
+          />
+        </button>
+        {season ? <span className="v4-season pointer-events-none">{pick(season.seasonOf, lang)}</span> : null}
+        <div className="v4-glass pointer-events-none">
           {asking ? (
-            <span className="flex flex-col items-center" data-testid="ring-ask">
-              <span className="kicker !text-label">
+            <div data-testid="ring-ask" className="pointer-events-auto">
+              <p className={cn("v4-ph-n v4-ph-ink", season?.key)}>
+                <i className={cn("v4-pdot", season?.key)} aria-hidden />
                 {lateDays > 0
                   ? lateDays === 1
                     ? t.ringLateOne
                     : t.ringLate.replace("{n}", String(lateDays))
                   : t.ringExpected}
-              </span>
-              <span className="mt-1.5 max-w-[10rem] font-display text-[1.6rem] font-semibold leading-[1.05] tracking-[-0.04em] text-fg">
-                {t.ringAskTitle}
-              </span>
+              </p>
+              <p className="mt-2 font-display text-[32px] leading-[1.05] tracking-[-0.01em]">{t.ringAskTitle}</p>
               {dayNum != null ? (
-                <span className="mt-1 text-[12.5px] text-muted">
-                  {t.ringDayPhase.replace("{n}", String(dayNum)).replace("{phase}", phaseLabel)}
-                </span>
+                <p className="v4-nxt mt-1">{fill(v.dayN, { n: dayNum })}</p>
               ) : null}
-            </span>
+              <div className="mt-3 flex gap-2">
+                <button
+                  type="button"
+                  data-testid="ring-ask-yes"
+                  onClick={() => {
+                    haptic(14);
+                    setRegOpen(true);
+                  }}
+                  className="press h-11 min-w-24 rounded-full bg-accent px-5 text-sm font-semibold text-white"
+                >
+                  {t.ringAskYes}
+                </button>
+                <button
+                  type="button"
+                  data-testid="ring-ask-no"
+                  onClick={() => {
+                    haptic(10);
+                    try {
+                      localStorage.setItem(`savia.periodAsk.${today}`, "no");
+                    } catch {
+                      /* private mode */
+                    }
+                    setAskDismissed(true);
+                    toast(t.ringNoThanks);
+                  }}
+                  className="press h-11 min-w-24 rounded-full bg-white px-5 text-sm font-semibold text-ink ring-1 ring-line"
+                >
+                  {t.ringAskNo}
+                </button>
+              </div>
+            </div>
           ) : dayNum != null && cycling ? (
-            <span className="flex flex-col items-center" data-testid="ring-day">
-              <span
-                data-testid="fert-chip"
-                data-tone={chipTone}
-                className={cn(
-                  "whitespace-nowrap rounded-full px-2.5 py-0.5 text-[11px] font-semibold",
-                  chipTone === "period" && "bg-[rgb(255_77_132/0.2)] text-[#ffc4df]",
-                  chipTone === "fertile" && "bg-[rgb(201_162_255/0.2)] text-[#e6d6ff]",
-                  chipTone === "rest" && "bg-[rgb(168_197_160/0.16)] text-[#d6e6d0]",
-                )}
-              >
-                {onPeriod ? t.chipPeriod : todayMark === "peak" ? t.chipPeak : todayMark === "fertile" ? t.chipFertile : t.chipLow}
-              </span>
-              <span
-                className="mt-1 font-display text-[3.4rem] font-semibold leading-[0.95] tracking-[-0.05em] text-transparent"
-                style={{ backgroundImage: "linear-gradient(180deg,#fff 30%,#ffc4df 100%)", WebkitBackgroundClip: "text", backgroundClip: "text" }}
-              >
-                {t.ringDayPhase.replace("{n}", String(dayNum)).split(" · ")[0]}
-              </span>
-              <span className="mt-0.5 font-display text-[17px] font-semibold tracking-[-0.02em] text-fg" data-testid="ring-phase">
-                {phaseLabel}
-              </span>
-              {countdown ? <span className="mt-0.5 text-[12.5px] text-muted">{countdown}</span> : null}
-            </span>
+            <div data-testid="ring-day">
+              <p className={cn("v4-ph-n v4-ph-ink", season?.key)} data-testid="ring-phase">
+                <i className={cn("v4-pdot", season?.key)} aria-hidden />
+                {season ? pick(season.label, lang) : phaseLabel}
+              </p>
+              <p className="v4-big" aria-label={`${v.day} ${dayNum}`}>
+                <span className="v4-bd">{v.day}</span>
+                {dayNum}
+              </p>
+              {nextLine ? (
+                <p className="v4-nxt" data-testid="hoy-next">
+                  {nextLine}
+                </p>
+              ) : null}
+              <div className="v4-cdots" aria-hidden>
+                {segs.map((p, i) => (
+                  <i
+                    key={i}
+                    className={cn("v4-cd", `v4-bg-${SEASONS[p].key}`, i + 1 < segNow && "past", i + 1 === segNow && "now")}
+                    style={{ animationDelay: `${i * 12}ms` }}
+                  />
+                ))}
+              </div>
+            </div>
           ) : (
-            <span className="font-display text-[1.8rem] font-semibold leading-[1.05] tracking-[-0.04em] text-fg">
-              {heroTitle}
-            </span>
+            <p className="font-display text-[30px] leading-[1.1]">{heroTitle}</p>
           )}
-        </SegmentRing>
-        {asking ? (
-          <div className="relative -mt-14 flex justify-center gap-2.5">
+        </div>
+      </div>
+
+      <p className="v4-line" data-testid="hoy-line">
+        {season ? pick(season.line, lang) : v.noCycleLine}
+      </p>
+      {season ? (
+        <Link to="/app/estaciones" className="v4-why" data-testid="why-link">
+          {v.whyLink}
+          <ChevronRight className="size-4" strokeWidth={2} aria-hidden />
+        </Link>
+      ) : null}
+      {season ? (
+        <div className="v4-todo" aria-label={v.forToday} role="list">
+          {season.tips.map((tip) => {
+            const Icon = TIP_ICON[tip.icon];
+            return (
+              <span key={tip.icon} role="listitem" className={cn("v4-chip", season.key)} data-testid="hoy-tip">
+                <Icon className="size-[18px]" strokeWidth={1.8} aria-hidden />
+                {pick(tip.text, lang)}
+              </span>
+            );
+          })}
+        </div>
+      ) : null}
+      <div className="px-2 pt-5">
+        <button
+          type="button"
+          className="v4-cta"
+          data-testid="hoy-log"
+          onClick={() => {
+            haptic(14);
+            onLog();
+          }}
+        >
+          <Plus className="size-5" strokeWidth={2.2} aria-hidden />
+          {log && (log.symptoms.length || log.mood != null || (log.flow && log.flow !== "none")) ? v.logDayDone : v.logDay}
+        </button>
+      </div>
+
+      {/* Below the fold: period + cycle tools, Savia's note of the day, reminders */}
+      <div className="mt-6 space-y-3 px-2">
+        <div className="flex flex-wrap justify-center gap-x-5 gap-y-1">
+          {cycling || isCycling(stage) ? (
             <button
               type="button"
-              data-testid="ring-ask-yes"
+              data-testid="register-period-btn"
               onClick={() => {
                 haptic(14);
-                setRegOpen(true);
+                openRegister();
               }}
-              className="press bg-grad h-11 min-w-24 rounded-full px-5 text-sm font-semibold text-primary-fg"
+              className="inline-flex min-h-11 items-center gap-1.5 text-[14px] font-semibold text-accent"
             >
-              {t.ringAskYes}
+              <Droplet className="size-4" strokeWidth={1.8} aria-hidden />
+              {onPeriod ? t.actBleedDay : t.actBleed}
             </button>
-            <button
-              type="button"
-              data-testid="ring-ask-no"
-              onClick={() => {
-                haptic(10);
-                try {
-                  localStorage.setItem(`savia.periodAsk.${today}`, "no");
-                } catch {
-                  /* private mode */
-                }
-                setAskDismissed(true);
-                toast(t.ringNoThanks);
-              }}
-              className="press glass h-11 min-w-24 rounded-full px-5 text-sm font-semibold"
-            >
-              {t.ringAskNo}
-            </button>
-          </div>
-        ) : null}
-        {predLine ? (
-          <p className="mt-1 text-center text-[12px] leading-snug text-soft" data-testid="pred-line">
-            {t.predNextRange}: <span className="font-semibold text-fg">{predLine}</span>
-          </p>
-        ) : null}
-      </div>
-
-      <DailyNoteCard
-        ctx={noteCtx}
-        day={today}
-        tone={tone}
-        log={log}
-        paid={wrapUpPaid}
-        onSaved={onLogSaved}
-        name={name}
-        compact
-        onNoteText={(txt) => setNoteSaysContra(/anticonceptiv|birth control|contracepti/i.test(txt))}
-      />
-
-      <div className="mt-2 grid grid-cols-2 gap-2">
-        <button
-          type="button"
-          data-testid="register-period-btn"
-          onClick={() => {
-            haptic(14);
-            openRegister();
-          }}
-          className="press bg-grad flex h-[50px] items-center justify-center gap-2 whitespace-nowrap rounded-[18px] px-3 text-[13.5px] font-semibold text-primary-fg shadow-[0_8px_24px_-8px_rgb(242_66_126/0.6)] disabled:opacity-60"
-        >
-          <Droplet className="size-4" strokeWidth={1.8} aria-hidden />
-          {onPeriod ? t.actBleedDay : t.actBleed}
-        </button>
-        <button
-          type="button"
-          data-testid="symptoms-btn"
-          onClick={() => {
-            haptic(14);
-            onSymptoms?.();
-          }}
-          className="press glass flex h-[50px] items-center justify-center gap-2 whitespace-nowrap rounded-[18px] px-3 text-[13.5px] font-medium text-fg"
-        >
-          <Activity className="size-4" strokeWidth={1.8} aria-hidden />
-          {t.actBody}
-        </button>
-      </div>
-
-      {tipBody ? (
-        <button
-          type="button"
-          data-testid="hoy-tip"
-          onClick={onGuia}
-          className={cn(
-            "press mt-2 flex w-full items-start gap-3 rounded-[20px] border px-4 py-3 text-left",
-            chipTone === "fertile" ? "card-fert" : "glass",
-          )}
-        >
-          <span className="min-w-0 flex-1">
-            <span className="kicker block">{t.tipsToday} · {phaseLabel}</span>
-            <span className="mt-1 text-[13px] leading-snug text-fg/90 line-clamp-2">{tipBody}</span>
-          </span>
-          <ArrowRight className="mt-4 size-4 shrink-0 text-muted" strokeWidth={1.8} aria-hidden />
-        </button>
-      ) : null}
-
-      {/* Below the fold: compact extras */}
-      <div className="mt-6 space-y-2">
-        <PushSoftPrompt />
-        {cycling ? <InsightsCompact result={insights} paid={wrapUpPaid} /> : null}
-        <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 pt-1">
-          <button type="button" onClick={onLog} className="inline-flex min-h-11 items-center text-[13px] font-semibold text-rose-dust">
-            {t.hoyFullDay}
+          ) : null}
+          <button
+            type="button"
+            data-testid="symptoms-btn"
+            onClick={() => {
+              haptic(14);
+              onSymptoms?.();
+            }}
+            className="inline-flex min-h-11 items-center gap-1.5 text-[14px] font-semibold text-ink-2"
+          >
+            <Activity className="size-4" strokeWidth={1.8} aria-hidden />
+            {t.actBody}
           </button>
           {onCycleChange ? (
             <button
               type="button"
-              onClick={() => setAdjust((v) => !v)}
-              className="inline-flex min-h-11 items-center text-[13px] font-semibold text-muted"
+              onClick={() => setAdjust((x) => !x)}
+              className="inline-flex min-h-11 items-center text-[14px] font-semibold text-muted"
             >
               {adjust ? t.hideAdjust : t.adjustCycle}
             </button>
           ) : null}
         </div>
         {onCycleChange && adjust ? (
-          <div className="glass rounded-[22px] p-3">
+          <div className="v4-card p-3">
             <p className="kicker px-1">{t.adjustCycle}</p>
             <div className="mt-2 flex flex-wrap gap-1.5">
               {CYCLE_CHOICES.map((n) => (
                 <button
                   key={n}
                   type="button"
+                  aria-pressed={cycleLength === n}
                   onClick={() => onCycleChange(n)}
                   className={cn(
                     "h-11 min-w-11 rounded-full px-2 text-sm font-semibold",
-                    cycleLength === n ? "bg-grad text-primary-fg" : "bg-white/5 text-fg ring-1 ring-white/10",
+                    cycleLength === n ? "bg-ink text-white" : "bg-sand text-ink",
                   )}
                 >
                   {n}
@@ -486,8 +466,25 @@ export function TodayHero({
             </div>
           </div>
         ) : null}
+        {predLine ? (
+          <p className="text-center text-[12.5px] leading-snug text-muted" data-testid="pred-line">
+            {t.predNextRange}: <span className="font-semibold text-ink">{predLine}</span>
+          </p>
+        ) : null}
+        <DailyNoteCard
+          ctx={noteCtx}
+          day={today}
+          tone={tone}
+          log={log}
+          paid={wrapUpPaid}
+          onSaved={onLogSaved}
+          name={name}
+          compact
+          onNoteText={(txt) => setNoteSaysContra(/anticonceptiv|birth control|contracepti/i.test(txt))}
+        />
+        <PushSoftPrompt />
         {noteSaysContra ? null : (
-          <p className="px-2 text-center text-[11px] leading-snug text-muted" data-testid="contra-notice">
+          <p className="px-2 text-center text-[12px] leading-snug text-muted" data-testid="contra-notice">
             {t.notContraOnce}
           </p>
         )}

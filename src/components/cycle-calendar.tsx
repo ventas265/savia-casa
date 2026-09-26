@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
-import { ChevronDown, ChevronLeft, ChevronRight, Heart } from "lucide-react";
+import { ChevronLeft, ChevronRight, Heart } from "lucide-react";
+import { useV4 } from "@/lib/i18n-v4";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import {
+  addDaysISO,
   dayInfo,
   dayStatus,
   formatDay,
@@ -12,7 +14,6 @@ import {
   type DayInfo,
 } from "@/lib/cycle";
 import { useClientTodayISO } from "@/lib/use-today";
-import { phaseName, pick } from "@/lib/savia-content";
 
 const MONTHS_ES = [
   "Enero",
@@ -86,8 +87,6 @@ export function CycleCalendar({
   const now = fromISO(today);
   const [cursor, setCursor] = useState({ y: now.getFullYear(), m: now.getMonth() });
   const [picked, setPicked] = useState(today);
-  const [legendOpen, setLegendOpen] = useState(false);
-  const weekdays = lang === "es" ? ["Lu", "Ma", "Mi", "Ju", "Vi", "Sa", "Do"] : ["M", "T", "W", "T", "F", "S", "S"];
   const months = lang === "es" ? MONTHS_ES : MONTHS_EN;
   const cells = useMemo(() => monthCells(cursor.y, cursor.m), [cursor.y, cursor.m]);
 
@@ -124,10 +123,6 @@ export function CycleCalendar({
     onMonthChange?.();
   }
 
-  const pickedInfo = info(picked);
-  const selectedMark = pickedInfo.mark;
-  const dayNum = pickedInfo.cycleDay;
-  const phase = pickedInfo.phase;
 
   // Prefer union so a mark never depends on which prop arrived first.
   const sexSet = useMemo(() => {
@@ -142,267 +137,129 @@ export function CycleCalendar({
   const logByDay = useMemo(() => Object.fromEntries(logs.map((l) => [l.day, l])), [logs]);
   const infos = cells.map((c) => info(c.iso));
 
-  const pickedLog = logByDay[picked];
-  const pickedConfirmed = pickedInfo.confirmed;
-
-  const status = dayStatus(selectedMark, pickedConfirmed);
-  const pickedSex = sexSet.has(picked) || Boolean(pickedLog?.sex);
-  const pickedSexKind = sexKindByDay[picked] || (pickedLog?.sex ? "unprotected" : "none");
-
-  const statusTitle =
-    status === "period"
-      ? t.calStatusPeriod
-      : status === "predicted"
-        ? t.calStatusPredicted
-        : status === "peak"
-          ? t.calStatusPeak
-          : status === "fertile"
-            ? t.calStatusFertile
-            : status === "quiet"
-              ? t.calStatusQuiet
-              : t.calStatusNone;
-  const statusSub =
-    status === "period"
-      ? t.calStatusPeriodSub
-      : status === "predicted"
-        ? t.calStatusPredictedSub
-        : status === "quiet"
-          ? t.calStatusQuietSub
-          : null;
-  const hot = status === "peak" || status === "fertile";
+  const { v } = useV4();
+  // Extra week after the grid (next month's first days) so the predicted period stays visible.
+  const lastCell = cells[cells.length - 1]!;
+  const extra = Array.from({ length: 7 }, (_, k) => {
+    const iso = addDaysISO(lastCell.iso, k + 1);
+    const d = fromISO(iso);
+    return { iso, date: d.getDate(), inMonth: false, month: d.getMonth() };
+  });
+  const extraInfos = extra.map((c) => info(c.iso));
+  const weekLetters = lang === "es" ? ["L", "M", "M", "J", "V", "S", "D"] : ["M", "T", "W", "T", "F", "S", "S"];
+  type C = { iso: string; date: number; inMonth: boolean };
+  const kindOf = (ci: DayInfo) => {
+    const m = ci.mark;
+    if (ci.confirmed) return "regla" as const;
+    if (m === "period") return "pred" as const;
+    if (m === "peak") return "ovu" as const;
+    if (m === "fertile") return "fert" as const;
+    return null;
+  };
+  function renderRow(row: C[], rowInfos: DayInfo[], key: string) {
+    return row.map((cell, col) => {
+      const ci = rowInfos[col]!;
+      const k = kindOf(ci);
+      const band = k === "regla" ? "regla" : k === "fert" || k === "ovu" ? "fert" : null;
+      const prevK = col > 0 ? kindOf(rowInfos[col - 1]!) : null;
+      const nextK = col < 6 ? kindOf(rowInfos[col + 1]!) : null;
+      const same = (x: ReturnType<typeof kindOf>) =>
+        band === "regla" ? x === "regla" : band === "fert" ? x === "fert" || x === "ovu" : false;
+      const isToday = cell.iso === today;
+      const isPicked = cell.iso === picked;
+      const logged = logByDay[cell.iso];
+      const flow = logged?.flow;
+      const hasLoggedFlow = flow === "heavy" || flow === "medium" || flow === "light" || flow === "spotting";
+      const hasEntry = Boolean(
+        logged && ((logged.mood != null && logged.mood > 0) || logged.symptoms.length > 0 || (hasLoggedFlow && !ci.confirmed)),
+      );
+      const hasSex = sexSet.has(cell.iso) || Boolean(logged?.sex);
+      const sexKind = sexKindByDay[cell.iso] || (logged?.sex ? "unprotected" : "none");
+      const st = dayStatus(ci.mark, ci.confirmed);
+      return (
+        <button
+          key={`${key}-${cell.iso}`}
+          type="button"
+          onClick={() => choose(cell.iso)}
+          aria-label={`${formatDay(cell.iso, lang)}${statusWord(st, t) ? ` · ${statusWord(st, t)}` : ""}${hasSex ? ` · ${t.legendSexUnprotected.split(" ")[0]}` : ""}`}
+          data-day={cell.iso}
+          aria-current={isToday ? "date" : undefined}
+          aria-pressed={isPicked}
+          data-status={st ?? "none"}
+          data-sex={hasSex ? sexKind : undefined}
+          className={cn(
+            "v4-day press",
+            band,
+            band && !same(prevK) && "cs",
+            band && !same(nextK) && "ce",
+            k === "ovu" && "ovu",
+            k === "pred" && "pred",
+            !cell.inMonth && "out",
+            cell.iso > today && "fut",
+            isToday && "today",
+          )}
+        >
+          <span className="n">{cell.date}</span>
+          <span className="marks" aria-hidden>
+            {hasSex ? <SexHeart kind={sexKind} className="size-[9px]" /> : null}
+            {hasEntry ? <i className="v4-ld" title={t.calMarkMood} /> : null}
+          </span>
+        </button>
+      );
+    });
+  }
+  const gridRows: { row: C[]; infos: DayInfo[] }[] = [];
+  for (let r = 0; r < cells.length; r += 7) gridRows.push({ row: cells.slice(r, r + 7), infos: infos.slice(r, r + 7) });
+  const extraMonth = extra[0]!.month !== cursor.m ? extra[0]!.month : extra[6]!.month;
+  const showExtraLabel = extra.some((c) => c.month !== cursor.m);
+  // Leading days of the previous month are greyed; trailing next-month days read normally.
 
   return (
-    <div>
-      <div
-        data-testid="cal-status"
-        data-status={status ?? "none"}
-        className={cn(
-          "mb-4 flex items-start gap-3 rounded-[22px] border px-4 py-3.5",
-          hot
-            ? "card-fert"
-            : status === "period" || status === "predicted"
-              ? "border-[rgb(255_77_132/0.3)] bg-[linear-gradient(135deg,rgb(255_77_132/0.16),rgb(155_92_255/0.08))]"
-              : status === "quiet"
-                ? "border-[rgb(168_197_160/0.22)] bg-[rgb(168_197_160/0.07)]"
-                : "glass",
-        )}
-        aria-live="polite"
-      >
-        <StatusDot status={status} />
-        <div className="min-w-0 flex-1">
-          <p className={cn("kicker", hot ? "!text-[#C9A2FF]" : status === "period" || status === "predicted" ? "!text-label" : "")}>
-            {picked === today ? `${t.calStatusToday} · ` : ""}
-            {formatDay(picked, lang)}
-            {dayNum ? ` · ${t.dayOf} ${dayNum}` : ""}
-          </p>
-          <p className="mt-1 font-display text-[17px] font-semibold leading-tight tracking-[-0.02em]">{statusTitle}</p>
-          {statusSub || phase !== "none" ? (
-            <p className="mt-0.5 text-[12.5px] leading-snug text-soft">
-              {phase !== "none" ? pick(phaseName[phase], lang) : null}
-              {phase !== "none" && statusSub ? " · " : null}
-              {statusSub}
-            </p>
-          ) : null}
-          {pickedSex ? (
-            <p className="mt-1.5 inline-flex items-center gap-1.5 text-[12.5px] text-soft">
-              <SexHeart kind={pickedSexKind} />
-              {pickedSexKind === "protected"
-                ? t.relationsProtected
-                : pickedSexKind === "withdrawal"
-                  ? t.relationsWithdrawal
-                  : t.relationsUnprotected}
-            </p>
-          ) : null}
-        </div>
-      </div>
-      <div className="flex items-center justify-between">
-        <button
-          type="button"
-          className="inline-flex size-11 items-center justify-center rounded-full ring-1 ring-white/10 hover:bg-surface-2"
-          onClick={() => moveMonth(-1)}
-          aria-label={lang === "es" ? "Mes anterior" : "Previous month"}
-        >
-          <ChevronLeft className="size-5" strokeWidth={1.5} />
-        </button>
-        <p className="font-display text-2xl font-semibold tracking-[-0.035em]">
-          {months[cursor.m]} {cursor.y}
-        </p>
-        <button
-          type="button"
-          className="inline-flex size-11 items-center justify-center rounded-full ring-1 ring-white/10 hover:bg-surface-2"
-          onClick={() => moveMonth(1)}
-          aria-label={lang === "es" ? "Mes siguiente" : "Next month"}
-        >
-          <ChevronRight className="size-5" strokeWidth={1.5} />
-        </button>
-      </div>
-      <div className="mt-2 grid grid-cols-7 text-center font-mono text-[10.5px] uppercase tracking-[0.1em] text-muted">
-        {weekdays.map((w, i) => (
-          <div key={`${w}-${i}`} className="py-2">
-            {w}
-          </div>
-        ))}
-      </div>
-      <div className="grid grid-cols-7 gap-y-1">
-        {cells.map((cell, i) => {
-          const ci = infos[i]!;
-          const m = ci.mark;
-          const isToday = cell.iso === today;
-          const isPicked = cell.iso === picked;
-          const logged = logByDay[cell.iso];
-          const flow = logged?.flow;
-          const hasLoggedFlow =
-            flow === "heavy" || flow === "medium" || flow === "light" || flow === "spotting";
-          const isConfirmed = ci.confirmed;
-          const isPredicted = m === "period" && !isConfirmed;
-          const isPeak = m === "peak" && !isConfirmed;
-          const isFertile = m === "fertile" && !isConfirmed;
-          const isQuiet = m === "quiet" && !isConfirmed;
-          // Projected (after today) = dotted; past/today estimates keep the fill.
-          const projected = cell.iso > today;
-          // Period fill already says "flow": only show the dot for spotting / off-period flow.
-          const hasFlowMark = hasLoggedFlow && !isConfirmed;
-          const hasMood = Boolean(
-            logged && ((logged.mood != null && logged.mood > 0) || logged.symptoms.length > 0),
-          );
-          const hasSex = sexSet.has(cell.iso) || Boolean(logged?.sex);
-          const sexKind = sexKindByDay[cell.iso] || (logged?.sex ? "unprotected" : "none");
-
-          return (
-            <button
-              key={cell.iso}
-              type="button"
-              onClick={() => choose(cell.iso)}
-              aria-label={`${formatDay(cell.iso, lang)}${statusWord(dayStatus(m, isConfirmed), t) ? ` · ${statusWord(dayStatus(m, isConfirmed), t)}` : ""}`}
-              data-day={cell.iso}
-              aria-current={isToday ? "date" : undefined}
-              aria-pressed={isPicked}
-              data-status={dayStatus(m, isConfirmed) ?? "none"}
-              data-sex={hasSex ? sexKind : undefined}
-              className={cn(
-                "press flex min-h-11 flex-col items-center justify-center gap-0.5 py-0.5",
-                !cell.inMonth && "opacity-30",
-              )}
-            >
-              <span
-                className={cn(
-                  "relative flex size-10 items-center justify-center rounded-full text-sm tabular-nums transition-shadow sm:size-11",
-                  // Confirmed period — filled berry with a soft glow
-                  isConfirmed &&
-                    "bg-cal-period font-semibold text-white shadow-[0_0_16px_-4px_rgb(255_77_132/0.7)]",
-                  // Predicted period — dotted outline, never filled
-                  isPredicted && "border-2 border-dotted border-cal-period bg-transparent font-medium text-rose-dust",
-                  // Fertile window — lilac; projected days dotted, ovulation stronger (ring + marker)
-                  isFertile &&
-                    (projected
-                      ? "border-2 border-dotted border-cal-peak/80 font-semibold text-[#e6d6ff]"
-                      : "bg-cal-fertile font-semibold text-[#e6d6ff] ring-1 ring-inset ring-cal-peak/35"),
-                  isPeak &&
-                    (projected
-                      ? "border-2 border-dotted border-cal-peak bg-cal-peak/20 font-semibold text-white"
-                      : "bg-cal-peak/30 font-semibold text-white ring-2 ring-cal-peak shadow-[0_0_16px_-4px_rgb(201_162_255/0.75)]"),
-                  // Rest of the cycle — sage text
-                  isQuiet && "text-cal-rest",
-                  !isConfirmed && !isPredicted && !isFertile && !isPeak && !isQuiet && "text-fg/60",
-                  isToday && !isConfirmed && !isPredicted && !isFertile && !isPeak && "bg-white/[0.1] font-semibold text-white",
-                  isToday && "font-semibold",
-                  // Selected — pearl outline (always)
-                  isPicked && "outline-2 outline-offset-2 outline-white/90",
-                )}
-              >
-                {cell.date}
-                {isToday ? (
-                  <span className="absolute top-0.5 size-1 rounded-full bg-white/90" aria-hidden />
-                ) : null}
-                {isPeak ? (
-                  <span
-                    className="absolute -right-0.5 -top-0.5 size-2.5 rounded-full bg-cal-peak ring-2 ring-bg"
-                    aria-hidden
-                  />
-                ) : null}
-              </span>
-              <span className="flex h-3 min-h-[12px] items-center justify-center gap-[3px]" aria-hidden>
-                {hasSex ? <SexHeart kind={sexKind} /> : null}
-                {hasFlowMark ? (
-                  <span
-                    className={cn("size-1 rounded-full", flow === "spotting" ? "bg-cal-period/60" : "bg-cal-period")}
-                    title={t.calMarkFlow}
-                  />
-                ) : null}
-                {hasMood && !hasSex ? (
-                  <span className="size-1 rounded-full bg-white/55" title={t.calMarkMood} />
-                ) : null}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-      <div className="mt-3 rounded-[18px] bg-white/[0.03] px-3 py-2.5 ring-1 ring-white/[0.06]" data-testid="cal-legend">
-        <div className="flex items-center justify-between gap-2">
-          <ul className="flex flex-wrap gap-x-3.5 gap-y-1.5 text-xs text-soft">
-            <li className="inline-flex items-center gap-1.5">
-              <span className="size-3 rounded-full bg-cal-period" /> {t.legendPeriod}
-            </li>
-            <li className="inline-flex items-center gap-1.5">
-              <span className="size-3 rounded-full bg-cal-fertile ring-1 ring-cal-peak/50" /> {t.legendFertileShort}
-            </li>
-            <li className="inline-flex items-center gap-1.5">
-              <span className="size-3 rounded-full bg-cal-rest/35 ring-1 ring-cal-rest/70" /> {t.legendRest}
-            </li>
-            <li className="inline-flex items-center gap-1.5">
-              <span className="size-3 rounded-full border-2 border-dotted border-white/60" /> {t.legendProjected}
-            </li>
-          </ul>
-          <button
-            type="button"
-            className="inline-flex min-h-9 shrink-0 items-center gap-1 text-xs font-semibold text-rose-dust"
-            aria-expanded={legendOpen}
-            onClick={() => setLegendOpen((v) => !v)}
-          >
-            {legendOpen ? t.hideSymbols : t.showSymbols}
-            <ChevronDown className={cn("size-3.5 transition-transform", legendOpen && "rotate-180")} strokeWidth={1.8} />
+    <div data-testid="cal-v4">
+      <div className="flex items-end justify-between px-2 pt-2.5">
+        <h1 className="v4-h1 !text-[40px]" aria-live="polite">
+          {months[cursor.m]}
+          {cursor.y !== now.getFullYear() ? ` ${cursor.y}` : ""}
+        </h1>
+        <div className="flex gap-2">
+          <button type="button" className="v4-ib press" onClick={() => moveMonth(-1)} aria-label={v.prevMonth}>
+            <ChevronLeft className="size-5" strokeWidth={1.8} />
+          </button>
+          <button type="button" className="v4-ib press" onClick={() => moveMonth(1)} aria-label={v.nextMonth}>
+            <ChevronRight className="size-5" strokeWidth={1.8} />
           </button>
         </div>
-        {legendOpen ? (
-          <ul className="mt-2 grid grid-cols-2 gap-x-3 gap-y-2 border-t border-white/[0.06] pt-2.5 text-xs text-soft">
-            <li className="inline-flex items-center gap-1.5">
-              <span className="size-3 rounded-full border-2 border-dotted border-cal-period bg-transparent" />
-              {t.legendPeriodPredicted}
-            </li>
-            <li className="inline-flex items-center gap-1.5">
-              <span className="relative size-3 rounded-full bg-cal-peak/30 ring-2 ring-cal-peak">
-                <span className="absolute -right-1 -top-1 size-1.5 rounded-full bg-cal-peak" />
-              </span>
-              {t.legendPeak}
-            </li>
-            <li className="inline-flex items-center gap-1.5">
-              <SexHeart kind="unprotected" /> {t.legendSexUnprotected}
-            </li>
-            <li className="inline-flex items-center gap-1.5">
-              <SexHeart kind="protected" /> {t.legendSexProtectedFull}
-            </li>
-            <li className="inline-flex items-center gap-1.5">
-              <span className="relative flex size-3 items-center justify-center rounded-full bg-white/[0.1]">
-                <span className="absolute top-0 size-1 rounded-full bg-white/90" />
-              </span>
-              {t.legendToday}
-            </li>
-            <li className="inline-flex items-center gap-1.5">
-              <span className="size-1.5 rounded-full bg-cal-period" /> {t.calMarkFlow}
-            </li>
-            <li className="inline-flex items-center gap-1.5">
-              <span className="size-1.5 rounded-full bg-white/55" /> {t.calMarkMood}
-            </li>
-          </ul>
-        ) : null}
       </div>
-      <button
-        type="button"
-        className="press glass mt-3 flex min-h-11 w-full items-center justify-center rounded-full text-sm font-semibold"
-        onClick={() => onSelect?.(picked)}
-      >
-        {t.editDayCta}
-      </button>
+      <div className="v4-key" data-testid="cal-legend">
+        <span>
+          <i className="v4-k regla" />
+          {v.legendPeriod}
+        </span>
+        <span>
+          <i className="v4-k fert" />
+          {v.legendFertile}
+        </span>
+        <span>
+          <i className="v4-k pred" />
+          {v.legendPredicted}
+        </span>
+      </div>
+      <div className="v4-wk" aria-hidden>
+        {weekLetters.map((w, i) => (
+          <span key={`${w}-${i}`}>{w}</span>
+        ))}
+      </div>
+      <div className="v4-cg">
+        {gridRows.map((r, ri) =>
+          renderRow(
+            r.row.map((c) => ({ ...c, inMonth: c.inMonth || (ri > 0 && !c.inMonth) })),
+            r.infos,
+            `r${ri}`,
+          ),
+        )}
+      </div>
+      {showExtraLabel ? <p className="v4-mo">{months[extraMonth]}</p> : null}
+      <div className="v4-cg">{renderRow(extra, extraInfos, "x")}</div>
     </div>
   );
 }
@@ -421,31 +278,13 @@ export function SexHeart({ kind, className }: { kind: string; className?: string
   return (
     <Heart
       className={cn(
-        "size-3 shrink-0 text-cal-period",
-        filled ? "fill-current" : "fill-none text-rose-dust",
+        "size-3 shrink-0 text-regla",
+        filled ? "fill-current" : "fill-none",
         kind === "withdrawal" && "opacity-75",
         className,
       )}
       strokeWidth={1.6}
       aria-hidden
     />
-  );
-}
-
-function StatusDot({ status }: { status: ReturnType<typeof dayStatus> }) {
-  return (
-    <span aria-hidden className="mt-0.5 grid size-9 shrink-0 place-items-center rounded-full bg-white/[0.05] ring-1 ring-white/10">
-      <span
-        className={cn(
-          "relative size-4 rounded-full",
-          status === "period" && "bg-cal-period shadow-[0_0_12px_rgb(255_77_132/0.7)]",
-          status === "predicted" && "border-2 border-dotted border-cal-period",
-          status === "fertile" && "bg-cal-peak/55 ring-1 ring-cal-peak",
-          status === "peak" && "bg-cal-peak shadow-[0_0_12px_rgb(201_162_255/0.8)]",
-          status === "quiet" && "bg-cal-rest/70",
-          !status && "bg-white/20",
-        )}
-      />
-    </span>
   );
 }

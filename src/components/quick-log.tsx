@@ -11,10 +11,10 @@ import { haptic } from "@/lib/haptic";
 import { pick, symptomLabel } from "@/lib/savia-content";
 
 const FLOWS: { id: Flow; tint: string; drops: number }[] = [
-  { id: "spotting", tint: "text-[#ffb0cc]", drops: 1 },
-  { id: "light", tint: "text-[#ff8cb8]", drops: 1 },
-  { id: "medium", tint: "text-[#ff5f92]", drops: 2 },
-  { id: "heavy", tint: "text-[#ff4d84]", drops: 3 },
+  { id: "spotting", tint: "text-[#c9687b]", drops: 1 },
+  { id: "light", tint: "text-[#b84459]", drops: 1 },
+  { id: "medium", tint: "text-regla", drops: 2 },
+  { id: "heavy", tint: "text-[#7a1f33]", drops: 3 },
 ];
 
 const FEEL = ["fatigue", "low_mood", "craving", "acne", "irritable"];
@@ -87,8 +87,8 @@ export function QuickLog({
                 className={cn(
                   "flex size-12 items-center justify-center gap-px rounded-full transition-colors",
                   flow === f.id
-                    ? "bg-grad text-primary-fg shadow-[0_6px_22px_-4px_rgb(242_66_126/0.65)]"
-                    : cn("bg-white/[0.055] ring-1 ring-white/10", f.tint),
+                    ? "bg-grad text-primary-fg shadow-[0_6px_22px_-4px_rgb(142_42_63/0.45)]"
+                    : cn("bg-white ring-1 ring-line", f.tint),
                 )}
               >
                 {Array.from({ length: f.drops }).map((_, i) => (
@@ -125,7 +125,7 @@ export function QuickLog({
               }}
               className={cn(
                 "press h-11 rounded-full px-4 text-sm font-semibold",
-                mucus === m ? "bg-select text-select-fg" : "bg-white/[0.06] text-fg ring-1 ring-white/10",
+                mucus === m ? "bg-select text-select-fg" : "bg-white text-fg ring-1 ring-line",
               )}
             >
               {mucusLabel[m]}
@@ -166,11 +166,11 @@ function Card({
       <p className="mb-4 flex items-center gap-2.5 font-display text-[16px] font-semibold tracking-[-0.02em]">
         <span
           className={cn(
-            "flex size-8 items-center justify-center rounded-full bg-white/[0.06] ring-1 ring-white/10",
-            tone === "rose" && "text-[#ff8cb8]",
-            tone === "sand" && "text-[#f0b0e8]",
-            tone === "plum" && "text-[#c7a6ff]",
-            tone === "sage" && "text-[#a8c5a0]",
+            "flex size-8 items-center justify-center rounded-full bg-white ring-1 ring-line",
+            tone === "rose" && "text-regla",
+            tone === "sand" && "text-lut-ink",
+            tone === "plum" && "text-ovu-ink",
+            tone === "sage" && "text-lut-ink",
           )}
         >
           {icon}
@@ -202,7 +202,7 @@ function Chips({
           onClick={() => onTap(id)}
           className={cn(
             "press h-11 rounded-full px-4 text-sm font-semibold",
-            selected.includes(id) ? "bg-select text-select-fg" : "bg-white/[0.06] text-fg ring-1 ring-white/10",
+            selected.includes(id) ? "bg-select text-select-fg" : "bg-white text-fg ring-1 ring-line",
           )}
         >
           {pick(symptomLabel[id]!, lang)}

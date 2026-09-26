@@ -237,7 +237,7 @@ export function DailyNoteCard({
             className={cn(
               "press flex flex-col items-center justify-center gap-0.5 rounded-[16px] text-[11.5px] font-medium",
               compact ? "h-[46px]" : "h-[52px]",
-              picked === id ? "bg-grad text-white shadow-[0_6px_18px_-6px_rgb(242_66_126/0.6)]" : "bg-white/[0.06] text-fg ring-1 ring-white/10",
+              picked === id ? "bg-grad text-white shadow-[0_6px_18px_-6px_rgb(142_42_63/0.45)]" : "bg-white text-fg ring-1 ring-line",
             )}
           >
             <Icon className="size-[18px]" strokeWidth={1.6} />
@@ -256,7 +256,7 @@ export function DailyNoteCard({
             });
           }}
           className={cn(
-            "press flex flex-col items-center justify-center gap-0.5 rounded-[16px] bg-white/[0.06] text-[11.5px] font-medium leading-tight text-fg ring-1 ring-white/10",
+            "press flex flex-col items-center justify-center gap-0.5 rounded-[16px] bg-white text-[11.5px] font-medium leading-tight text-fg ring-1 ring-line",
             compact ? "h-[46px]" : "h-[52px]",
           )}
         >

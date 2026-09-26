@@ -6,7 +6,9 @@
  * - script-src 'unsafe-inline': TanStack Start streams inline hydration scripts
  *   ($tsr) without nonces; https://grok.com is the platform "Created with Grok"
  *   banner script injected by server/middleware/grok-pwa.ts.
- * - style-src / font-src: Google Fonts (@import in styles.css) + inline styles.
+ * - style-src / font-src: fonts are self-hosted (@fontsource Newsreader + Onest,
+ *   bundled by Vite into /assets) — no third-party font origin needed.
+ * - img-src: phase photos live in /public/v4 (same origin, webp).
  * - connect-src 'self': AI (xAI), Web Push sends and DB calls all happen on the
  *   server; the browser only calls this origin (+ the banner's deployer API).
  * - worker-src 'self': /savia-sw.js. Push delivery into the SW is done by the
@@ -16,8 +18,8 @@
 export const CSP = [
   "default-src 'self'",
   "script-src 'self' 'unsafe-inline' https://grok.com",
-  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-  "font-src 'self' data: https://fonts.gstatic.com",
+  "style-src 'self' 'unsafe-inline'",
+  "font-src 'self' data:",
   "img-src 'self' data: blob: https:",
   "media-src 'self' data: blob:",
   "connect-src 'self' https://app-builder-deployer.grok.com",
