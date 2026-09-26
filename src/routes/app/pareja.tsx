@@ -13,8 +13,9 @@ export const Route = createFileRoute("/app/pareja")({ component: Pareja });
 
 function Pareja() {
   const { t, lang } = useI18n();
-  const [data, setData] = useState<TodaySnapshot | null>(() => (SAVIA_BETA ? localToday() : null));
+  const [data, setData] = useState<TodaySnapshot | null>(null);
   useEffect(() => {
+    if (SAVIA_BETA) setData(localToday());
     loadToday()
       .then(setData)
       .catch(() => {});

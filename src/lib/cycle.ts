@@ -80,30 +80,18 @@ export function isCycling(stage: Stage) {
 
 export type DayMark = "period" | "fertile" | "peak" | "quiet";
 
-export function markForDate(
-  iso: string,
-  opts: {
-    lastStart: string | null;
-    cycleLength: number;
-    periodLength: number;
-    periodStarts?: string[];
-    periodDays?: string[];
-  },
-): DayMark | null {
-  if (!opts.lastStart) return null;
-  if (opts.periodDays?.includes(iso)) return "period";
-  const plen = Math.max(opts.periodLength, 2);
-  for (const start of opts.periodStarts || []) {
-    const diff = differenceInCalendarDays(fromISO(iso), fromISO(start));
-    if (diff >= 0 && diff < plen) return "period";
-  }
-  const n = cycleDay(opts.lastStart, opts.cycleLength, iso);
-  if (!n) return null;
-  if (n <= plen) return "period";
-  const ov = ovulationDayNum(plen, opts.cycleLength);
-  if (n === ov) return "peak";
-  if (n >= ov - 5 && n <= ov + 1) return "fertile";
-  return "quiet";
+export type DayMarkOpts = {
+  lastStart: string | null;
+  cycleLength: number;
+  periodLength: number;
+  periodStarts?: string[];
+  periodDays?: string[];
+  /** Local "today" (defaults to the device day). Past vs projected depends on it. */
+  today?: string;
+};
+
+export function markForDate(iso: string, opts: DayMarkOpts): DayMark | null {
+  return dayInfo(iso, opts).mark;
 }
 
 export function monthCells(year: number, month0: number) {
@@ -127,7 +115,11 @@ export function monthCells(year: number, month0: number) {
   return cells;
 }
 
-export function snapshotMeta(profile: SaviaProfile, day = todayISO()) {
+export function snapshotMeta(
+  profile: SaviaProfile,
+  day = todayISO(),
+  extra: { starts?: string[]; periodDays?: string[] } = {},
+) {
   if (profile.stage === "pregnancy") {
     return {
       cycleDay: null as number | null,
@@ -138,10 +130,17 @@ export function snapshotMeta(profile: SaviaProfile, day = todayISO()) {
   if (profile.stage === "meno") {
     return { cycleDay: null as number | null, phase: "none" as Phase, pregnancyWeek: null as number | null };
   }
-  const dayNum = cycleDay(profile.lastPeriodStart, profile.cycleLength, day);
+  const info = dayInfo(day, {
+    lastStart: profile.lastPeriodStart,
+    cycleLength: effectiveCycle(extra.starts ?? [], profile.cycleLength, profile.lastPeriodStart),
+    periodLength: profile.periodLength,
+    periodStarts: extra.starts,
+    periodDays: extra.periodDays,
+    today: day,
+  });
   return {
-    cycleDay: dayNum,
-    phase: phaseForDay(dayNum, profile.periodLength, profile.cycleLength),
+    cycleDay: info.cycleDay,
+    phase: info.phase,
     pregnancyWeek: null as number | null,
   };
 }
@@ -206,21 +205,7 @@ export function predictPeriod(
   fallback: number,
   stage: Stage = "cycle",
 ) {
-  const p = cyclePattern(starts, fallback);
-  const len = weightedCycle(starts, fallback);
-  const next = nextPeriodDate(lastStart, len);
-  if (!next) return { next: null, from: null, to: null, pad: 0, n: p.n, len, irregular: p.irregular };
-  let pad = p.n < 1 ? 3 : p.n < 3 ? Math.max(2, Math.ceil(p.variation / 2) || 2) : Math.max(1, Math.ceil(p.variation / 2));
-  if (stage === "peri" || p.irregular) pad = Math.max(pad, 4);
-  return {
-    next,
-    from: addDaysISO(next, -pad),
-    to: addDaysISO(next, pad),
-    pad,
-    n: p.n,
-    len,
-    irregular: p.irregular,
-  };
+  return predictRange(lastStart, starts, fallback, stage);
 }
 
 export function cyclePattern(starts: string[], fallback: number) {
@@ -350,4 +335,255 @@ export function sexChanceForMark(mark: DayMark | null): "peak" | "fertile" | "qu
   if (mark === "peak") return "peak";
   if (mark === "fertile") return "fertile";
   return "quiet";
+}
+
+
+// ---------------------------------------------------------------------------
+// One source of truth for day number / phase / marks (Hoy, calendar, orb, push)
+// ---------------------------------------------------------------------------
+
+function clampInt(n: number, lo: number, hi: number) {
+  return Math.min(hi, Math.max(lo, Math.round(Number.isFinite(n) ? n : lo)));
+}
+
+function daysBetween(a: string, b: string) {
+  return differenceInCalendarDays(fromISO(b), fromISO(a));
+}
+
+/** Every known period start (logged starts + the profile's last start), oldest first. */
+export function knownStarts(lastStart: string | null, starts: string[] = []) {
+  const all = new Set<string>();
+  for (const s of starts) {
+    const d = asIsoDay(s);
+    if (d) all.add(d);
+  }
+  const last = asIsoDay(lastStart);
+  if (last) all.add(last);
+  return [...all].sort();
+}
+
+export type DayInfo = {
+  /** Day of the cycle that contains this date (never wraps for today / the past). */
+  cycleDay: number | null;
+  phase: Phase;
+  mark: DayMark | null;
+  /** Bleeding backed by data (a logged start or logged flow), not an estimate. */
+  confirmed: boolean;
+  /** Future estimate — drawn dotted. */
+  projected: boolean;
+  /** Past the expected period with no new start logged. */
+  late: boolean;
+};
+
+const NO_INFO: DayInfo = { cycleDay: null, phase: "none", mark: null, confirmed: false, projected: false, late: false };
+
+function classifyDay(
+  n: number,
+  len: number,
+  plen: number,
+  confirmedPeriod: boolean,
+  projected: boolean,
+): DayInfo {
+  const base = { cycleDay: n, projected, late: false };
+  if (confirmedPeriod) return { ...base, phase: "menstrual", mark: "period", confirmed: true };
+  if (n <= plen) {
+    // Only reachable for projected cycles: an estimate, never "on your period".
+    return { ...base, phase: "menstrual", mark: "period", confirmed: false };
+  }
+  const ov = ovulationDayNum(plen, len);
+  const phase: Phase =
+    n >= ov - 1 && n <= ov + 1 ? "ovulatory" : n < ov ? "follicular" : "luteal";
+  if (ov < len && n === ov) return { ...base, phase, mark: "peak", confirmed: false };
+  if (ov < len && n >= ov - 5 && n <= ov + 1) return { ...base, phase, mark: "fertile", confirmed: false };
+  return { ...base, phase, mark: "quiet", confirmed: false };
+}
+
+/**
+ * Day number, phase and calendar mark for one date — the same answer on every
+ * screen. Rules:
+ * - Menstruation only with data (a known start + period length, or logged flow).
+ *   A predicted period never turns "today" into menstruation.
+ * - The current cycle keeps counting past the expected date (Día 30, late)
+ *   until she confirms a new start.
+ * - No marks before her first known start (no fertile days in the past without data).
+ * - Future days are estimates (projected → dotted).
+ */
+export function dayInfo(iso: string, opts: DayMarkOpts): DayInfo {
+  const day = asIsoDay(iso);
+  if (!day) return NO_INFO;
+  const starts = knownStarts(opts.lastStart, opts.periodStarts);
+  if (!starts.length) return NO_INFO;
+  const today = asIsoDay(opts.today ?? null) ?? todayISO();
+  const plen = clampInt(opts.periodLength || 5, 2, 10);
+  const len = clampInt(opts.cycleLength || 28, 21, 60);
+  const bleeding = Boolean(opts.periodDays?.includes(day));
+
+  if (day < starts[0]!) {
+    return bleeding ? { ...NO_INFO, phase: "menstrual", mark: "period", confirmed: true } : NO_INFO;
+  }
+  let start = starts[0]!;
+  let next: string | null = null;
+  for (const s of starts) {
+    if (s <= day) start = s;
+    else {
+      next = s;
+      break;
+    }
+  }
+  const diff = daysBetween(start, day);
+
+  if (next) {
+    // A finished cycle between two real starts: its own length, not the average.
+    return classifyDay(diff + 1, daysBetween(start, next), plen, diff < plen || bleeding, false);
+  }
+
+  if (day <= today) {
+    const n = diff + 1;
+    if (n > len && !(diff < plen)) {
+      return {
+        cycleDay: n,
+        phase: bleeding ? "menstrual" : "luteal",
+        mark: bleeding ? "period" : null,
+        confirmed: bleeding,
+        projected: false,
+        late: !bleeding,
+      };
+    }
+    return classifyDay(n, len, plen, diff < plen || bleeding, false);
+  }
+
+  // Future: rest of the current cycle, then projected cycles from the next expected start.
+  let nextStart = addDaysISO(start, len);
+  if (nextStart <= today) nextStart = addDaysISO(today, 1);
+  if (day < nextStart) return classifyDay(diff + 1, len, plen, diff < plen || bleeding, diff >= plen);
+  const k = Math.floor(daysBetween(nextStart, day) / len);
+  const cs = addDaysISO(nextStart, k * len);
+  return classifyDay(daysBetween(cs, day) + 1, len, plen, bleeding, true);
+}
+
+/** Cycle length to use everywhere: average of her logged cycles, else what she told us. */
+export function effectiveCycle(starts: string[], fallback: number, lastStart: string | null = null) {
+  const gaps = cycleGaps(knownStarts(lastStart, starts));
+  if (!gaps.length) return clampInt(fallback || 28, 21, 45);
+  return Math.round(gaps.reduce((a, b) => a + b, 0) / gaps.length);
+}
+
+export type Confidence = "low" | "medium" | "high";
+
+export type PredictionRange = {
+  next: string | null;
+  from: string | null;
+  to: string | null;
+  pad: number;
+  /** Complete logged cycles (gaps between two starts). */
+  n: number;
+  /** Periods she has logged (data points). */
+  cycles: number;
+  len: number;
+  sd: number;
+  confidence: Confidence;
+  irregular: boolean;
+};
+
+/**
+ * Next period as a range + confidence, learnt from her real logged cycles:
+ * average gap = centre; confidence from number of cycles and their spread.
+ */
+export function predictRange(
+  lastStart: string | null,
+  starts: string[],
+  fallback: number,
+  stage: Stage = "cycle",
+): PredictionRange {
+  const all = knownStarts(lastStart, starts);
+  const gaps = cycleGaps(all);
+  const n = gaps.length;
+  const len = n ? Math.round(gaps.reduce((a, b) => a + b, 0) / n) : clampInt(fallback || 28, 21, 45);
+  const mean = n ? gaps.reduce((a, b) => a + b, 0) / n : len;
+  const sd = n > 1 ? Math.sqrt(gaps.reduce((a, g) => a + (g - mean) ** 2, 0) / (n - 1)) : 0;
+  let confidence: Confidence = n <= 1 ? "low" : n <= 3 ? (sd <= 3 ? "medium" : "low") : sd <= 2 ? "high" : sd <= 4 ? "medium" : "low";
+  const irregular = n > 0 && (Math.max(...gaps) - Math.min(...gaps) >= 8 || Math.min(...gaps) < 21 || Math.max(...gaps) > 35);
+  if ((stage === "peri" || irregular) && confidence === "high") confidence = "medium";
+  let pad = confidence === "high" ? 1 : confidence === "medium" ? 2 : 3;
+  pad = Math.min(7, Math.max(pad, Math.ceil(sd)));
+  if (stage === "peri" || irregular) pad = Math.max(pad, 4);
+  const latest = all.length ? all[all.length - 1]! : null;
+  const next = latest ? addDaysISO(latest, len) : null;
+  return {
+    next,
+    from: next ? addDaysISO(next, -pad) : null,
+    to: next ? addDaysISO(next, pad) : null,
+    pad,
+    n,
+    cycles: all.length,
+    len,
+    sd: Math.round(sd * 10) / 10,
+    confidence,
+    irregular,
+  };
+}
+
+const MONTH_SHORT = {
+  es: ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"],
+  en: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+} as const;
+
+/** «15–21 oct» / «28 oct – 3 nov». */
+export function formatRange(from: string, to: string, lang: "es" | "en" = "es") {
+  const a = fromISO(from);
+  const b = fromISO(to);
+  const m = MONTH_SHORT[lang];
+  if (a.getMonth() === b.getMonth() && a.getFullYear() === b.getFullYear()) {
+    return `${a.getDate()}–${b.getDate()} ${m[b.getMonth()]}`;
+  }
+  return `${a.getDate()} ${m[a.getMonth()]} – ${b.getDate()} ${m[b.getMonth()]}`;
+}
+
+/** «confianza baja, 1 ciclo» — same words in onboarding, Hoy and calendar. */
+export function confidenceLabel(p: Pick<PredictionRange, "confidence" | "cycles">, lang: "es" | "en" = "es") {
+  const c = Math.max(1, p.cycles);
+  if (lang === "en") {
+    const w = { low: "low", medium: "medium", high: "high" }[p.confidence];
+    return `${w} confidence, ${c} ${c === 1 ? "cycle" : "cycles"}`;
+  }
+  const w = { low: "baja", medium: "media", high: "alta" }[p.confidence];
+  return `confianza ${w}, ${c} ${c === 1 ? "ciclo" : "ciclos"}`;
+}
+
+/** «15–21 oct · confianza baja, 1 ciclo» */
+export function predictionLabel(p: PredictionRange, lang: "es" | "en" = "es") {
+  if (!p.from || !p.to) return "";
+  return `${formatRange(p.from, p.to, lang)} · ${confidenceLabel(p, lang)}`;
+}
+
+/** Days between the new start and the closest earlier known start (null if none). */
+export function cycleLengthIfStarted(day: string, starts: string[]) {
+  const earlier = starts.filter((s) => s < day).sort();
+  const prev = earlier[earlier.length - 1];
+  return prev ? daysBetween(prev, day) : null;
+}
+
+/** A new bleeding day counts as a new period start unless a start sits right before it. */
+export function isNewPeriodStart(day: string, starts: string[], periodLength: number) {
+  const plen = clampInt(periodLength || 5, 2, 10);
+  return !starts.some((s) => {
+    const d = daysBetween(s, day);
+    return d >= -2 && d <= plen + 2;
+  });
+}
+
+/** Upcoming (or current) fertile window from a day on — never a past one. */
+export function upcomingFertile(opts: DayMarkOpts, from?: string) {
+  const today = asIsoDay(from ?? opts.today ?? null) ?? todayISO();
+  let start: string | null = null;
+  let end: string | null = null;
+  for (let i = 0; i < 70; i++) {
+    const d = addDaysISO(today, i);
+    const m = dayInfo(d, { ...opts, today }).mark;
+    const hot = m === "fertile" || m === "peak";
+    if (hot && !start) start = d;
+    if (start && hot) end = d;
+    if (start && !hot) break;
+  }
+  return start && end ? { start, end } : null;
 }

@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { authMiddleware } from "@/lib/auth/middleware";
 import { getSql } from "@/lib/db";
-import { asIsoDay, cyclePattern, fertileWindow, nextPeriodDate, averageCycle, snapshotMeta, symptomByPhase, todayISO, learnedCycle } from "@/lib/cycle";
+import { asIsoDay, cyclePattern, fertileWindow, nextPeriodDate, averageCycle, periodDaysFromLogs, snapshotMeta, symptomByPhase, todayISO, learnedCycle } from "@/lib/cycle";
 import type { DailyLog, Flow, Intention, Mucus, SaviaProfile, SexKind, Stage, TodaySnapshot } from "@/lib/types";
 import { moneyToNumber } from "@/lib/utils";
 import { WHOP_MONTH } from "@/lib/pay-links";
@@ -240,7 +240,8 @@ export async function snapshotFor(userId: string): Promise<TodaySnapshot> {
     order by day desc
     limit 90
   `;
-  const meta = snapshotMeta(profile, day);
+  const startDays = starts.map((s) => asIsoDay(s.start_date) || String(s.start_date).slice(0, 10));
+  const meta = snapshotMeta(profile, day, { starts: startDays, periodDays: periodDaysFromLogs(recent.map(mapLog)) });
   const sexMarks = sexRows.map((s) => ({
     day: asIsoDay(s.day) || String(s.day).slice(0, 10),
     kind: ((s.sex_kind as SexKind) || "unprotected") as SexKind,

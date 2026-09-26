@@ -34,18 +34,7 @@ export function QuickLog({
   const [mucus, setMucus] = useState<Mucus>(initial?.mucus || "none");
 
   function persist(nextFlow: Flow, nextSym: string[], nextMucus: Mucus) {
-    void writeLog({
-      day: todayISO(),
-      flow: nextFlow,
-      mood: initial?.mood ?? null,
-      energy: initial?.energy ?? null,
-      sleepHours: initial?.sleepHours ?? null,
-      notes: initial?.notes ?? "",
-      symptoms: nextSym,
-      periodStarted: nextFlow === "light" || nextFlow === "medium" || nextFlow === "heavy",
-      mucus: nextMucus,
-      // Omit sex: localSaveLog keeps existing sex/sexKind when updating feelings.
-    }).then((res) => {
+    void writeLog({ day: todayISO(), flow: nextFlow, symptoms: nextSym, mucus: nextMucus }).then((res) => {
       if (res.ok) {
         setSymptoms(res.log.symptoms);
         setFlow(res.log.flow && res.log.flow !== "none" ? res.log.flow : "none");
@@ -124,14 +113,15 @@ export function QuickLog({
 
       <Card tone="sage" icon={<Sparkles className="size-4" strokeWidth={1.6} />} title={t.mucus}>
         <div className="flex flex-wrap gap-2">
-          {MUCUS.map((m) => (
+          {MUCUS.filter((m) => m !== "none").map((m) => (
             <button
               key={m}
               type="button"
               onClick={() => {
                 haptic(14);
-                setMucus(m);
-                persist(flow, symptoms, m);
+                const next: Mucus = mucus === m ? "none" : m;
+                setMucus(next);
+                persist(flow, symptoms, next);
               }}
               className={cn(
                 "press h-11 rounded-full px-4 text-sm font-semibold",

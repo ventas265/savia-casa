@@ -7,14 +7,15 @@ import { PageTitle } from "@/components/color-blobs";
 import { CycleCalendar } from "@/components/cycle-calendar";
 import { DaySheet } from "@/components/day-sheet";
 import { Predictions } from "@/components/predictions";
-import { loadToday, writeProfile } from "@/lib/savia-api";
+import { correctLastPeriod, loadToday, writeProfile } from "@/lib/savia-api";
+import { BottomSheet } from "@/components/bottom-sheet";
 import { SAVIA_BETA } from "@/lib/beta";
 import { localAllLogs, localToday } from "@/lib/savia-local";
 import { InsightsPanel } from "@/components/insights-card";
 import { computeInsights } from "@/lib/insights";
 import { getSelectedDay, setSelectedDay } from "@/lib/selected-day";
 import { useI18n } from "@/lib/i18n";
-import { todayISO, isConfirmedPeriodDay, isCycling, markForDate, periodDaysFromLogs, formatDay, weightedCycle, cycleDay, phaseForDay } from "@/lib/cycle";
+import { todayISO, dayInfo, isCycling, periodDaysFromLogs, formatDay, formatLong, predictPeriod } from "@/lib/cycle";
 import type { DailyLog, TodaySnapshot } from "@/lib/types";
 
 export const Route = createFileRoute("/app/calendario")({ component: CalendarTab });
@@ -92,6 +93,15 @@ function CalendarTab() {
     setSavingFum(true);
     try {
       const p = data.profile;
+      if (p.lastPeriodStart && SAVIA_BETA) {
+        // Correction: move the latest start, keep older history, clean the old start's log.
+        const snap = await correctLastPeriod(fumDraft);
+        setData(snap);
+        setEditingFum(false);
+        setFumDraft("");
+        toast.success(t.regSaved.replace("{date}", formatLong(fumDraft, lang)));
+        return;
+      }
       const res = await writeProfile({
         displayName: p.displayName,
         stage: p.stage,
@@ -139,11 +149,22 @@ function CalendarTab() {
   }
 
   const wrapUpPaid = data.profile.plan === "serena" || data.profile.plan === "year";
-  const learned = weightedCycle(data.periodStarts, data.profile.cycleLength);
+  const learned = predictPeriod(data.profile.lastPeriodStart, data.periodStarts, data.profile.cycleLength, data.profile.stage).len;
+  const periodDays = periodDaysFromLogs(data.recentLogs);
+  const sheetInfo = sheetDay
+    ? dayInfo(sheetDay, {
+        lastStart: data.profile.lastPeriodStart,
+        cycleLength: learned,
+        periodLength: data.profile.periodLength,
+        periodStarts: data.periodStarts,
+        periodDays,
+        today: todayISO(),
+      })
+    : null;
   const sheetLog = sheetDay ? (data.recentLogs.find((l) => l.day === sheetDay) ?? null) : null;
   const cycling = isCycling(data.profile.stage);
   const needsFum = cycling && !data.profile.lastPeriodStart;
-  const showFumForm = needsFum || editingFum;
+  const showFumForm = needsFum;
 
   return (
     <div>
@@ -207,7 +228,7 @@ function CalendarTab() {
                   cycleLength={learned}
                   periodLength={data.profile.periodLength}
                   periodStarts={data.periodStarts}
-                  periodDays={periodDaysFromLogs(data.recentLogs)}
+                  periodDays={periodDays}
                   logs={data.recentLogs.map((l) => ({
                     day: l.day,
                     flow: l.flow,
@@ -272,31 +293,46 @@ function CalendarTab() {
           paid={wrapUpPaid}
         />
       ) : null}
+      {editingFum && !needsFum ? (
+        <BottomSheet
+          title={t.lastPeriodSheetTitle}
+          onClose={() => {
+            setEditingFum(false);
+            setFumDraft("");
+          }}
+          testId="last-period-sheet"
+          labelledBy="last-period-title"
+        >
+          <p className="text-sm leading-relaxed text-muted">{t.lastPeriodSheetSub}</p>
+          <label htmlFor="fum-edit" className="mt-4 block text-sm font-semibold">
+            {t.calSetLastPeriod}
+          </label>
+          <input
+            id="fum-edit"
+            type="date"
+            value={fumDraft}
+            max={todayISO()}
+            onChange={(e) => setFumDraft(e.target.value)}
+            className="glass mt-2 min-h-14 w-full rounded-[22px] px-5 font-display text-xl font-semibold outline-none [color-scheme:dark]"
+          />
+          <Button
+            className="mt-4 h-14 w-full rounded-full bg-grad text-base text-primary-fg"
+            disabled={!fumDraft || savingFum}
+            onClick={() => void saveLastPeriod()}
+          >
+            {t.calSaveLastPeriod}
+          </Button>
+        </BottomSheet>
+      ) : null}
       {sheetDay && !needsFum ? (
         <DaySheet
           day={sheetDay}
           log={sheetLog}
           wrapUpPaid={wrapUpPaid}
-          dayMark={markForDate(sheetDay, {
-            lastStart: data.profile.lastPeriodStart,
-            cycleLength: learned,
-            periodLength: data.profile.periodLength,
-            periodStarts: data.periodStarts,
-            periodDays: periodDaysFromLogs(data.recentLogs),
-          })}
-          confirmedPeriod={isConfirmedPeriodDay(sheetDay, {
-            lastStart: data.profile.lastPeriodStart,
-            periodLength: data.profile.periodLength,
-            periodStarts: data.periodStarts,
-            periodDays: periodDaysFromLogs(data.recentLogs),
-            log: sheetLog,
-          })}
-          cycleDayNum={cycleDay(data.profile.lastPeriodStart, learned, sheetDay)}
-          phase={phaseForDay(
-            cycleDay(data.profile.lastPeriodStart, learned, sheetDay),
-            data.profile.periodLength,
-            learned,
-          )}
+          dayMark={sheetInfo?.mark ?? null}
+          confirmedPeriod={sheetInfo?.confirmed ?? false}
+          cycleDayNum={sheetInfo?.cycleDay ?? null}
+          phase={sheetInfo?.phase ?? "none"}
           intention={data.profile.intention}
           onClose={() => {
             setSheetDay(null);

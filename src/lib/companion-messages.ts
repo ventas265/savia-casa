@@ -91,6 +91,13 @@ export function greetingFor(hour: number, lang: Lang = "es") {
   return GREETING[lang][momentForHour(hour)];
 }
 
+/** «Buenas tardes, QA» — the one greeting line every screen uses (header, onboarding, note). */
+export function greetingLine(hour: number, name: string | null | undefined, lang: Lang = "es") {
+  const g = capitalize(greetingFor(hour, lang));
+  const who = companionName(name);
+  return who ? `${g}, ${who}` : g;
+}
+
 export function capitalize(s: string) {
   return s ? s.charAt(0).toLocaleUpperCase("es") + s.slice(1) : s;
 }
@@ -103,15 +110,21 @@ export function capitalize(s: string) {
 const NO_NAME = new Set(["tu", "tú", "you", "yo", "-", "—", "anonima", "anónima", "x"]);
 
 /**
- * The registered name as a friend would write it: first word, first letter
- * capitalised, max 24 chars. "" when missing / placeholder / not a name.
+ * The registered name as a friend would write it: first word, max 24 chars,
+ * her own capitalisation kept (only all-lowercase or SHOUTED names get a
+ * normal capital; short initials like «QA» stay). "" when missing / placeholder.
  */
 export function companionName(raw: string | null | undefined): string {
   const first = (raw || "").trim().split(/\s+/)[0] || "";
   const clean = first.replace(/[^\p{L}\p{M}'-]/gu, "").slice(0, 24);
   if (clean.length < 2) return "";
   if (NO_NAME.has(clean.toLocaleLowerCase("es"))) return "";
-  return capitalize(clean.toLocaleLowerCase("es") === clean || clean.toLocaleUpperCase("es") === clean ? clean.toLocaleLowerCase("es") : clean);
+  const lower = clean.toLocaleLowerCase("es");
+  const upper = clean.toLocaleUpperCase("es");
+  // Short all-caps words are initials (QA, MJ): keep them as typed.
+  if (upper === clean && clean.length <= 3) return clean;
+  // Shouted names (CLAUDIA) and all-lowercase (maría) get a normal capital; mixed case stays as typed.
+  return capitalize(lower === clean || upper === clean ? lower : clean);
 }
 
 // ---------------------------------------------------------------------------

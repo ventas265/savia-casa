@@ -96,6 +96,31 @@ export const paySettingsSchema = z.object({
   bankHolder: payField(),
 });
 
+const isoDay = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
+
+/** Undo / correct a period start (device credential required). */
+export const removePeriodSchema = z.object({
+  ...deviceCredsSchema,
+  day: isoDay,
+  lastPeriodStart: isoDay.nullable(),
+  cycleLength: z.number().int().min(21).max(45).nullish(),
+  log: z
+    .object({
+      flow: z.enum(["none", "spotting", "light", "medium", "heavy"]),
+      mood: z.number().int().min(0).max(5).nullable(),
+      energy: z.number().int().min(0).max(5).nullable(),
+      sleepHours: z.number().min(0).max(24).nullable(),
+      notes: z.string().max(500),
+      symptoms: z.array(z.string().max(40)).max(24),
+      periodStarted: z.boolean(),
+      mucus: z.enum(["none", "sticky", "creamy", "eggwhite", "watery"]),
+      sex: z.boolean(),
+      sexKind: z.enum(["none", "protected", "unprotected", "withdrawal"]),
+    })
+    .nullable()
+    .optional(),
+});
+
 /** Output caps for xAI calls (reasoning tokens count against these). */
 export const AI_MAX_TOKENS = { chat: 2500, note: 1200 } as const;
 /** Per-window request caps for the AI endpoints. */

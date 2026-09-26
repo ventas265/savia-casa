@@ -1,5 +1,5 @@
 import { useEffect, useState, type CSSProperties } from "react";
-import { isConfirmedPeriodDay, isCycling, markForDate } from "@/lib/cycle";
+import { dayInfo, isCycling, periodDaysFromLogs, predictPeriod } from "@/lib/cycle";
 import { SAVIA_BETA } from "@/lib/beta";
 import { localToday } from "@/lib/savia-local";
 import { loadToday } from "@/lib/savia-api";
@@ -45,19 +45,15 @@ export function OrbCaption({ tone, className }: { tone: SaviaTone; className?: s
 export function toneFromSnapshot(snap: TodaySnapshot | null): SaviaTone {
   if (!snap || !isCycling(snap.profile.stage) || !snap.profile.lastPeriodStart) return "none";
   const p = snap.profile;
-  const mark = markForDate(snap.day, {
+  const info = dayInfo(snap.day, {
     lastStart: p.lastPeriodStart,
-    cycleLength: p.cycleLength,
+    cycleLength: predictPeriod(p.lastPeriodStart, snap.periodStarts, p.cycleLength, p.stage).len,
     periodLength: p.periodLength,
     periodStarts: snap.periodStarts,
+    periodDays: periodDaysFromLogs(snap.log ? [snap.log, ...snap.recentLogs] : snap.recentLogs),
+    today: snap.day,
   });
-  const onPeriod = isConfirmedPeriodDay(snap.day, {
-    lastStart: p.lastPeriodStart,
-    periodLength: p.periodLength,
-    periodStarts: snap.periodStarts,
-    log: snap.log,
-  });
-  return toneFor(snap.phase, mark, onPeriod);
+  return toneFor(info.phase, info.mark, info.confirmed);
 }
 
 /** Client-only tone (on-device data); "none" during SSR / before hydration. */

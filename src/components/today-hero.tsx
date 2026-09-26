@@ -6,26 +6,27 @@ import { differenceInCalendarDays } from "date-fns";
 import {
   addDaysISO,
   CYCLE_CHOICES,
-  daysUntil,
   formatDay,
+  dayInfo,
+  daysUntil,
   formatLong,
   fromISO,
-  inDayRange,
-  isConfirmedPeriodDay,
   isCycling,
   markForDate,
+  periodDaysFromLogs,
   predictPeriod,
   todayISO,
 } from "@/lib/cycle";
 import { useClientTodayISO } from "@/lib/use-today";
-import type { DailyLog, Intention, Phase, Stage } from "@/lib/types";
+import type { DailyLog, Intention, Phase, Stage, TodaySnapshot } from "@/lib/types";
+import { RegisterPeriodSheet } from "@/components/register-period-sheet";
 import { cn } from "@/lib/utils";
 import { Activity, ArrowRight, ArrowUpRight, Bell, Droplet } from "lucide-react";
 import { SegmentRing } from "@/components/cycle-ring";
 import { SaviaOrb } from "@/components/savia-orb";
 import { DailyNoteCard, useLocalHour } from "@/components/daily-note-card";
 import { PushSoftPrompt } from "@/components/push-reminders";
-import { capitalize, companionName, greetingFor } from "@/lib/companion-messages";
+import { companionName, greetingLine } from "@/lib/companion-messages";
 import { InsightsCompact } from "@/components/insights-card";
 import { buildNoteContext } from "@/lib/daily-note";
 import { computeInsights } from "@/lib/insights";
@@ -53,6 +54,7 @@ export function TodayHero({
   onGuia,
   onAsk,
   onCameToday,
+  onPeriodChange,
   onCycleChange,
   notify = false,
   showFertile = true,
@@ -77,6 +79,8 @@ export function TodayHero({
   onGuia: () => void;
   onAsk: () => void;
   onCameToday?: () => void | Promise<unknown>;
+  /** After registering / undoing a period from the sheet. */
+  onPeriodChange?: (snap: TodaySnapshot) => void;
   onCycleChange?: (n: number) => void;
   notify?: boolean;
   showFertile?: boolean;
@@ -93,41 +97,51 @@ export function TodayHero({
   const { t, lang } = useI18n();
   const [adjust, setAdjust] = useState(false);
   const hour = useLocalHour();
-  const [savingPeriod, setSavingPeriod] = useState(false);
   const today = useClientTodayISO() ?? todayISO();
   const pred = predictPeriod(lastStart, periodStarts, cycleLength, stage);
   const next = pred.next ?? nextPeriod ?? null;
-  const left = daysUntil(next);
-  // Confirmed bleeding only — Ogino wrap must not look like she already logged period.
-  const onPeriod = isConfirmedPeriodDay(today, {
+  const left = daysUntil(next, today);
+  const allLogs = log ? [log, ...recentLogs.filter((l) => l.day !== log.day)] : recentLogs;
+  const markOpts = {
     lastStart: lastStart ?? null,
+    cycleLength: pred.len,
     periodLength,
     periodStarts,
-    log,
-  });
+    periodDays: periodDaysFromLogs(allLogs),
+    today,
+  };
+  // One answer for day / phase / period (same as calendar): menstruation only with data.
+  const info = dayInfo(today, markOpts);
+  const onPeriod = info.confirmed;
+  const dayNum = info.cycleDay ?? cycleDay;
+  const livePhase: Phase = isCycling(stage) && lastStart ? info.phase : phase;
   void showFertile;
-  const fertile = phase === "ovulatory";
-  const estimatedBleed =
-    !onPeriod &&
-    markForDate(today, {
-      lastStart: lastStart ?? null,
-      cycleLength,
-      periodLength,
-      periodStarts,
-    }) === "period";
-  const inWindow = !onPeriod && (inDayRange(today, pred.from, pred.to) || estimatedBleed);
-  const kind = periodAlert(left, onPeriod, phase, inWindow);
+  const fertile = livePhase === "ovulatory";
+  // From the start of the predicted range on (or late), ask instead of assuming.
+  const inWindow = !onPeriod && Boolean(pred.from && today >= pred.from);
+  const [askDismissed, setAskDismissed] = useState(false);
+  const [regOpen, setRegOpen] = useState(false);
+  useEffect(() => {
+    try {
+      setAskDismissed(localStorage.getItem(`savia.periodAsk.${today}`) === "no");
+    } catch {
+      /* private mode */
+    }
+  }, [today]);
+  const asking = inWindow && !askDismissed && isCycling(stage) && Boolean(lastStart);
+  const lateDays = next && today > next ? daysUntil(today, next) ?? 0 : 0;
+  const kind = periodAlert(left, onPeriod, livePhase, inWindow);
 
   const heroTitle = (() => {
-    if (onPeriod && cycleDay != null) {
-      return t.heroDayMenstrual.replace("{n}", String(cycleDay));
+    if (onPeriod && dayNum != null) {
+      return t.heroDayMenstrual.replace("{n}", String(dayNum));
     }
     if (onPeriod) return t.periodToday;
     if (inWindow || left === 0) return t.periodComesToday;
     if (left != null && left > 0) {
       return left === 1 ? t.periodInOneDay : t.periodInDays.replace("{n}", String(left));
     }
-    if (cycleDay != null) return t.heroDayCycle.replace("{n}", String(cycleDay));
+    if (dayNum != null) return t.heroDayCycle.replace("{n}", String(dayNum));
     return t.periodComesToday;
   })();
 
@@ -181,27 +195,18 @@ export function TodayHero({
     );
   }, [notify, kind, fertile, notifyTitle, notifyBody, next, onPeriod, t]);
 
-  async function registerPeriodToday() {
-    if (!onCameToday || onPeriod || savingPeriod) {
-      if (onPeriod) onLog();
+  function openRegister() {
+    if (onPeriod) {
+      onLog();
       return;
     }
-    setSavingPeriod(true);
-    haptic(14);
-    try {
-      await onCameToday();
-      toast.success(t.savedInMonth.replace("{date}", formatDay(today, lang)));
-    } finally {
-      setSavingPeriod(false);
-    }
+    setRegOpen(true);
   }
 
   const headerName = companionName(name);
   const initial = headerName.charAt(0).toUpperCase() || "S";
   const cycling = isCycling(stage) && Boolean(lastStart);
-  const todayMark = cycling
-    ? markForDate(today, { lastStart: lastStart ?? null, cycleLength, periodLength, periodStarts })
-    : null;
+  const todayMark = cycling ? info.mark : null;
   const fertHot = todayMark === "fertile" || todayMark === "peak";
   const meterOn = todayMark === "peak" ? 5 : todayMark === "fertile" ? 4 : onPeriod ? 1 : 2;
   const fertTitle =
@@ -212,18 +217,17 @@ export function TodayHero({
       : t.fertBodyAvoid
     : t.daySheetChanceLowSex;
   const nextShort = next ? formatDay(next, lang) : null;
-  const tone = toneFor(cycling ? phase : "none", todayMark, cycling && onPeriod);
+  const tone = toneFor(cycling ? livePhase : "none", todayMark, cycling && onPeriod);
   const noteCtx = buildNoteContext({
     today,
-    phase: cycling ? phase : "none",
-    cycleDay: cycling ? cycleDay : null,
+    phase: cycling ? livePhase : "none",
+    cycleDay: cycling ? dayNum : null,
     mark: todayMark,
     onPeriod: cycling && onPeriod,
     nextPeriod: cycling ? next : null,
     intention: intention ?? "track",
     logs: log ? [log, ...recentLogs.filter((l) => l.day !== log.day)] : recentLogs,
-    markFor: (iso) =>
-      cycling ? markForDate(iso, { lastStart: lastStart ?? null, cycleLength, periodLength, periodStarts }) : null,
+    markFor: (iso) => (cycling ? markForDate(iso, markOpts) : null),
   });
   const insights = computeInsights({
     starts: periodStarts,
@@ -233,33 +237,24 @@ export function TodayHero({
     today,
   });
   const ringSex =
-    cycling && cycleDay != null
+    cycling && dayNum != null
       ? (() => {
-          const start = addDaysISO(today, -(cycleDay - 1));
+          const start = addDaysISO(today, -(dayNum - 1));
           return sexMarks
             .filter((m) => m.day >= start && m.day <= today)
             .map((m) => ({ n: differenceInCalendarDays(fromISO(m.day), fromISO(start)) + 1, kind: m.kind }));
         })()
       : [];
 
-  // Big-number ring center: number when there is one, text otherwise.
-  const center = (() => {
-    if (onPeriod && cycleDay != null) {
-      return { kicker: t.ringOnPeriod, num: String(cycleDay), sub: t.ringOnPeriodSub };
-    }
-    if (!inWindow && left != null && left > 0) {
-      return {
-        kicker: t.ringPeriodIn,
-        num: String(left),
-        sub: left === 1 ? t.ringDay : t.ringDays,
-        date: nextShort ? `~${nextShort}` : null,
-      };
-    }
-    if (!inWindow && left != null && left < 0 && cycleDay != null) {
-      return { kicker: t.ringCycleDay, num: String(cycleDay), sub: t.ringOfCycle };
-    }
-    return { kicker: null, num: null, sub: heroTitle };
-  })();
+  const phaseLabel = livePhase !== "none" ? pick(phaseName[livePhase], lang) : "";
+  const countdown =
+    onPeriod || left == null
+      ? null
+      : left > 1
+        ? t.ringNextIn.replace("{n}", String(left))
+        : left === 1
+          ? t.ringNextInOne
+          : null;
 
   return (
     <div className="relative pb-6">
@@ -276,7 +271,7 @@ export function TodayHero({
           </span>
           <div className="min-w-0">
             <p className="truncate font-display text-lg font-medium tracking-[-0.02em]">
-              {headerName ? `${capitalize(greetingFor(hour, lang))}, ${headerName}` : capitalize(greetingFor(hour, lang))}
+              {greetingLine(hour, name, lang)}
             </p>
             <p className="text-[12.5px] text-muted first-letter:uppercase">{formatLong(today, lang)}</p>
           </div>
@@ -290,35 +285,86 @@ export function TodayHero({
         </Link>
       </header>
 
-      <div className="mt-3">
+      <div className="relative mt-3">
         <SegmentRing
-          cycleLength={cycleLength}
+          cycleLength={pred.len}
           periodLength={periodLength}
-          cycleDay={cycling ? cycleDay : null}
-          label={heroTitle}
+          cycleDay={cycling ? dayNum : null}
+          label={asking ? t.ringAskTitle : dayNum != null ? t.ringDayPhase.replace("{n}", String(dayNum)).replace("{phase}", phaseLabel) : heroTitle}
           onClick={onCal}
           sexDays={ringSex}
+          decorative={asking}
         >
-          {center.kicker ? <span className="kicker !text-[#ffb0cc]">{center.kicker}</span> : null}
-          {center.num ? (
-            <span
-              className="mt-2 font-display text-[6.5rem] font-semibold leading-[0.82] tracking-[-0.06em] text-transparent"
-              style={{ backgroundImage: "linear-gradient(180deg,#fff 30%,#ffc4df 100%)", WebkitBackgroundClip: "text", backgroundClip: "text" }}
-            >
-              {center.num}
+          {asking ? (
+            <span className="flex flex-col items-center" data-testid="ring-ask">
+              <span className="kicker !text-label">
+                {lateDays > 0
+                  ? lateDays === 1
+                    ? t.ringLateOne
+                    : t.ringLate.replace("{n}", String(lateDays))
+                  : t.ringExpected}
+              </span>
+              <span className="mt-2 font-display text-[1.85rem] font-semibold leading-[1.05] tracking-[-0.04em] text-fg">
+                {t.ringAskTitle}
+              </span>
+              {dayNum != null ? (
+                <span className="mt-1.5 text-[13px] text-muted">
+                  {t.ringDayPhase.replace("{n}", String(dayNum)).replace("{phase}", phaseLabel)}
+                </span>
+              ) : null}
             </span>
-          ) : null}
-          {center.num ? (
-            <span className="mt-2.5 text-sm text-muted">
-              <b className="font-medium text-fg">{center.sub}</b>
-              {center.date ? ` · ${center.date}` : null}
+          ) : dayNum != null && cycling ? (
+            <span className="flex flex-col items-center" data-testid="ring-day">
+              <span className="kicker !text-label">{formatLong(today, lang)}</span>
+              <span
+                className="mt-1.5 font-display text-[4.4rem] font-semibold leading-[0.9] tracking-[-0.05em] text-transparent"
+                style={{ backgroundImage: "linear-gradient(180deg,#fff 30%,#ffc4df 100%)", WebkitBackgroundClip: "text", backgroundClip: "text" }}
+              >
+                {t.ringDayPhase.replace("{n}", String(dayNum)).split(" · ")[0]}
+              </span>
+              <span className="mt-1.5 font-display text-lg font-semibold tracking-[-0.02em] text-fg" data-testid="ring-phase">
+                {phaseLabel}
+              </span>
+              {countdown ? <span className="mt-1 text-[13px] text-muted">{countdown}</span> : null}
             </span>
           ) : (
             <span className="font-display text-[2rem] font-semibold leading-[1.05] tracking-[-0.04em] text-fg">
-              {center.sub}
+              {heroTitle}
             </span>
           )}
         </SegmentRing>
+        {asking ? (
+          <div className="relative -mt-16 flex justify-center gap-2.5">
+            <button
+              type="button"
+              data-testid="ring-ask-yes"
+              onClick={() => {
+                haptic(14);
+                setRegOpen(true);
+              }}
+              className="press bg-grad h-11 min-w-24 rounded-full px-5 text-sm font-semibold text-primary-fg"
+            >
+              {t.ringAskYes}
+            </button>
+            <button
+              type="button"
+              data-testid="ring-ask-no"
+              onClick={() => {
+                haptic(10);
+                try {
+                  localStorage.setItem(`savia.periodAsk.${today}`, "no");
+                } catch {
+                  /* private mode */
+                }
+                setAskDismissed(true);
+                toast(t.ringNoThanks);
+              }}
+              className="press glass h-11 min-w-24 rounded-full px-5 text-sm font-semibold"
+            >
+              {t.ringAskNo}
+            </button>
+          </div>
+        ) : null}
       </div>
 
       <DailyNoteCard ctx={noteCtx} day={today} tone={tone} log={log} paid={wrapUpPaid} onSaved={onLogSaved} name={name} />
@@ -328,11 +374,11 @@ export function TodayHero({
       {cycling ? (
         <div className="mt-2 grid grid-cols-3 gap-2">
           <StatTile label={t.statDay}>
-            {cycleDay ?? "–"}
+            {dayNum ?? "–"}
             <small className="text-[13px] font-normal text-muted"> /{cycleLength}</small>
           </StatTile>
-          <StatTile label={t.statPhase} small={pick(phaseName[phase], lang).length > 9}>
-            {pick(phaseName[phase], lang)}
+          <StatTile label={t.statPhase} small={phaseLabel.length > 9}>
+            {phaseLabel}
           </StatTile>
           <StatTile label={t.statCycle} onClick={onCycleChange ? () => setAdjust((v) => !v) : undefined}>
             {cycleLength}
@@ -378,10 +424,9 @@ export function TodayHero({
       <div className="mt-2 grid grid-cols-[1.15fr_1fr] gap-2">
         <button
           type="button"
-          disabled={savingPeriod}
           onClick={() => {
             haptic(14);
-            void registerPeriodToday();
+            openRegister();
           }}
           className="press bg-grad flex h-[54px] items-center gap-2.5 whitespace-nowrap rounded-[18px] px-3 text-[13.5px] font-semibold text-primary-fg shadow-[0_8px_24px_-8px_rgb(242_66_126/0.6)] disabled:opacity-60"
         >
@@ -430,11 +475,11 @@ export function TodayHero({
         </div>
       ) : null}
 
-      <ConsejosHoy stage={stage} phase={phase} onAsk={onAsk} onGuia={onGuia} />
+      <ConsejosHoy stage={stage} phase={livePhase} onAsk={onAsk} onGuia={onGuia} />
 
       <QuickLog initial={log} onSaved={onLogSaved} />
 
-      <CartaHoy name={name} stage={stage} phase={phase} onAsk={onAsk} />
+      <CartaHoy name={name} stage={stage} phase={livePhase} onAsk={onAsk} />
 
       {onCycleChange ? (
         <div className="relative mt-4 text-center">
@@ -446,6 +491,14 @@ export function TodayHero({
             {adjust ? t.hideAdjust : t.adjustCycle}
           </button>
         </div>
+      ) : null}
+      {regOpen ? (
+        <RegisterPeriodSheet
+          lastStart={lastStart ?? null}
+          starts={periodStarts}
+          onClose={() => setRegOpen(false)}
+          onChange={(snap) => onPeriodChange?.(snap)}
+        />
       ) : null}
     </div>
   );
@@ -467,8 +520,8 @@ function StatTile({
       <span className="kicker block">{label}</span>
       <span
         className={cn(
-          "mt-1.5 block truncate font-display font-medium tracking-[-0.03em]",
-          small ? "text-[16px] leading-[1.6rem]" : "text-[21px] leading-[1.6rem]",
+          "mt-1.5 block font-display font-medium tracking-[-0.03em]",
+          small ? "text-[15px] leading-[1.6rem] tracking-[-0.04em]" : "truncate text-[21px] leading-[1.6rem]",
         )}
       >
         {children}

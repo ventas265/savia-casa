@@ -1,4 +1,6 @@
-import { asIsoDay, averageCycle, cyclePattern, daysUntil, fertileWindow, learnedCycle, nextPeriodDate, periodDaysFromLogs, snapshotMeta, symptomByPhase, todayISO, weightedCycle } from "@/lib/cycle";
+import { asIsoDay, averageCycle, cyclePattern, daysUntil, effectiveCycle, fertileWindow, isNewPeriodStart, nextPeriodDate, periodDaysFromLogs, snapshotMeta, symptomByPhase, todayISO } from "@/lib/cycle";
+import { isBleeding, mergeLog, type LogPatch } from "@/lib/log-merge";
+import { deviceId } from "@/lib/device";
 import { callName } from "@/lib/names";
 import { songToday } from "@/lib/songs";
 import { dailyLetters, pickDailyLetter, yesterdayISO } from "@/lib/carta";
@@ -10,6 +12,8 @@ const KEY = "savia.beta.v1";
 type Feeling = "suave" | "bien" | "pesada" | "dolor";
 
 type Store = {
+  /** Local edits not yet confirmed by the server: a pull must not undo them. */
+  dirtyUntil?: number;
   profile: SaviaProfile;
   logs: DailyLog[];
   starts: string[];
@@ -45,8 +49,10 @@ function read(): Store {
     const raw = localStorage.getItem(KEY);
     if (!raw) return { profile: emptyProfile(), logs: [], starts: [], checkins: {}, notes: {} };
     const parsed = JSON.parse(raw) as Store;
+    const owner = ownerId(parsed.profile?.userId);
     return {
-      profile: { ...emptyProfile(), ...parsed.profile, plan: "serena", userId: "beta" },
+      dirtyUntil: parsed.dirtyUntil,
+      profile: { ...emptyProfile(), ...parsed.profile, plan: "serena", userId: owner },
       logs: parsed.logs || [],
       starts: parsed.starts || [],
       checkins: parsed.checkins || {},
@@ -57,8 +63,22 @@ function read(): Store {
   }
 }
 
+/** The real owner id (device UUID) — never downgrade to the "beta" placeholder. */
+function ownerId(current?: string | null) {
+  if (current && current !== "beta") return current;
+  return deviceId() || "beta";
+}
+
 function write(store: Store) {
   localStorage.setItem(KEY, JSON.stringify(store));
+}
+
+function markDirty(store: Store) {
+  store.dirtyUntil = Date.now() + 45_000;
+}
+
+function latestStart(starts: string[]) {
+  return [...starts].sort().reverse()[0] ?? null;
 }
 
 export function localToday(): TodaySnapshot {
@@ -67,7 +87,7 @@ export function localToday(): TodaySnapshot {
   const log = store.logs.find((l) => l.day === day) || null;
   const recent = [...store.logs].sort((a, b) => b.day.localeCompare(a.day)).slice(0, 90);
   const sexMarks = store.logs.filter((l) => l.sex).map((l) => ({ day: l.day, kind: l.sexKind }));
-  const meta = snapshotMeta(store.profile, day);
+  const meta = snapshotMeta(store.profile, day, { starts: store.starts, periodDays: periodDaysFromLogs(store.logs) });
   return {
     profile: store.profile,
     day,
@@ -83,7 +103,9 @@ export function localToday(): TodaySnapshot {
 export function localHydrate(snap: TodaySnapshot) {
   if (!snap.profile.onboardingDone) return;
   const store = read();
-  store.profile = { ...store.profile, ...snap.profile };
+  // A pull that started before a local edit must not bring back old data.
+  if (store.dirtyUntil && store.dirtyUntil > Date.now()) return;
+  store.profile = { ...store.profile, ...snap.profile, userId: ownerId(snap.profile.userId || store.profile.userId) };
   if (snap.periodStarts.length) store.starts = snap.periodStarts;
   const map = new Map(store.logs.map((l) => [l.day, l]));
   for (const l of snap.recentLogs) map.set(l.day, l);
@@ -107,11 +129,19 @@ export function localSaveProfile(data: {
   country?: string;
 }) {
   const store = read();
-  const last = data.lastPeriodStart;
-  store.starts = last ? [last] : [];
+  const last = asIsoDay(data.lastPeriodStart);
+  const prevLast = store.profile.lastPeriodStart;
+  if (!last) store.starts = [];
+  else if (!store.starts.length) store.starts = [last];
+  else if (!store.starts.includes(last)) {
+    // Correcting the last period replaces it; older history stays.
+    store.starts = [...store.starts.filter((s) => s !== prevLast), last].sort().reverse().slice(0, 12);
+  }
+  markDirty(store);
   store.profile = {
     ...store.profile,
     ...data,
+    lastPeriodStart: last ? latestStart(store.starts) : null,
     cycleLength: Math.min(45, Math.max(21, data.cycleLength)),
     periodLength: Math.min(10, Math.max(2, data.periodLength)),
     plan: "serena",
@@ -121,57 +151,108 @@ export function localSaveProfile(data: {
   return { ok: true as const, profile: store.profile };
 }
 
-export function localSaveLog(data: {
-  day: string;
-  flow: Flow;
-  mood: number | null;
-  energy: number | null;
-  sleepHours: number | null;
-  notes: string;
-  symptoms: string[];
-  periodStarted: boolean;
-  mucus?: Mucus;
-  sex?: boolean;
-  sexKind?: SexKind;
-}) {
+export type SaveLogInput = LogPatch & { day: string };
+
+export function localSaveLog(data: SaveLogInput) {
   const store = read();
   const day = asIsoDay(data.day) || data.day.slice(0, 10);
-  const existing = store.logs.find((l) => l.day === day);
-  let sex = existing?.sex || false;
-  let sexKind: SexKind = existing?.sexKind || "none";
-  if (data.sexKind !== undefined) {
-    sexKind = data.sexKind;
-    sex = sexKind !== "none";
-  } else if (data.sex !== undefined) {
-    sex = Boolean(data.sex);
-    if (!sex) sexKind = "none";
-    else if (sexKind === "none") sexKind = "unprotected";
+  const existing = store.logs.find((l) => l.day === day) ?? null;
+  const { day: _d, ...patch } = data;
+  void _d;
+  const log = mergeLog(existing, day, patch, ownerId(store.profile.userId));
+  let removedStart = false;
+  if (patch.periodStarted === undefined) {
+    if (isBleeding(log.flow) && !log.periodStarted && isNewPeriodStart(day, store.starts, store.profile.periodLength)) {
+      // First bleeding day after a gap = a new period start.
+      log.periodStarted = true;
+    } else if (log.periodStarted && patch.flow !== undefined && !isBleeding(log.flow)) {
+      // She removed the bleeding from the day that started a period: that start goes too.
+      log.periodStarted = false;
+      removedStart = true;
+    }
+  } else if (!patch.periodStarted && existing?.periodStarted) {
+    removedStart = true;
   }
-  const symptoms = Array.from(new Set(data.symptoms)).slice(0, 24);
-  const log: DailyLog = {
-    id: existing?.id || Date.now(),
-    userId: "beta",
-    day,
-    flow: data.flow,
-    mood: data.mood,
-    energy: data.energy,
-    sleepHours: data.sleepHours,
-    notes: data.notes.slice(0, 500),
-    symptoms,
-    periodStarted: data.periodStarted,
-    mucus: data.mucus || "none",
-    sex,
-    sexKind,
-  };
   store.logs = [log, ...store.logs.filter((l) => l.day !== day)].slice(0, 180);
-  if (data.periodStarted) {
-    const prev = store.profile.lastPeriodStart;
-    store.profile.cycleLength = learnedCycle(prev, day, store.profile.cycleLength);
+  if (log.periodStarted) {
     store.starts = Array.from(new Set([day, ...store.starts])).sort().reverse().slice(0, 12);
-    store.profile.lastPeriodStart = day;
+    store.profile.lastPeriodStart = latestStart(store.starts);
+  } else if (removedStart) {
+    store.starts = store.starts.filter((s) => s !== day);
+    store.profile.lastPeriodStart = latestStart(store.starts);
   }
+  markDirty(store);
   write(store);
-  return { ok: true as const, log };
+  return { ok: true as const, log, removedStart, lastPeriodStart: store.profile.lastPeriodStart };
+}
+
+export type PeriodUndo = {
+  day: string;
+  starts: string[];
+  lastPeriodStart: string | null;
+  cycleLength: number;
+  log: DailyLog | null;
+};
+
+/** Register a period start on `day`, merged into that day's log. Returns what undo needs. */
+export function localRegisterPeriod(dayRaw: string) {
+  const store = read();
+  const day = asIsoDay(dayRaw) || dayRaw.slice(0, 10);
+  const existing = store.logs.find((l) => l.day === day) ?? null;
+  const undo: PeriodUndo = {
+    day,
+    starts: [...store.starts],
+    lastPeriodStart: store.profile.lastPeriodStart,
+    cycleLength: store.profile.cycleLength,
+    log: existing ? { ...existing, symptoms: [...existing.symptoms] } : null,
+  };
+  const res = localSaveLog({
+    day,
+    periodStarted: true,
+    flow: existing && isBleeding(existing.flow) ? existing.flow : "medium",
+  });
+  return { ...res, undo };
+}
+
+export function localUndoPeriod(undo: PeriodUndo) {
+  const store = read();
+  store.starts = [...undo.starts];
+  store.profile.lastPeriodStart = undo.lastPeriodStart;
+  store.profile.cycleLength = undo.cycleLength;
+  store.logs = store.logs.filter((l) => l.day !== undo.day);
+  if (undo.log) store.logs = [undo.log, ...store.logs];
+  markDirty(store);
+  write(store);
+  return localToday();
+}
+
+/**
+ * «Cambiar última regla»: move the latest start to `newDay`. The old start's
+ * log stops being a start; if it now falls outside the period it loses the
+ * automatic flow too, so day/phase stay consistent.
+ */
+export function localCorrectLastPeriod(newDayRaw: string) {
+  const store = read();
+  const newDay = asIsoDay(newDayRaw) || newDayRaw.slice(0, 10);
+  const old = store.profile.lastPeriodStart;
+  const plen = Math.max(2, store.profile.periodLength || 5);
+  const touched: DailyLog[] = [];
+  if (old && old !== newDay) {
+    store.starts = store.starts.filter((s) => s !== old);
+    store.logs = store.logs.map((l) => {
+      if (l.day <= newDay || !l.periodStarted) return l;
+      const inside = (new Date(l.day).getTime() - new Date(newDay).getTime()) / 86400000 < plen;
+      const fixed: DailyLog = { ...l, periodStarted: false, flow: inside ? l.flow : "none" };
+      touched.push(fixed);
+      return fixed;
+    });
+    store.starts = store.starts.filter((s) => !touched.some((t) => t.day === s));
+  }
+  store.starts = Array.from(new Set([newDay, ...store.starts])).sort().reverse().slice(0, 12);
+  store.profile.lastPeriodStart = latestStart(store.starts);
+  markDirty(store);
+  write(store);
+  return { snap: localToday(), oldStart: old, touched };
 }
 
 export function localSetSex(dayRaw: string, kind: SexKind) {
@@ -185,7 +266,7 @@ export function localSetSex(dayRaw: string, kind: SexKind) {
     ? { ...existing, sex: on, sexKind: next }
     : {
         id: Date.now(),
-        userId: "beta",
+        userId: ownerId(store.profile.userId),
         day,
         flow: "none",
         mood: null,
@@ -199,6 +280,7 @@ export function localSetSex(dayRaw: string, kind: SexKind) {
         sexKind: next,
       };
   store.logs = [log, ...store.logs.filter((l) => l.day !== day)].slice(0, 180);
+  markDirty(store);
   write(store);
   return { ok: true as const, log, sex: on, kind: next };
 }
@@ -208,7 +290,7 @@ export function localAskFile() {
   const p = snap.profile;
   const note = localNoteToday(p.stage, snap.phase, p.locale === "en" ? "en" : "es");
   const song = songToday(p.stage, snap.phase);
-  const next = nextPeriodDate(p.lastPeriodStart, weightedCycle(snap.periodStarts, p.cycleLength));
+  const next = nextPeriodDate(p.lastPeriodStart, effectiveCycle(snap.periodStarts, p.cycleLength, p.lastPeriodStart));
   return {
     displayName: p.displayName,
     callName: callName(p.displayName),
@@ -250,7 +332,7 @@ export function localReport() {
   const p = store.profile;
   const avg = averageCycle(store.starts, p.cycleLength);
   const pattern = cyclePattern(store.starts, p.cycleLength);
-  const meta = snapshotMeta(p);
+  const meta = snapshotMeta(p, todayISO(), { starts: store.starts, periodDays: periodDaysFromLogs(store.logs) });
   const symptoms = symptomByPhase(store.logs, p.lastPeriodStart, avg, p.periodLength);
   const sexMarks = store.logs.filter((l) => l.sex).map((l) => ({ day: l.day, kind: l.sexKind }));
   const heavyDays = store.logs.filter((l) => l.flow === "heavy").length;
@@ -278,21 +360,13 @@ export function localReport() {
 export function localSetCycle(n: number) {
   const store = read();
   store.profile.cycleLength = Math.min(45, Math.max(21, n));
+  markDirty(store);
   write(store);
   return localToday();
 }
 
 export function localCameToday() {
-  return localSaveLog({
-    day: todayISO(),
-    flow: "medium",
-    mood: null,
-    energy: null,
-    sleepHours: null,
-    notes: "",
-    symptoms: [],
-    periodStarted: true,
-  });
+  return localRegisterPeriod(todayISO());
 }
 
 export function localReset() {

@@ -13,10 +13,13 @@ export function InstallSavia() {
   const { t } = useI18n();
   const [standalone, setStandalone] = useState(false);
   const [deferred, setDeferred] = useState<BeforeInstall | null>(null);
-  const ios = typeof navigator !== "undefined" && /iphone|ipad|ipod/i.test(navigator.userAgent);
-  const trapped = inAppBrowser();
+  // UA checks run after mount: the server can't know the phone (hydration #418).
+  const [ios, setIos] = useState(false);
+  const [trapped, setTrapped] = useState(false);
 
   useEffect(() => {
+    setIos(/iphone|ipad|ipod/i.test(navigator.userAgent));
+    setTrapped(inAppBrowser());
     const media = window.matchMedia("(display-mode: standalone)");
     const navStandalone = "standalone" in navigator && Boolean((navigator as Navigator & { standalone?: boolean }).standalone);
     setStandalone(media.matches || navStandalone);

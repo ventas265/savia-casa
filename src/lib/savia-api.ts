@@ -2,7 +2,11 @@ import { asIsoDay, todayISO } from "@/lib/cycle";
 import { SAVIA_BETA } from "@/lib/beta";
 import {
   localAskFile,
-  localCameToday,
+  localCorrectLastPeriod,
+  localRegisterPeriod,
+  localUndoPeriod,
+  type PeriodUndo,
+  type SaveLogInput,
   localHydrate,
   localReport,
   localSaveLog,
@@ -12,7 +16,8 @@ import {
   localToday,
 } from "@/lib/savia-local";
 import { askSavia, askSaviaOpen, getReport, getToday, saveLog, saveProfile, toggleSex } from "@/lib/savia-server";
-import { getTodayDevice, saveLogDevice, saveProfileDevice, saveSexDevice } from "@/lib/savia-device";
+import { getTodayDevice, removePeriodStartDevice, saveLogDevice, saveProfileDevice, saveSexDevice } from "@/lib/savia-device";
+import type { DailyLog } from "@/lib/types";
 import { deviceId, deviceToken, setDeviceToken, claimRecovery } from "@/lib/device";
 import { registerTester } from "@/lib/testers";
 import type { Flow, Intention, Mucus, SexKind, Stage } from "@/lib/types";
@@ -114,43 +119,151 @@ export async function writeProfile(data: {
   return saved;
 }
 
-export async function writeLog(data: {
-  day: string;
-  flow: Flow;
-  mood: number | null;
-  energy: number | null;
-  sleepHours: number | null;
-  notes: string;
-  symptoms: string[];
-  periodStarted: boolean;
-  mucus?: Mucus;
-  sex?: boolean;
-  sexKind?: SexKind;
-}) {
+/**
+ * Save a day. Fields left out keep their stored value (merge, never overwrite),
+ * so a symptom popup can't wipe flow and registering a period can't wipe symptoms.
+ */
+export async function writeLog(data: SaveLogInput) {
   const day = asIsoDay(data.day) || data.day.slice(0, 10);
   const payload = { ...data, day };
-  if (!SAVIA_BETA) return saveLog({ data: payload });
+  if (!SAVIA_BETA) {
+    return saveLog({
+      data: {
+        day,
+        flow: payload.flow ?? "none",
+        mood: payload.mood ?? null,
+        energy: payload.energy ?? null,
+        sleepHours: payload.sleepHours ?? null,
+        notes: payload.notes ?? "",
+        symptoms: Array.from(new Set([...(payload.symptoms ?? []), ...(payload.addSymptoms ?? [])])),
+        periodStarted: payload.periodStarted ?? false,
+        mucus: payload.mucus,
+        sex: payload.sex,
+        sexKind: payload.sexKind,
+      },
+    });
+  }
   const saved = localSaveLog(payload);
-  void pushLog(payload);
+  if (saved.removedStart) void pushRemoval(saved.log.day, saved.log, saved.lastPeriodStart);
+  else void pushLog(saved.log);
   return saved;
 }
 
-async function pushLog(data: {
-  day: string;
-  flow: Flow;
-  mood: number | null;
-  energy: number | null;
-  sleepHours: number | null;
-  notes: string;
-  symptoms: string[];
-  periodStarted: boolean;
-  mucus?: Mucus;
-  sex?: boolean;
-  sexKind?: SexKind;
-}) {
-  const c = await creds();
-  if (c) void saveLogDevice({ data: { ...c, ...data } }).catch(() => {});
+/** Server writes run one after another, so an «undo» can never land before the write it undoes. */
+let pushChain: Promise<unknown> = Promise.resolve();
+function enqueue(job: () => Promise<unknown>) {
+  pushChain = pushChain.catch(() => undefined).then(job).catch(() => undefined);
+  return pushChain;
 }
+
+/** Server copy of the merged log (full row, so the server never sees partial data). */
+function pushLog(log: DailyLog) {
+  return enqueue(() => pushLogNow(log));
+}
+
+async function pushLogNow(log: DailyLog) {
+  const c = await creds();
+  if (!c) return;
+  await saveLogDevice({
+    data: {
+      ...c,
+      day: log.day,
+      flow: log.flow,
+      mood: log.mood,
+      energy: log.energy,
+      sleepHours: log.sleepHours,
+      notes: log.notes,
+      symptoms: log.symptoms,
+      periodStarted: log.periodStarted,
+      mucus: log.mucus,
+      sex: log.sex,
+      sexKind: log.sexKind,
+    },
+  }).catch(() => {});
+}
+
+function logRow(log: DailyLog | null) {
+  if (!log) return null;
+  return {
+    flow: log.flow,
+    mood: log.mood,
+    energy: log.energy,
+    sleepHours: log.sleepHours,
+    notes: log.notes,
+    symptoms: log.symptoms,
+    periodStarted: log.periodStarted,
+    mucus: log.mucus || "none",
+    sex: Boolean(log.sex),
+    sexKind: log.sexKind || "none",
+  };
+}
+
+function pushRemoval(day: string, log: DailyLog | null, lastPeriodStart: string | null, cycleLength?: number) {
+  return enqueue(() => pushRemovalNow(day, log, lastPeriodStart, cycleLength));
+}
+
+async function pushRemovalNow(day: string, log: DailyLog | null, lastPeriodStart: string | null, cycleLength?: number) {
+  const c = await creds();
+  if (!c) return;
+  await removePeriodStartDevice({
+    data: { ...c, day, lastPeriodStart, cycleLength: cycleLength ?? null, log: logRow(log) },
+  }).catch(() => {});
+}
+
+/** «Registrar periodo»: start on `day` (today or another day), merged into that day's log. */
+export async function registerPeriod(day: string) {
+  const res = localRegisterPeriod(day);
+  void pushLog(res.log);
+  return { snap: localToday(), undo: res.undo };
+}
+
+/** «Deshacer» after registering: restore exactly what was there. */
+export async function undoPeriod(undo: PeriodUndo) {
+  const snap = localUndoPeriod(undo);
+  void pushRemoval(undo.day, undo.log, undo.lastPeriodStart, undo.cycleLength);
+  return snap;
+}
+
+/** «Cambiar última regla». */
+export async function correctLastPeriod(newDay: string) {
+  const res = localCorrectLastPeriod(newDay);
+  const c = await creds();
+  const p = res.snap.profile;
+  if (c) await enqueue(async () => {
+    if (res.oldStart && res.oldStart !== newDay) {
+      const oldLog = res.touched.find((l) => l.day === res.oldStart);
+      await removePeriodStartDevice({
+        data: {
+          ...c,
+          day: res.oldStart,
+          lastPeriodStart: p.lastPeriodStart,
+          cycleLength: null,
+          ...(oldLog ? { log: logRow(oldLog) } : {}),
+        },
+      }).catch(() => {});
+      for (const l of res.touched) if (l.day !== res.oldStart) await pushLogNow(l);
+    }
+    await saveProfileDevice({
+      data: {
+        ...c,
+        displayName: p.displayName,
+        stage: p.stage,
+        birthYear: p.birthYear,
+        cycleLength: p.cycleLength,
+        periodLength: p.periodLength,
+        lastPeriodStart: p.lastPeriodStart,
+        dueDate: p.dueDate,
+        lastPeriodYear: p.lastPeriodYear,
+        onboardingDone: true,
+        locale: p.locale,
+        intention: p.intention,
+      },
+    }).catch(() => {});
+  });
+  return res.snap;
+}
+
+export type { PeriodUndo };
 
 export async function writeSex(dayRaw: string, kind: SexKind) {
   const day = asIsoDay(dayRaw) || dayRaw.slice(0, 10);
@@ -225,35 +338,5 @@ export async function setCycleLength(n: number) {
 }
 
 export async function markCameToday() {
-  if (SAVIA_BETA) {
-    localCameToday();
-    const c = await creds();
-    if (c) {
-      void saveLogDevice({
-        data: {
-          ...c,
-          day: todayISO(),
-          flow: "medium",
-          mood: null,
-          energy: null,
-          sleepHours: null,
-          notes: "",
-          symptoms: [],
-          periodStarted: true,
-        },
-      }).catch(() => {});
-    }
-    return localToday();
-  }
-  await writeLog({
-    day: todayISO(),
-    flow: "medium",
-    mood: null,
-    energy: null,
-    sleepHours: null,
-    notes: "",
-    symptoms: [],
-    periodStarted: true,
-  });
-  return loadToday();
+  return (await registerPeriod(todayISO())).snap;
 }

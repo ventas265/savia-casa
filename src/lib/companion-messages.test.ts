@@ -5,6 +5,7 @@ import {
   companionOpener,
   dayInTimeZone,
   greetingFor,
+  greetingLine,
   hourInTimeZone,
   momentForHour,
   moodReplyText,
@@ -49,6 +50,10 @@ test("name fallback: missing / «tú» / junk → «Hola, ¿cómo estás?»", ()
   assert.equal(companionName("  maría josé  "), "María");
   assert.equal(companionName("CLAUDIA"), "Claudia");
   assert.equal(companionName("Claudia 🌸"), "Claudia");
+  // Her capitalisation is kept: initials stay, mixed case stays.
+  assert.equal(companionName("QA Diseño"), "QA");
+  assert.equal(companionName("McKenzie"), "McKenzie");
+  assert.equal(companionName("ana"), "Ana");
   assert.equal(withName("Me encanta{,nombre}. Guardado.", ""), "Me encanta. Guardado.");
   assert.equal(withName("{Nombre, }te leo.", ""), "Te leo.");
   assert.equal(withName("{Nombre, }te leo.", "clau"), "Clau, te leo.");
@@ -115,4 +120,11 @@ test("mood + talk replies carry the name, or read fine without it", () => {
   assert.match(moodReplyText("bad", "prePeriod", "es", "d", "Claudia"), /^Lo siento, Claudia\./);
   assert.match(talkOpener("es", "d", "Claudia"), /Claudia/);
   assert.match(talkOpener("es", "d", ""), /^[A-ZÁÉÍÓÚ¿]/);
+});
+
+test("greetingLine: one shared greeting with her name", () => {
+  assert.equal(greetingLine(15, "QA Diseño"), "Buenas tardes, QA");
+  assert.equal(greetingLine(8, "maría josé"), "Buenos días, María");
+  assert.equal(greetingLine(21, ""), "Buenas noches");
+  assert.equal(greetingLine(21, "vale", "en"), "Good evening, Vale");
 });

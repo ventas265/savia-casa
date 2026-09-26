@@ -109,19 +109,8 @@ export function SymptomCheckSheet({
     try {
       // Same write path as LogForm; merge with today's log. sex/sexKind omitted on
       // purpose — local + server saveLog keep the existing heart when not sent.
-      const symptoms = Array.from(new Set([...(log?.symptoms ?? []), ...picked])).slice(0, 24);
-      const flow = log?.flow ?? "none";
-      const res = await writeLog({
-        day,
-        flow,
-        mood: log?.mood ?? null,
-        energy: log?.energy ?? null,
-        sleepHours: log?.sleepHours ?? null,
-        notes: log?.notes ?? "",
-        symptoms,
-        mucus: log?.mucus ?? "none",
-        periodStarted: flow === "light" || flow === "medium" || flow === "heavy",
-      });
+      // Merge: adds to today's symptoms; flow, period start and hearts stay as stored.
+      const res = await writeLog({ day, addSymptoms: picked });
       if (res.ok) {
         markAsked(day, "applied");
         haptic(14);

@@ -23,12 +23,19 @@ export const Route = createFileRoute("/app/mas")({ component: MasTab });
 
 function MasTab() {
   const { t, lang } = useI18n();
-  const [perm, setPerm] = useState(notifyPermission);
-  const [profile, setProfile] = useState<SaviaProfile | null>(() => (SAVIA_BETA ? localToday().profile : null));
+  // Client-only storage is read in effects, never during render (SSR hydration #418).
+  const [perm, setPerm] = useState<string>("default");
+  const [profile, setProfile] = useState<SaviaProfile | null>(null);
   const [pay, setPay] = useState<PaySettings>(emptyPay);
-  const [paid, setPaid] = useState(SAVIA_BETA);
+  const [paid, setPaid] = useState(false);
 
   useEffect(() => {
+    setPerm(notifyPermission());
+    if (SAVIA_BETA) {
+      const p = localToday().profile;
+      setProfile(p);
+      setPaid(p.plan === "serena" || p.plan === "year");
+    }
     loadToday()
       .then((s) => {
         setProfile(s.profile);
@@ -66,7 +73,7 @@ function MasTab() {
         <InstallSavia />
       </div>
       <PushReminders />
-      <PlanSplit />
+      {paid ? null : <PlanSplit />}
 
       <section className="mt-6 rounded-[1.6rem] bg-surface p-5 shadow-card">
         <p className="text-xs font-semibold uppercase tracking-wide text-muted">{t.moreYou}</p>
@@ -122,6 +129,7 @@ function MasTab() {
         )}
       </section>
 
+      {paid ? null : (
       <section className="mt-6">
         <h2 className="text-lg font-bold">{t.morePay}</h2>
         <p className="mt-1 text-sm text-muted">{t.morePayHint}</p>
@@ -136,6 +144,7 @@ function MasTab() {
           {pmLine ? <PayRow label={t.payIdPm} value={pmLine} onCopy={() => void copy(pmLine)} /> : null}
         </ul>
       </section>
+      )}
 
       <section className="mt-8">
         <h2 className="text-lg font-bold">{t.moreTools}</h2>

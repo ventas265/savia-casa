@@ -12,10 +12,12 @@ import { getSql } from "@/lib/db";
 import { assertDevice } from "@/lib/testers";
 import {
   addDaysISO,
+  dayInfo,
   daysUntil,
-  isConfirmedPeriodDay,
+  effectiveCycle,
   isCycling,
   markForDate,
+  periodDaysFromLogs,
   predictPeriod,
   snapshotMeta,
 } from "@/lib/cycle";
@@ -204,12 +206,15 @@ export async function messageFor(sub: Pick<SubRow, "user_id" | "display_name" | 
     sexKind: (r.sex_kind as SexKind) || "none",
   }));
   const cycling = isCycling(profile.stage) && Boolean(profile.lastPeriodStart);
-  const meta = snapshotMeta(profile, day);
+  const periodDays = periodDaysFromLogs(logs);
+  const meta = snapshotMeta(profile, day, { starts, periodDays });
   const opts = {
     lastStart: profile.lastPeriodStart,
-    cycleLength: profile.cycleLength,
+    cycleLength: effectiveCycle(starts, profile.cycleLength, profile.lastPeriodStart),
     periodLength: profile.periodLength,
     periodStarts: starts,
+    periodDays,
+    today: day,
   };
   const todayLog = logs.find((l) => l.day === day) ?? null;
   const next = cycling ? predictPeriod(profile.lastPeriodStart, starts, profile.cycleLength, profile.stage).next : null;
@@ -218,7 +223,7 @@ export async function messageFor(sub: Pick<SubRow, "user_id" | "display_name" | 
     phase: cycling ? meta.phase : "none",
     cycleDay: cycling ? meta.cycleDay : null,
     mark: cycling ? markForDate(day, opts) : null,
-    onPeriod: cycling && isConfirmedPeriodDay(day, { ...opts, log: todayLog }),
+    onPeriod: cycling && (dayInfo(day, opts).confirmed || Boolean(todayLog?.periodStarted)),
     nextPeriod: next,
     intention: ((prow.intention as Intention) || "track") as Intention,
     logs,

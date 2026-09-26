@@ -11,6 +11,13 @@ import { type Intention, type Stage } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { daysUntil, formatLong, nextPeriodDate } from "@/lib/cycle";
 import { haptic } from "@/lib/haptic";
+import { companionName, greetingLine } from "@/lib/companion-messages";
+import { useLocalHour } from "@/components/daily-note-card";
+
+/** «Toca…» → «toca…» after a name and a comma. */
+function lowerFirst(s: string) {
+  return s ? s.charAt(0).toLocaleLowerCase("es") + s.slice(1) : s;
+}
 
 export const Route = createFileRoute("/app/onboarding")({ component: Onboarding });
 
@@ -83,6 +90,7 @@ function StepHeader({
 function Onboarding() {
   const { t, lang } = useI18n();
   const navigate = useNavigate();
+  const hour = useLocalHour();
   const [step, setStep] = useState(0);
   const [displayName, setDisplayName] = useState("");
   const [stage, setStage] = useState<Stage>("cycle");
@@ -221,7 +229,7 @@ function Onboarding() {
             title={t.askBody}
             hint={
               <>
-                {displayName}, {t.askBodyHint}
+                {companionName(displayName) ? `${companionName(displayName)}, ${lowerFirst(t.askBodyHint)}` : t.askBodyHint}
               </>
             }
             progressLabel={progressLabel}
@@ -295,7 +303,7 @@ function Onboarding() {
             </button>
           </div>
           <p className="mt-2 text-center text-sm text-muted">
-            {t.days} {t.askRhythmHint}
+            {t.days}. {t.askRhythmHint}
           </p>
         </div>
       ) : null}
@@ -330,7 +338,7 @@ function Onboarding() {
           <StepHeader
             step={3}
             total={total}
-            title={`${t.goodMorning}, ${displayName}`}
+            title={greetingLine(hour, displayName, lang)}
             progressLabel={progressLabel}
           />
           {left != null ? (

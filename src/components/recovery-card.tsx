@@ -1,15 +1,10 @@
-import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { takeRecovery } from "@/lib/device";
 import { useI18n } from "@/lib/i18n";
 import { toast } from "sonner";
 
-export function RecoveryCard() {
+/** One-time recovery code (right after the device registers). */
+export function RecoveryCard({ code, onDone }: { code: string; onDone: () => void }) {
   const { t } = useI18n();
-  const [code, setCode] = useState("");
-  useEffect(() => {
-    setCode(takeRecovery());
-  }, []);
   if (!code) return null;
   return (
     <section className="relative mb-4 rounded-[1.5rem] card-hot p-5">
@@ -28,7 +23,15 @@ export function RecoveryCard() {
       >
         {t.copyCode}
       </button>
-      <Link to="/app/recuperar" className="mt-3 block text-center text-xs font-semibold opacity-80">
+      <button
+        type="button"
+        data-testid="recovery-done"
+        onClick={onDone}
+        className="press mt-2 h-11 w-full rounded-full bg-white/10 text-sm font-semibold ring-1 ring-white/15"
+      >
+        {t.keepCodeDone}
+      </button>
+      <Link to="/app/recuperar" className="mt-2 flex min-h-11 items-center justify-center text-xs font-semibold opacity-80">
         {t.recoverHint}
       </Link>
     </section>

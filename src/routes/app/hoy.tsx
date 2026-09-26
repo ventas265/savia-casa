@@ -5,7 +5,8 @@ import { TodayHero } from "@/components/today-hero";
 import { RecoveryCard } from "@/components/recovery-card";
 import { WelcomeStart } from "@/components/welcome-start";
 import { SymptomCheckSheet, useSymptomAsk } from "@/components/symptom-check-sheet";
-import { loadToday, markCameToday, setCycleLength } from "@/lib/savia-api";
+import { loadToday, setCycleLength } from "@/lib/savia-api";
+import { takeRecovery } from "@/lib/device";
 import { SAVIA_BETA } from "@/lib/beta";
 import { localAllLogs, localToday } from "@/lib/savia-local";
 import { isCycling, predictPeriod } from "@/lib/cycle";
@@ -90,7 +91,12 @@ function HoyTab() {
   const onboarded = Boolean(
     data?.profile.onboardingDone && (!isCycling(data.profile.stage) || data.profile.lastPeriodStart),
   );
-  const symAsk = useSymptomAsk(ready && Boolean(data), onboarded, data?.log ?? null);
+  // The recovery code shows first; the symptom popup waits until she saved it.
+  const [code, setCode] = useState<string | null>(null);
+  useEffect(() => {
+    setCode(takeRecovery() || "");
+  }, []);
+  const symAsk = useSymptomAsk(ready && Boolean(data) && code === "", onboarded, data?.log ?? null);
 
   useEffect(() => {
     if (!ready || !data) return;
@@ -118,7 +124,7 @@ function HoyTab() {
 
   return (
     <>
-      <RecoveryCard />
+      {code ? <RecoveryCard code={code} onDone={() => setCode("")} /> : null}
       <TodayHero
         name={data.profile.displayName}
         stage={data.profile.stage}
@@ -142,9 +148,7 @@ function HoyTab() {
         onLog={() => void navigate({ to: "/app/registro" })}
         onGuia={() => void navigate({ to: "/app/guia" })}
         onAsk={() => void navigate({ to: "/app/preguntar" })}
-        onCameToday={() => {
-          void markCameToday().then(setData);
-        }}
+        onPeriodChange={setData}
         onCycleChange={(n) => {
           void setCycleLength(n).then(setData);
         }}

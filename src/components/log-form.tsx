@@ -216,7 +216,8 @@ export function LogForm({
             notes: next.notes,
             symptoms: next.symptoms,
             mucus: next.mucus,
-            periodStarted: next.flow === "light" || next.flow === "medium" || next.flow === "heavy",
+            // periodStarted omitted: the store decides (first bleeding day after a gap
+            // starts a period; clearing the flow of a start day removes it).
             // Always send live sexKind (ref+queue) so a later flow/symptom tap cannot
             // wipe a heart with a stale React closure from an earlier render.
             sex,

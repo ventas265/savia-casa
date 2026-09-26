@@ -165,21 +165,8 @@ export function DailyNoteCard({
     haptic(12);
     setPicked(m);
     setReply(moodReply(m, note.template.situation, lang, day, note.name));
-    // Freshest copy of today's log so we never clobber other fields.
-    const cur = (SAVIA_BETA ? localToday().log : null) ?? log;
-    await writeLog({
-      day,
-      flow: cur?.flow ?? "none",
-      mood: MOOD_VALUE[m],
-      energy: cur?.energy ?? null,
-      sleepHours: cur?.sleepHours ?? null,
-      notes: cur?.notes ?? "",
-      symptoms: cur?.symptoms ?? [],
-      periodStarted: cur?.periodStarted ?? false,
-      mucus: cur?.mucus ?? "none",
-      sex: cur ? cur.sex : false,
-      sexKind: cur?.sexKind ?? "none",
-    }).catch(() => null);
+    // Merge: only the mood changes; the rest of today's log stays as stored.
+    await writeLog({ day, mood: MOOD_VALUE[m] }).catch(() => null);
     onSaved?.();
   }
 

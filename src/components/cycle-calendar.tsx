@@ -3,16 +3,13 @@ import { ChevronDown, ChevronLeft, ChevronRight, Heart } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import {
-  addDaysISO,
-  cycleDay,
+  dayInfo,
   dayStatus,
   formatDay,
   fromISO,
-  markForDate,
   monthCells,
-  phaseForDay,
   todayISO,
-  type DayMark,
+  type DayInfo,
 } from "@/lib/cycle";
 import { useClientTodayISO } from "@/lib/use-today";
 import { phaseName, pick } from "@/lib/savia-content";
@@ -105,9 +102,9 @@ export function CycleCalendar({
   }, [clientToday, focusDay]);
 
   void showFertile; // always-on; prop kept for callers
-  function mark(iso: string): DayMark | null {
-    // Fertile window always visible (avoid accidental pregnancy) — not opt-in.
-    return markForDate(iso, { lastStart, cycleLength, periodLength, periodStarts, periodDays });
+  // Same rules as Hoy (dayInfo): one day number / phase / mark per date.
+  function info(iso: string): DayInfo {
+    return dayInfo(iso, { lastStart, cycleLength, periodLength, periodStarts, periodDays, today });
   }
 
   function choose(iso: string) {
@@ -127,21 +124,10 @@ export function CycleCalendar({
     onMonthChange?.();
   }
 
-  const selectedMark = mark(picked);
-  const dayNum = cycleDay(lastStart, cycleLength, picked);
-  const phase = phaseForDay(dayNum, periodLength, cycleLength);
-
-  const confirmedPeriod = useMemo(() => {
-    const set = new Set(periodDays);
-    const plen = Math.max(periodLength, 2);
-    const starts = [...periodStarts];
-    // Last start she told us counts as confirmed (filled), not a dotted estimate.
-    if (lastStart && !starts.includes(lastStart)) starts.push(lastStart);
-    for (const start of starts) {
-      for (let i = 0; i < plen; i++) set.add(addDaysISO(start, i));
-    }
-    return set;
-  }, [periodDays, periodStarts, periodLength, lastStart]);
+  const pickedInfo = info(picked);
+  const selectedMark = pickedInfo.mark;
+  const dayNum = pickedInfo.cycleDay;
+  const phase = pickedInfo.phase;
 
   // Prefer union so a mark never depends on which prop arrived first.
   const sexSet = useMemo(() => {
@@ -154,15 +140,10 @@ export function CycleCalendar({
     [sexMarks],
   );
   const logByDay = useMemo(() => Object.fromEntries(logs.map((l) => [l.day, l])), [logs]);
-  const marks = cells.map((c) => mark(c.iso));
+  const infos = cells.map((c) => info(c.iso));
 
   const pickedLog = logByDay[picked];
-  const pickedFlow = pickedLog?.flow;
-  const pickedConfirmed =
-    confirmedPeriod.has(picked) ||
-    pickedFlow === "heavy" ||
-    pickedFlow === "medium" ||
-    pickedFlow === "light";
+  const pickedConfirmed = pickedInfo.confirmed;
 
   const status = dayStatus(selectedMark, pickedConfirmed);
   const pickedSex = sexSet.has(picked) || Boolean(pickedLog?.sex);
@@ -263,18 +244,15 @@ export function CycleCalendar({
       </div>
       <div className="grid grid-cols-7 gap-y-1">
         {cells.map((cell, i) => {
-          const m = marks[i] ?? null;
+          const ci = infos[i]!;
+          const m = ci.mark;
           const isToday = cell.iso === today;
           const isPicked = cell.iso === picked;
           const logged = logByDay[cell.iso];
           const flow = logged?.flow;
           const hasLoggedFlow =
             flow === "heavy" || flow === "medium" || flow === "light" || flow === "spotting";
-          const isConfirmed =
-            confirmedPeriod.has(cell.iso) ||
-            flow === "heavy" ||
-            flow === "medium" ||
-            flow === "light";
+          const isConfirmed = ci.confirmed;
           const isPredicted = m === "period" && !isConfirmed;
           const isPeak = m === "peak" && !isConfirmed;
           const isFertile = m === "fertile" && !isConfirmed;
