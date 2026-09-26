@@ -34,6 +34,11 @@ export async function pulseTester() {
   if (res?.ok && res.recovery) claimRecovery(res.recovery);
 }
 
+/** Beta device credentials (registers the tester on first use). */
+export async function deviceCreds() {
+  return creds();
+}
+
 async function creds() {
   const id = deviceId();
   if (!id) return null;

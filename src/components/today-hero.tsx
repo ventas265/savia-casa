@@ -23,7 +23,9 @@ import { cn } from "@/lib/utils";
 import { Activity, ArrowRight, ArrowUpRight, Bell, Droplet } from "lucide-react";
 import { SegmentRing } from "@/components/cycle-ring";
 import { SaviaOrb } from "@/components/savia-orb";
-import { DailyNoteCard } from "@/components/daily-note-card";
+import { DailyNoteCard, useLocalHour } from "@/components/daily-note-card";
+import { PushSoftPrompt } from "@/components/push-reminders";
+import { capitalize, companionName, greetingFor } from "@/lib/companion-messages";
 import { InsightsCompact } from "@/components/insights-card";
 import { buildNoteContext } from "@/lib/daily-note";
 import { computeInsights } from "@/lib/insights";
@@ -90,6 +92,7 @@ export function TodayHero({
 }) {
   const { t, lang } = useI18n();
   const [adjust, setAdjust] = useState(false);
+  const hour = useLocalHour();
   const [savingPeriod, setSavingPeriod] = useState(false);
   const today = useClientTodayISO() ?? todayISO();
   const pred = predictPeriod(lastStart, periodStarts, cycleLength, stage);
@@ -193,7 +196,8 @@ export function TodayHero({
     }
   }
 
-  const initial = (name || "").trim().charAt(0).toUpperCase() || "S";
+  const headerName = companionName(name);
+  const initial = headerName.charAt(0).toUpperCase() || "S";
   const cycling = isCycling(stage) && Boolean(lastStart);
   const todayMark = cycling
     ? markForDate(today, { lastStart: lastStart ?? null, cycleLength, periodLength, periodStarts })
@@ -272,7 +276,7 @@ export function TodayHero({
           </span>
           <div className="min-w-0">
             <p className="truncate font-display text-lg font-medium tracking-[-0.02em]">
-              {name ? `${t.goodMorning}, ${name}` : t.goodMorning}
+              {headerName ? `${capitalize(greetingFor(hour, lang))}, ${headerName}` : capitalize(greetingFor(hour, lang))}
             </p>
             <p className="text-[12.5px] text-muted first-letter:uppercase">{formatLong(today, lang)}</p>
           </div>
@@ -317,7 +321,9 @@ export function TodayHero({
         </SegmentRing>
       </div>
 
-      <DailyNoteCard ctx={noteCtx} day={today} tone={tone} log={log} paid={wrapUpPaid} onSaved={onLogSaved} />
+      <DailyNoteCard ctx={noteCtx} day={today} tone={tone} log={log} paid={wrapUpPaid} onSaved={onLogSaved} name={name} />
+
+      <PushSoftPrompt />
 
       {cycling ? (
         <div className="mt-2 grid grid-cols-3 gap-2">

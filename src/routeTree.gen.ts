@@ -34,6 +34,12 @@ import { Route as AppRecuperarRouteImport } from './routes/app/recuperar'
 import { Route as AppRegistroRouteImport } from './routes/app/registro'
 import { Route as AppSexoRouteImport } from './routes/app/sexo'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as ApiCronPushRouteImport } from './routes/api/cron/push'
+import { Route as ApiPushHourRouteImport } from './routes/api/push/hour'
+import { Route as ApiPushKeyRouteImport } from './routes/api/push/key'
+import { Route as ApiPushSubscribeRouteImport } from './routes/api/push/subscribe'
+import { Route as ApiPushTestRouteImport } from './routes/api/push/test'
+import { Route as ApiPushUnsubscribeRouteImport } from './routes/api/push/unsubscribe'
 import { Route as ApiWebhooksWhopRouteImport } from './routes/api/webhooks/whop'
 
 const IndexRoute = IndexRouteImport.update({
@@ -161,6 +167,36 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiCronPushRoute = ApiCronPushRouteImport.update({
+  id: '/api/cron/push',
+  path: '/api/cron/push',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPushHourRoute = ApiPushHourRouteImport.update({
+  id: '/api/push/hour',
+  path: '/api/push/hour',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPushKeyRoute = ApiPushKeyRouteImport.update({
+  id: '/api/push/key',
+  path: '/api/push/key',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPushSubscribeRoute = ApiPushSubscribeRouteImport.update({
+  id: '/api/push/subscribe',
+  path: '/api/push/subscribe',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPushTestRoute = ApiPushTestRouteImport.update({
+  id: '/api/push/test',
+  path: '/api/push/test',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPushUnsubscribeRoute = ApiPushUnsubscribeRouteImport.update({
+  id: '/api/push/unsubscribe',
+  path: '/api/push/unsubscribe',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiWebhooksWhopRoute = ApiWebhooksWhopRouteImport.update({
   id: '/api/webhooks/whop',
   path: '/api/webhooks/whop',
@@ -193,6 +229,12 @@ export interface FileRoutesByFullPath {
   '/app/sexo': typeof AppSexoRoute
   '/app/': typeof AppIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/cron/push': typeof ApiCronPushRoute
+  '/api/push/hour': typeof ApiPushHourRoute
+  '/api/push/key': typeof ApiPushKeyRoute
+  '/api/push/subscribe': typeof ApiPushSubscribeRoute
+  '/api/push/test': typeof ApiPushTestRoute
+  '/api/push/unsubscribe': typeof ApiPushUnsubscribeRoute
   '/api/webhooks/whop': typeof ApiWebhooksWhopRoute
 }
 export interface FileRoutesByTo {
@@ -220,6 +262,12 @@ export interface FileRoutesByTo {
   '/app/sexo': typeof AppSexoRoute
   '/app': typeof AppIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/cron/push': typeof ApiCronPushRoute
+  '/api/push/hour': typeof ApiPushHourRoute
+  '/api/push/key': typeof ApiPushKeyRoute
+  '/api/push/subscribe': typeof ApiPushSubscribeRoute
+  '/api/push/test': typeof ApiPushTestRoute
+  '/api/push/unsubscribe': typeof ApiPushUnsubscribeRoute
   '/api/webhooks/whop': typeof ApiWebhooksWhopRoute
 }
 export interface FileRoutesById {
@@ -249,6 +297,12 @@ export interface FileRoutesById {
   '/app/sexo': typeof AppSexoRoute
   '/app/': typeof AppIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/cron/push': typeof ApiCronPushRoute
+  '/api/push/hour': typeof ApiPushHourRoute
+  '/api/push/key': typeof ApiPushKeyRoute
+  '/api/push/subscribe': typeof ApiPushSubscribeRoute
+  '/api/push/test': typeof ApiPushTestRoute
+  '/api/push/unsubscribe': typeof ApiPushUnsubscribeRoute
   '/api/webhooks/whop': typeof ApiWebhooksWhopRoute
 }
 export interface FileRouteTypes {
@@ -279,6 +333,12 @@ export interface FileRouteTypes {
     | '/app/sexo'
     | '/app/'
     | '/api/auth/$'
+    | '/api/cron/push'
+    | '/api/push/hour'
+    | '/api/push/key'
+    | '/api/push/subscribe'
+    | '/api/push/test'
+    | '/api/push/unsubscribe'
     | '/api/webhooks/whop'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -306,6 +366,12 @@ export interface FileRouteTypes {
     | '/app/sexo'
     | '/app'
     | '/api/auth/$'
+    | '/api/cron/push'
+    | '/api/push/hour'
+    | '/api/push/key'
+    | '/api/push/subscribe'
+    | '/api/push/test'
+    | '/api/push/unsubscribe'
     | '/api/webhooks/whop'
   id:
     | '__root__'
@@ -334,6 +400,12 @@ export interface FileRouteTypes {
     | '/app/sexo'
     | '/app/'
     | '/api/auth/$'
+    | '/api/cron/push'
+    | '/api/push/hour'
+    | '/api/push/key'
+    | '/api/push/subscribe'
+    | '/api/push/test'
+    | '/api/push/unsubscribe'
     | '/api/webhooks/whop'
   fileRoutesById: FileRoutesById
 }
@@ -348,6 +420,12 @@ export interface RootRouteChildren {
   PrivacidadRoute: typeof PrivacidadRoute
   TerminosRoute: typeof TerminosRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  ApiCronPushRoute: typeof ApiCronPushRoute
+  ApiPushHourRoute: typeof ApiPushHourRoute
+  ApiPushKeyRoute: typeof ApiPushKeyRoute
+  ApiPushSubscribeRoute: typeof ApiPushSubscribeRoute
+  ApiPushTestRoute: typeof ApiPushTestRoute
+  ApiPushUnsubscribeRoute: typeof ApiPushUnsubscribeRoute
   ApiWebhooksWhopRoute: typeof ApiWebhooksWhopRoute
 }
 
@@ -528,6 +606,48 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/cron/push': {
+      id: '/api/cron/push'
+      path: '/api/cron/push'
+      fullPath: '/api/cron/push'
+      preLoaderRoute: typeof ApiCronPushRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/push/hour': {
+      id: '/api/push/hour'
+      path: '/api/push/hour'
+      fullPath: '/api/push/hour'
+      preLoaderRoute: typeof ApiPushHourRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/push/key': {
+      id: '/api/push/key'
+      path: '/api/push/key'
+      fullPath: '/api/push/key'
+      preLoaderRoute: typeof ApiPushKeyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/push/subscribe': {
+      id: '/api/push/subscribe'
+      path: '/api/push/subscribe'
+      fullPath: '/api/push/subscribe'
+      preLoaderRoute: typeof ApiPushSubscribeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/push/test': {
+      id: '/api/push/test'
+      path: '/api/push/test'
+      fullPath: '/api/push/test'
+      preLoaderRoute: typeof ApiPushTestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/push/unsubscribe': {
+      id: '/api/push/unsubscribe'
+      path: '/api/push/unsubscribe'
+      fullPath: '/api/push/unsubscribe'
+      preLoaderRoute: typeof ApiPushUnsubscribeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/webhooks/whop': {
       id: '/api/webhooks/whop'
       path: '/api/webhooks/whop'
@@ -587,6 +707,12 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacidadRoute: PrivacidadRoute,
   TerminosRoute: TerminosRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  ApiCronPushRoute: ApiCronPushRoute,
+  ApiPushHourRoute: ApiPushHourRoute,
+  ApiPushKeyRoute: ApiPushKeyRoute,
+  ApiPushSubscribeRoute: ApiPushSubscribeRoute,
+  ApiPushTestRoute: ApiPushTestRoute,
+  ApiPushUnsubscribeRoute: ApiPushUnsubscribeRoute,
   ApiWebhooksWhopRoute: ApiWebhooksWhopRoute,
 }
 export const routeTree = rootRouteImport

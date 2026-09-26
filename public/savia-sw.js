@@ -53,14 +53,39 @@ self.addEventListener("message", (e) => {
   if (e.data && e.data.type === "arm") e.waitUntil(fire());
 });
 
+// Web Push from the server (/api/cron/push, /api/push/test).
+self.addEventListener("push", (e) => {
+  let data = {};
+  try {
+    data = e.data ? e.data.json() : {};
+  } catch {
+    data = { body: e.data ? e.data.text() : "" };
+  }
+  const title = data.title || "Savia";
+  e.waitUntil(
+    self.registration.showNotification(title, {
+      body: data.body || "¿Cómo va tu día?",
+      icon: "/icon-192.png",
+      badge: "/icon-192.png",
+      tag: data.tag || "savia-daily",
+      renotify: false,
+      data: { url: data.url || "/app/hoy" },
+    }),
+  );
+});
+
 self.addEventListener("notificationclick", (e) => {
   e.notification.close();
-  const url = (e.notification.data && e.notification.data.url) || "/app/hoy";
+  const raw = (e.notification.data && e.notification.data.url) || "/app/hoy";
+  const url = new URL(raw, self.location.origin);
+  if (url.origin !== self.location.origin) url.href = new URL("/app/hoy", self.location.origin).href;
   e.waitUntil(
     self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((windows) => {
-      const open = windows.find((c) => c.url.includes("/app"));
-      if (open) return open.focus();
-      return self.clients.openWindow(url);
+      const open = windows.find((c) => new URL(c.url).origin === self.location.origin);
+      if (open) {
+        return open.focus().then((c) => (c && "navigate" in c ? c.navigate(url.href) : c)).catch(() => self.clients.openWindow(url.href));
+      }
+      return self.clients.openWindow(url.href);
     }),
   );
 });

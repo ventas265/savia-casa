@@ -18,16 +18,17 @@ import {
   type MoodReply,
   type NoteCtx,
 } from "@/lib/daily-note";
+import { companionName, momentForHour } from "@/lib/companion-messages";
 import type { SaviaTone } from "@/lib/savia-tone";
 import type { DailyLog } from "@/lib/types";
 
-const NOTE_KEY = (day: string, lang: string) => `savia.note.v1.${day}.${lang}`;
+const NOTE_KEY = (day: string, lang: string, slot: string) => `savia.note.v2.${day}.${lang}.${slot}`;
 
 type Cached = { src: "ai"; text: string } | { src: "tried" };
 
-function readCache(day: string, lang: string): Cached | null {
+function readCache(key: string): Cached | null {
   try {
-    const raw = localStorage.getItem(NOTE_KEY(day, lang));
+    const raw = localStorage.getItem(key);
     return raw ? (JSON.parse(raw) as Cached) : null;
   } catch {
     return null;
@@ -38,11 +39,36 @@ function readCache(day: string, lang: string): Cached | null {
  * Template note is always ready; one AI attempt per day upgrades it when xAI
  * answers. Any failure is silent (the template stays).
  */
-export function useDailyNote(ctx: NoteCtx, day: string, lang: "es" | "en") {
-  const template = useMemo(() => buildDailyNote(ctx, lang, day), [ctx, lang, day]);
+/** Local wall-clock hour, refreshed every 5 minutes (the greeting follows the day). */
+export function useLocalHour() {
+  const [hour, setHour] = useState(() => new Date().getHours());
+  useEffect(() => {
+    const id = window.setInterval(() => setHour(new Date().getHours()), 5 * 60 * 1000);
+    return () => window.clearInterval(id);
+  }, []);
+  return hour;
+}
+
+/**
+ * Template note is always ready; one AI attempt per day + moment (morning /
+ * afternoon / night) upgrades it when xAI answers, so the greeting stays right.
+ * Any failure is silent (the template stays).
+ */
+export function useDailyNote(ctx: NoteCtx, day: string, lang: "es" | "en", name?: string | null) {
+  const hour = useLocalHour();
+  const moment = momentForHour(hour);
+  const who = companionName(name);
+  const template = useMemo(
+    () => buildDailyNote(ctx, lang, day, { name: who, hour }),
+    // hour only matters through its moment
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [ctx, lang, day, who, moment],
+  );
+  const key = NOTE_KEY(day, lang, `${moment}.${who.toLowerCase() || "-"}`);
   const [ai, setAi] = useState<string | null>(null);
   useEffect(() => {
-    const cached = readCache(day, lang);
+    setAi(null);
+    const cached = readCache(key);
     if (cached?.src === "ai") {
       setAi(cached.text);
       return;
@@ -50,16 +76,25 @@ export function useDailyNote(ctx: NoteCtx, day: string, lang: "es" | "en") {
     if (cached?.src === "tried") return;
     let alive = true;
     try {
-      localStorage.setItem(NOTE_KEY(day, lang), JSON.stringify({ src: "tried" } satisfies Cached));
+      localStorage.setItem(key, JSON.stringify({ src: "tried" } satisfies Cached));
     } catch {
       /* private mode */
     }
-    saviaNoteOpen({ data: { locale: lang, facts: noteFacts(ctx), draft: template.text } })
+    saviaNoteOpen({
+      data: {
+        locale: lang,
+        facts: noteFacts(ctx),
+        draft: template.text,
+        name: who,
+        greeting: template.opener.greeting,
+        moment,
+      },
+    })
       .then((res) => {
-        const text = res.ok ? acceptAiNote(res.text) : null;
+        const text = res.ok ? acceptAiNote(res.text, template.opener.greeting) : null;
         if (!text) return;
         try {
-          localStorage.setItem(NOTE_KEY(day, lang), JSON.stringify({ src: "ai", text } satisfies Cached));
+          localStorage.setItem(key, JSON.stringify({ src: "ai", text } satisfies Cached));
         } catch {
           /* ignore */
         }
@@ -69,10 +104,21 @@ export function useDailyNote(ctx: NoteCtx, day: string, lang: "es" | "en") {
     return () => {
       alive = false;
     };
-    // One attempt per day/lang; ctx changes during the day keep the template live.
+    // One attempt per day/lang/moment/name; ctx changes during the day keep the template live.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [day, lang]);
-  return { text: ai ?? template.text, fromAi: Boolean(ai), template };
+  }, [key]);
+  return { text: ai ?? template.text, fromAi: Boolean(ai), template, name: who };
+}
+
+/** AI note → headline (greeting + questions, up to the last leading «?») and the rest. */
+function splitAiNote(text: string) {
+  const parts = text.split(/(?<=[.?!])\s+/);
+  let n = 1;
+  for (let i = 0; i < Math.min(parts.length, 4); i++) {
+    if (parts[i]!.trim().endsWith("?")) n = i + 1;
+    else if (i > 0) break;
+  }
+  return { head: parts.slice(0, n).join(" "), rest: parts.slice(n).join(" ") };
 }
 
 function moodOf(v: number | null | undefined): MoodReply | null {
@@ -89,6 +135,7 @@ export function DailyNoteCard({
   log,
   paid,
   onSaved,
+  name,
 }: {
   ctx: NoteCtx;
   day: string;
@@ -96,10 +143,12 @@ export function DailyNoteCard({
   log: DailyLog | null;
   paid: boolean;
   onSaved?: () => void;
+  /** Registered name (profile.displayName). */
+  name?: string | null;
 }) {
   const { t, lang } = useI18n();
   const navigate = useNavigate();
-  const note = useDailyNote(ctx, day, lang);
+  const note = useDailyNote(ctx, day, lang, name);
   const [picked, setPicked] = useState<MoodReply | null>(moodOf(log?.mood));
   const [reply, setReply] = useState<string | null>(null);
   useEffect(() => {
@@ -109,7 +158,7 @@ export function DailyNoteCard({
   async function saveMood(m: MoodReply) {
     haptic(12);
     setPicked(m);
-    setReply(moodReply(m, note.template.situation, lang, day));
+    setReply(moodReply(m, note.template.situation, lang, day, note.name));
     // Freshest copy of today's log so we never clobber other fields.
     const cur = (SAVIA_BETA ? localToday().log : null) ?? log;
     await writeLog({
@@ -149,11 +198,11 @@ export function DailyNoteCard({
         </div>
       </div>
       <p className="mt-3 font-display text-[18px] font-semibold leading-snug tracking-[-0.02em] text-fg">
-        {note.template.checkIn && !note.fromAi ? note.template.checkIn : note.text.split(/(?<=[.?!])\s/)[0]}
+        {note.fromAi ? splitAiNote(note.text).head : note.template.checkIn}
       </p>
       <p className="mt-1.5 text-[13.5px] leading-relaxed text-soft">
         {note.fromAi
-          ? note.text.split(/(?<=[.?!])\s/).slice(1).join(" ")
+          ? splitAiNote(note.text).rest
           : note.template.lines.slice(1).join(" ")}
       </p>
       <div className="mt-3.5 grid grid-cols-4 gap-1.5" role="group" aria-label={t.moodAsk}>

@@ -10,6 +10,9 @@ import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { OrbCaption, SaviaOrb, useSaviaTone } from "@/components/savia-orb";
 import type { SaviaTone } from "@/lib/savia-tone";
+import { localToday } from "@/lib/savia-local";
+import { todayISO } from "@/lib/cycle";
+import { talkOpener } from "@/lib/companion-messages";
 
 type ChatCtx = "talk" | "day" | "ec";
 
@@ -37,6 +40,13 @@ function Preguntar() {
   const [busy, setBusy] = useState(false);
   const end = useRef<HTMLDivElement>(null);
   const canSend = q.trim().length > 0 && !busy;
+  const [talkLine, setTalkLine] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (ctx !== "talk") return;
+    const name = SAVIA_BETA ? localToday().profile.displayName : "";
+    setTalkLine(talkOpener(lang, todayISO(), name));
+  }, [ctx, lang]);
 
   useEffect(() => {
     end.current?.scrollIntoView({ block: "end" });
@@ -90,7 +100,7 @@ function Preguntar() {
           <div className="glass relative overflow-hidden rounded-[22px] p-5">
             <Face tone={tone} className="size-16" />
             <p className="mt-5 font-display text-[1.6rem] font-semibold leading-[1.1] tracking-[-0.035em] text-fg">
-              {t.askEmpty}
+              {talkLine ?? t.askEmpty}
             </p>
           </div>
         ) : (

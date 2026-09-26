@@ -796,32 +796,50 @@ export const askSaviaOpen = createServerFn({ method: "POST" })
  * template; this only upgrades it when xAI answers. Never throws.
  */
 export const saviaNoteOpen = createServerFn({ method: "POST" })
-  .validator((input: { locale: string; facts: string; draft: string }) => ({
-    locale: input.locale === "en" ? "en" : "es",
-    facts: String(input.facts || "").slice(0, 1200),
-    draft: String(input.draft || "").slice(0, 600),
-  }))
+  .validator(
+    (input: { locale: string; facts: string; draft: string; name?: string; greeting?: string; moment?: string }) => ({
+      locale: input.locale === "en" ? "en" : "es",
+      facts: String(input.facts || "").slice(0, 1200),
+      draft: String(input.draft || "").slice(0, 600),
+      // First name only, letters — never free text into the prompt.
+      name: String(input.name || "")
+        .replace(/[^\p{L}\p{M}'-]/gu, "")
+        .slice(0, 24),
+      greeting: String(input.greeting || "")
+        .replace(/[^\p{L}\p{M}\s,.¿?¡!'-]/gu, "")
+        .slice(0, 60),
+      moment: input.moment === "afternoon" || input.moment === "night" ? input.moment : "morning",
+    }),
+  )
   .handler(async ({ data }) => {
     const apiKey = process.env.XAI_API_KEY;
     if (!apiKey) return { ok: false as const };
     const lang = data.locale === "en" ? "English" : "neutral Latin American Spanish with tú (never voseo)";
+    const opener = data.greeting || (data.locale === "en" ? "Hi, how are you?" : "Hola, ¿cómo estás?");
+    const momentHint =
+      data.moment === "night"
+        ? "it is evening/night for her (ask how her day went)"
+        : data.moment === "afternoon"
+          ? "it is afternoon for her (ask how her day is going)"
+          : "it is morning for her (ask how she woke up / slept)";
     const text = await callGrok(
       apiKey,
       [
         {
           role: "system",
-          content: `You are Savia, a warm friend-doctor inside a cycle-tracking app for young Latin American women. Write today's short note in ${lang}.
+          content: `You are Savia, a close friend (with a doctor's knowledge) inside a cycle-tracking app for young Latin American women. Write today's short note in ${lang}, like a friend texting her.
 Rules:
-- 2 or 3 short sentences, max 300 characters total. Plain text, no emoji, no greeting by name, no lists.
-- The FIRST sentence is a warm companion check-in (e.g. "¿Qué tal tu día?", "¿Cómo te sientes hoy?", "Estoy para ti."), adapted to her phase and logs (period + pain: gentler).
-- Then one cycle-first line using only the facts given (cycle day, phase, what she logged). Never invent data.
-- If fertile/ovulation: say there is more chance of pregnancy and, if she is not trying, to protect herself more. Never say any day is "seguro"/"safe". Never promise pregnancy.
+- Start EXACTLY with: "${opener}" (her name + the time-of-day greeting, already correct for her time zone — do not change it${data.name ? "" : "; she has no name saved, so do not invent one"}).
+- Right after it, ONE or TWO short friend-style questions about her day and how she feels (${momentHint}), e.g. "¿Cómo va tu día? ¿Cómo te sientes?". Warm and close, never clinical.
+- Then ONE short cycle line using only the facts given (cycle day, phase, what she logged). Never invent data.
+- Max 3–4 short sentences after the greeting, max 320 characters total. Plain text, no emoji, no lists. Do not repeat her name.
+- If fertile/ovulation: it is an estimate; there is more chance of pregnancy and, if she is not trying, to protect herself more — the calendar is not contraception. Never say any day is "seguro"/"safe". Never present pregnancy as a goal or promise it.
 - If unprotected sex on a fertile day in the last 5 days: calmly mention emergency contraception works best the sooner.
 - Not a diagnosis. No moralizing.`,
         },
         {
           role: "user",
-          content: `Facts:\n${data.facts}\n\nA template draft you may improve (keep its meaning):\n${data.draft}`,
+          content: `Facts:\n${data.facts}\n\nA template draft you may improve (keep its meaning and its opening):\n${data.draft}`,
         },
       ],
       { maxTokens: 1500, timeoutMs: 12000 },
