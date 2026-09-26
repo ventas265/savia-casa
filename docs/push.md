@@ -33,7 +33,7 @@ Por eso `vercel.json` tiene un solo cron diario:
 **Alternativa gratuita (no configurada):** un planificador externo gratuito (p. ej. cron-job.org, o un workflow `schedule` de GitHub Actions) que llame cada hora a
 `GET https://savia-casa.vercel.app/api/cron/push?mode=hourly` con el header `Authorization: Bearer <CRON_SECRET>`. Con eso se respeta la hora elegida; el cron diario de Vercel puede quedarse como respaldo (no duplica: `last_sent_on` evita dos mensajes el mismo día).
 
-Nota: Nitro genera `.vercel/output/config.json`, así que `vite.config.ts` copia los `crons` de `vercel.json` allí.
+Nota: Vercel lee los `crons` de `vercel.json` aunque Nitro genere `.vercel/output/config.json`; no los dupliques en la config de Nitro (el deploy falla con `duplicated_cron_job`).
 
 ## Privacidad en la pantalla bloqueada
 Las líneas de push son discretas: nunca mencionan relaciones, dolor ni anticoncepción de emergencia. Los días fértiles se dicen como estimación («el calendario no es anticonceptivo»).

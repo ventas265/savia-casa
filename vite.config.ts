@@ -4,7 +4,6 @@ import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import viteReact from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { nitro } from "nitro/vite";
-import { readFileSync } from "node:fs";
 // @ts-expect-error JS plugin alongside the TS vite config
 import { grokPwaPlugin } from "./scripts/grok-pwa-plugin.mjs";
 
@@ -124,22 +123,6 @@ function authPopupPlugin(): Plugin {
   };
 }
 
-/**
- * Vercel crons live in vercel.json (single source). Nitro writes the Build
- * Output `config.json` itself, so copy them there too or they'd be dropped.
- * Hobby plan: once per day max (see docs/push.md).
- */
-function vercelCrons(): { path: string; schedule: string }[] {
-  try {
-    const cfg = JSON.parse(readFileSync(new URL("./vercel.json", import.meta.url), "utf8")) as {
-      crons?: { path: string; schedule: string }[];
-    };
-    return cfg.crons ?? [];
-  } catch {
-    return [];
-  }
-}
-
 // `0.0.0.0:8080` is the live-preview contract — don't change host/port.
 // Keep `nitro` gated to `build` (the Vercel deploy target): enabled in dev it
 // opens a second dev-server port, which breaks the single-port preview.
@@ -171,7 +154,6 @@ export default defineConfig(({ command }) => ({
             // manifest + head-tag middleware). Nitro v3 defaults serverDir to
             // false, so removing this silently unwires /?install=1 on deploys.
             serverDir: "./server",
-            vercel: { config: { crons: vercelCrons() } },
           }),
         ]
       : []),
