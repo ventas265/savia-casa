@@ -8,6 +8,41 @@ import { WHOP_MONTH } from "@/lib/pay-links";
 import { emergencyLine } from "@/lib/latam";
 import { callName } from "@/lib/names";
 import { isCompSerenaEmail } from "@/lib/serena-comps";
+import { assertDevice } from "@/lib/testers";
+import {
+  AI_LIMITS,
+  AI_MAX_TOKENS,
+  askOpenSchema,
+  noteOpenSchema,
+  paySettingsSchema,
+  paymentReportSchema,
+  waitlistSchema,
+} from "@/lib/input-schemas";
+import type { z } from "zod";
+
+/** Server-only helpers are imported lazily so node:crypto never reaches the client bundle. */
+async function rateLimit(...args: Parameters<typeof import("@/lib/security-core").rateLimit>) {
+  const m = await import("@/lib/security-core");
+  return m.rateLimit(...args);
+}
+async function rateKey(...parts: string[]) {
+  const m = await import("@/lib/security-core");
+  return m.rateKey(...parts);
+}
+
+async function callerIp(): Promise<string> {
+  const { clientIp } = await import("@/lib/request-ip.server");
+  return clientIp();
+}
+
+/** Admin = session user whose id or email is listed in SAVIA_ADMIN_EMAILS (fails closed). */
+async function isAdminUser(userId: string): Promise<boolean> {
+  if (!process.env.SAVIA_ADMIN_EMAILS?.trim()) return false;
+  const sql = await getSql();
+  const rows = await sql<{ email: string | null }>`select email from "user" where id = ${userId} limit 1`;
+  const { isAdminIdentity } = await import("@/lib/security-core");
+  return isAdminIdentity({ id: userId, email: rows[0]?.email }, process.env.SAVIA_ADMIN_EMAILS);
+}
 
 function saviaPrompt(lang: string, emergency: string, file: string) {
   return `You are Grok (xAI), answering in-character as Savia IA — her close companion inside the Savia app. Same intelligence as the builder of this product; you do not hand her off to a weaker bot.
@@ -418,11 +453,17 @@ export const getReport = createServerFn({ method: "GET" })
   });
 
 export const joinWaitlist = createServerFn({ method: "POST" })
-  .validator((input: { email: string; plan: string }) => input)
+  .validator((input: z.input<typeof waitlistSchema>) => {
+    const r = waitlistSchema.safeParse(input);
+    return r.success ? r.data : null;
+  })
   .handler(async ({ data }) => {
-    const email = data.email.trim().toLowerCase();
-    if (!email.includes("@")) return { ok: false as const };
+    if (!data) return { ok: false as const };
+    const email = data.email;
     const sql = await getSql();
+    if (!(await rateLimit(sql, "waitlist", await rateKey(await callerIp()), 5, 3600))) {
+      return { ok: false as const };
+    }
     await sql`
       insert into savia_waitlist (email, plan) values (${email}, ${data.plan})
     `;
@@ -496,10 +537,7 @@ export const getZinli = createServerFn({ method: "GET" })
     return { handle: p.zinli };
   });
 
-export const savePay = createServerFn({ method: "POST" })
-  .middleware([authMiddleware])
-  .validator((input: PaySettings) => input)
-  .handler(async ({ data }) => {
+async function writePay(data: PaySettings): Promise<PaySettings> {
     const next: PaySettings = {
       zinli: data.zinli.trim().replace(/^@/, ""),
       pmPhone: data.pmPhone.trim(),
@@ -523,28 +561,51 @@ export const savePay = createServerFn({ method: "POST" })
       insert into savia_settings (key, value) values ('zinli', ${next.zinli})
       on conflict (key) do update set value = excluded.value
     `;
+    return next;
+}
+
+/** Payment destinations: admin only (SAVIA_ADMIN_EMAILS). */
+export const savePay = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .validator((input: PaySettings) => paySettingsSchema.parse(input))
+  .handler(async ({ context, data }) => {
+    if (!(await isAdminUser(context.userId))) return { ok: false as const, error: "admin" as const };
+    const next = await writePay(data);
     return { ok: true as const, ...next };
   });
 
 export const saveZinli = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
-  .validator((input: { handle: string }) => input)
-  .handler(async ({ data }) => {
+  .validator((input: { handle: string }) => ({ handle: String(input?.handle ?? "").slice(0, 200) }))
+  .handler(async ({ context, data }) => {
+    if (!(await isAdminUser(context.userId))) return { ok: false as const, error: "admin" as const };
     const current = await readPay();
-    const res = await savePay({ data: { ...current, zinli: data.handle } });
+    const res = await writePay({ ...current, zinli: data.handle });
     return { ok: true as const, handle: res.zinli };
   });
 
+/**
+ * "I paid" report for manual methods (Zinli, Pago Móvil, …). Records a pending
+ * payment for admin review; it NEVER changes the plan. Plans are granted only by
+ * the verified Whop webhook (grantSerenaByEmail) or an admin.
+ */
 export const markZinliPaid = createServerFn({ method: "POST" })
-  .validator((input: { email: string; plan: "serena" | "year"; note: string }) => input)
-  .handler(async ({ data }) => {
-    const email = data.email.trim().toLowerCase();
-    if (!email.includes("@")) return { ok: false as const };
+  .middleware([authMiddleware])
+  .validator((input: z.input<typeof paymentReportSchema>) => {
+    const r = paymentReportSchema.safeParse(input);
+    return r.success ? r.data : null;
+  })
+  .handler(async ({ context, data }) => {
+    if (!data) return { ok: false as const };
+    const email = data.email;
     const amount = data.plan === "year" ? 39 : 4.99;
     const sql = await getSql();
+    if (!(await rateLimit(sql, "pay-report", await rateKey(context.userId), 5, 3600))) {
+      return { ok: false as const };
+    }
     await sql`
       insert into savia_payments (email, plan, amount, note)
-      values (${email}, ${data.plan}, ${amount}, ${data.note.trim()})
+      values (${email}, ${data.plan}, ${amount}, ${`pending: ${data.note.trim()}`})
     `;
     return { ok: true as const };
   });
@@ -569,27 +630,6 @@ export const getAskStatus = createServerFn({ method: "GET" })
       remaining: paid ? null : Math.max(0, FREE_ASKS - used),
     };
   });
-
-export const claimSerena = createServerFn({ method: "POST" })
-  .middleware([authMiddleware])
-  .validator((input: { email: string; plan: "serena" | "year"; note: string }) => input)
-  .handler(async ({ context, data }) => {
-    const mail = data.email.trim().toLowerCase();
-    const email = mail.includes("@") ? mail : `cuenta-${context.userId.slice(0, 8)}@savia.app`;
-    const amount = data.plan === "year" ? 39 : 4.99;
-    const sql = await getSql();
-    await sql`
-      insert into savia_payments (email, plan, amount, note)
-      values (${email}, ${data.plan}, ${amount}, ${data.note.trim()})
-    `;
-    await getOrCreateProfile(context.userId);
-    await sql`
-      update savia_profiles set plan = ${data.plan}, updated_at = now()
-      where user_id = ${context.userId}
-    `;
-    return { ok: true as const };
-  });
-
 
 export type ChatTurn = { role: "user" | "assistant"; content: string };
 
@@ -742,9 +782,28 @@ export type AskFile = {
   daysUntilPeriod?: number | null;
 };
 
+/**
+ * Beta chat (no session). Requires a valid device credential, zod caps, and
+ * per-device + per-IP rate limits (Postgres, savia_rate_limits).
+ */
 export const askSaviaOpen = createServerFn({ method: "POST" })
-  .validator((input: { question: string; locale: string; history?: ChatTurn[]; file?: AskFile }) => input)
+  .validator((input: z.input<typeof askOpenSchema>) => {
+    const r = askOpenSchema.safeParse(input);
+    return r.success ? r.data : null;
+  })
   .handler(async ({ data }) => {
+    if (!data) return { ok: false as const, error: "invalid" as const };
+    if (!(await assertDevice(data.deviceId, data.token))) {
+      return { ok: false as const, error: "device" as const };
+    }
+    const sql = await getSql();
+    const ip = await rateKey(await callerIp());
+    const dev = await rateKey(data.deviceId);
+    const allowed =
+      (await rateLimit(sql, "ai-chat-d10m", dev, AI_LIMITS.chatDevice10m, 600)) &&
+      (await rateLimit(sql, "ai-chat-dday", dev, AI_LIMITS.chatDeviceDay, 86400)) &&
+      (await rateLimit(sql, "ai-chat-ip10m", ip, AI_LIMITS.chatIp10m, 600));
+    if (!allowed) return { ok: false as const, error: "rate" as const };
     const apiKey = process.env.XAI_API_KEY;
     if (!apiKey) {
       console.error("[savia-ai] XAI_API_KEY is not set in this environment");
@@ -785,7 +844,7 @@ export const askSaviaOpen = createServerFn({ method: "POST" })
           },
           ...history,
           { role: "user", content: data.question.slice(0, 2000) },
-        ]);
+        ], { maxTokens: AI_MAX_TOKENS.chat, timeoutMs: 45000 });
     if (!text) return { ok: false as const, error: "ai" as const };
     return { ok: true as const, text, remaining: null as number | null };
   });
@@ -796,8 +855,13 @@ export const askSaviaOpen = createServerFn({ method: "POST" })
  * template; this only upgrades it when xAI answers. Never throws.
  */
 export const saviaNoteOpen = createServerFn({ method: "POST" })
-  .validator(
-    (input: { locale: string; facts: string; draft: string; name?: string; greeting?: string; moment?: string }) => ({
+  .validator((raw: z.input<typeof noteOpenSchema>) => {
+    const r = noteOpenSchema.safeParse(raw);
+    if (!r.success) return null;
+    const input = r.data;
+    return {
+      deviceId: input.deviceId,
+      token: input.token,
       locale: input.locale === "en" ? "en" : "es",
       facts: String(input.facts || "").slice(0, 1200),
       draft: String(input.draft || "").slice(0, 600),
@@ -809,9 +873,16 @@ export const saviaNoteOpen = createServerFn({ method: "POST" })
         .replace(/[^\p{L}\p{M}\s,.¿?¡!'-]/gu, "")
         .slice(0, 60),
       moment: input.moment === "afternoon" || input.moment === "night" ? input.moment : "morning",
-    }),
-  )
+    };
+  })
   .handler(async ({ data }) => {
+    if (!data) return { ok: false as const };
+    if (!(await assertDevice(data.deviceId, data.token))) return { ok: false as const };
+    const sql = await getSql();
+    const allowed =
+      (await rateLimit(sql, "ai-note-dh", await rateKey(data.deviceId), AI_LIMITS.noteDeviceHour, 3600)) &&
+      (await rateLimit(sql, "ai-note-iph", await rateKey(await callerIp()), AI_LIMITS.noteIpHour, 3600));
+    if (!allowed) return { ok: false as const };
     const apiKey = process.env.XAI_API_KEY;
     if (!apiKey) return { ok: false as const };
     const lang = data.locale === "en" ? "English" : "neutral Latin American Spanish with tú (never voseo)";
@@ -842,7 +913,7 @@ Rules:
           content: `Facts:\n${data.facts}\n\nA template draft you may improve (keep its meaning and its opening):\n${data.draft}`,
         },
       ],
-      { maxTokens: 1500, timeoutMs: 12000 },
+      { maxTokens: AI_MAX_TOKENS.note, timeoutMs: 12000 },
     ).catch(() => null);
     if (!text) return { ok: false as const };
     return { ok: true as const, text: text.trim() };

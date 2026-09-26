@@ -48,8 +48,9 @@ function Recuperar() {
         <input
           value={code}
           onChange={(e) => setCode(e.target.value.toUpperCase())}
-          className="h-14 w-full rounded-full bg-surface px-5 font-display text-xl font-semibold tracking-[0.2em] outline-none"
-          placeholder="XXXXXXXX"
+          className="h-14 w-full rounded-full bg-surface px-5 font-display text-lg font-semibold tracking-[0.06em] outline-none"
+          placeholder="XXXX-XXXX-XXXX-XXXX"
+          maxLength={40}
           autoCapitalize="characters"
         />
         {bad ? <p className="text-sm text-primary">{t.recoverBad}</p> : null}

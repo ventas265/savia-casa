@@ -7,7 +7,7 @@ import { haptic } from "@/lib/haptic";
 import { cn } from "@/lib/utils";
 import { SAVIA_BETA } from "@/lib/beta";
 import { localToday } from "@/lib/savia-local";
-import { writeLog } from "@/lib/savia-api";
+import { deviceCreds, writeLog } from "@/lib/savia-api";
 import { saviaNoteOpen } from "@/lib/savia-server";
 import {
   acceptAiNote,
@@ -75,13 +75,18 @@ export function useDailyNote(ctx: NoteCtx, day: string, lang: "es" | "en", name?
     }
     if (cached?.src === "tried") return;
     let alive = true;
-    try {
-      localStorage.setItem(key, JSON.stringify({ src: "tried" } satisfies Cached));
-    } catch {
-      /* private mode */
-    }
-    saviaNoteOpen({
+    // The AI note needs the beta device credential; without it the template stays.
+    void deviceCreds()
+      .then((c) => {
+        if (!c || !alive) return null;
+        try {
+          localStorage.setItem(key, JSON.stringify({ src: "tried" } satisfies Cached));
+        } catch {
+          /* private mode */
+        }
+        return saviaNoteOpen({
       data: {
+        ...c,
         locale: lang,
         facts: noteFacts(ctx),
         draft: template.text,
@@ -89,9 +94,10 @@ export function useDailyNote(ctx: NoteCtx, day: string, lang: "es" | "en", name?
         greeting: template.opener.greeting,
         moment,
       },
-    })
+    });
+      })
       .then((res) => {
-        const text = res.ok ? acceptAiNote(res.text, template.opener.greeting) : null;
+        const text = res?.ok ? acceptAiNote(res.text, template.opener.greeting) : null;
         if (!text) return;
         try {
           localStorage.setItem(key, JSON.stringify({ src: "ai", text } satisfies Cached));

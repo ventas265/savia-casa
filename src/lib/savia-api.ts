@@ -28,6 +28,7 @@ export async function pulseTester() {
       displayName: p.displayName,
       stage: p.stage,
       country: p.country,
+      token: deviceToken() || undefined,
     },
   }).catch(() => null);
   if (res?.ok && res.token) setDeviceToken(res.token);
@@ -171,7 +172,9 @@ export async function askGuide(input: {
   history?: { role: "user" | "assistant"; content: string }[];
 }) {
   if (SAVIA_BETA) {
-    return askSaviaOpen({ data: { ...input, file: localAskFile() } });
+    const c = await creds();
+    if (!c) return { ok: false as const, error: "ai" as const };
+    return askSaviaOpen({ data: { ...input, ...c, file: localAskFile() } });
   }
   return askSavia({ data: input });
 }

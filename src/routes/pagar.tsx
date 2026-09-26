@@ -5,7 +5,7 @@ import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SiteHeader } from "@/components/site-header";
-import { claimSerena, emptyPay, getAskStatus, getPay, type PaySettings } from "@/lib/savia-server";
+import { emptyPay, getAskStatus, getPay, markZinliPaid, type PaySettings } from "@/lib/savia-server";
 import { Disclaimer } from "@/components/disclaimer";
 import { whopFor } from "@/lib/pay-links";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
@@ -48,19 +48,24 @@ function Pagar() {
       .catch(() => setActive(false));
   }, [user]);
 
+  // Back from Whop (?paid=1): the plan is granted only by the verified Whop
+  // webhook, so just re-read the status (no client-side claim).
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (new URLSearchParams(window.location.search).get("paid") !== "1") return;
     if (!user) return;
-    void claimSerena({ data: { email: user.primaryEmail || email, plan, note: "whop" } })
-      .then((res) => {
-        if (res.ok) {
-          setActive(true);
-          toast.success(t.zinliPaidOk);
-        }
-      })
-      .catch(() => {});
-  }, [user, email, t.zinliPaidOk]);
+    const timer = window.setTimeout(() => {
+      getAskStatus()
+        .then((s) => {
+          if (s.paid) {
+            setActive(true);
+            toast.success(t.zinliPaidOk);
+          }
+        })
+        .catch(() => {});
+    }, 2500);
+    return () => window.clearTimeout(timer);
+  }, [user, t.zinliPaidOk]);
 
   const cardLink = whopFor(plan);
   const paypalLink = pay?.paypalUrl || whopFor(plan);
@@ -113,10 +118,10 @@ function Pagar() {
                   ? `${pay?.bankName || "Banplus"} ${pay?.bankAccount || ""}`
                 : cardLink;
       const note = `${method} ${dest || ""}`;
-      const res = await claimSerena({ data: { email, plan, note } });
+      // Records a pending payment for review; never activates the plan by itself.
+      const res = await markZinliPaid({ data: { email, plan, note: note.slice(0, 300) } });
       if (res.ok) {
-        setActive(true);
-        toast.success(t.zinliPaidOk);
+        toast.success(t.payPending);
         void navigate({ to: "/app/hoy" });
       } else toast.error(t.waitlistErr);
     } catch {

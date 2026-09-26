@@ -14,7 +14,7 @@ export function RecoveryCard() {
   return (
     <section className="relative mb-4 rounded-[1.5rem] card-hot p-5">
       <p className="text-xs font-bold uppercase tracking-wide opacity-80">{t.keepCode}</p>
-      <p className="mt-2 font-display text-3xl font-semibold tracking-[0.2em]">{code}</p>
+      <p className="mt-2 break-all font-display text-2xl font-semibold tracking-[0.06em]">{code}</p>
       <p className="mt-2 text-sm opacity-90">{t.keepCodeBody}</p>
       <button
         type="button"
