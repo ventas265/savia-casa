@@ -248,14 +248,14 @@ export function insightText(ins: Insight, lang: L): { title: string; detail: str
           };
     case "periodLength":
       return es
-        ? { title: `Tu regla dura unos ${ins.avg} días`, detail: `Medido en tus últimas ${ins.n} reglas anotadas.` }
+        ? { title: `Tu periodo dura unos ${ins.avg} días`, detail: `Medido en tus últimos ${ins.n} periodos anotados.` }
         : { title: `Your period lasts about ${ins.avg} days`, detail: `Measured over your last ${ins.n} logged periods.` };
     case "symptomBefore": {
       const s = SYM[ins.symptom]?.[i] ?? (es ? "Ese síntoma" : "That symptom");
       const pl = (es ? PLURAL_ES : PLURAL_EN).has(ins.symptom);
       return es
         ? {
-            title: `${s} ${pl ? "suelen" : "suele"} llegar ~${ins.days} ${ins.days === 1 ? "día" : "días"} antes de tu regla`,
+            title: `${s} ${pl ? "suelen" : "suele"} llegar ~${ins.days} ${ins.days === 1 ? "día" : "días"} antes de tu periodo`,
             detail: `Pasó en ${ins.cycles} ciclos. Tenerlo a mano esos días ayuda.`,
           }
         : {
@@ -268,8 +268,8 @@ export function insightText(ins: Insight, lang: L): { title: string; detail: str
       const pl = (es ? PLURAL_ES : PLURAL_EN).has(ins.symptom);
       return es
         ? {
-            title: `${s} ${pl ? "se concentran" : "se concentra"} ${ins.days === 1 ? "en el primer día" : `en los primeros ${ins.days} días`} de tu regla`,
-            detail: `Visto en ${ins.cycles} reglas.`,
+            title: `${s} ${pl ? "se concentran" : "se concentra"} ${ins.days === 1 ? "en el primer día" : `en los primeros ${ins.days} días`} de tu periodo`,
+            detail: `Visto en ${ins.cycles} periodos.`,
           }
         : {
             title: `${s} ${pl ? "concentrate" : "concentrates"} ${ins.days === 1 ? "on the first day" : `in the first ${ins.days} days`} of your period`,
@@ -303,7 +303,7 @@ export function learningText(l: { periodsMore: number; daysMore: number }, lang:
   const es = lang === "es";
   const parts: string[] = [];
   if (l.periodsMore)
-    parts.push(es ? `${l.periodsMore} ${l.periodsMore === 1 ? "regla" : "reglas"}` : `${l.periodsMore} ${l.periodsMore === 1 ? "period" : "periods"}`);
+    parts.push(es ? `${l.periodsMore} ${l.periodsMore === 1 ? "periodo" : "periodos"}` : `${l.periodsMore} ${l.periodsMore === 1 ? "period" : "periods"}`);
   if (l.daysMore) parts.push(es ? `${l.daysMore} días` : `${l.daysMore} days`);
   const what = parts.join(es ? " y " : " and ");
   return es ? `Savia está aprendiendo: anota ${what} más.` : `Savia is learning: log ${what} more.`;

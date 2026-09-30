@@ -35,7 +35,7 @@ test("little data: learning message, no invented insights", () => {
   const r = computeInsights({ starts: [addDaysISO(TODAY, -10)], logs: [log(TODAY, { mood: 3 })], periodLength: 5, cycleLength: 28, today: TODAY });
   assert.equal(r.items.length, 0);
   assert.deepEqual(r.learning, { periodsMore: 2, daysMore: 19 });
-  assert.equal(learningText(r.learning!, "es"), "Savia está aprendiendo: anota 2 reglas y 19 días más.");
+  assert.equal(learningText(r.learning!, "es"), "Savia está aprendiendo: anota 2 periodos y 19 días más.");
 });
 
 test("3+ cycles: learned length, regularity, period length, symptom timing, mood & desire by phase", () => {
@@ -76,7 +76,7 @@ test("phaseOfDay uses the real start before the day", () => {
 });
 
 test("symptom phrasing agrees in number", () => {
-  assert.match(insightText({ id: "symptomDuring", symptom: "cramps", days: 1, cycles: 3 }, "es").title, /Los cólicos se concentran en el primer día de tu regla/);
+  assert.match(insightText({ id: "symptomDuring", symptom: "cramps", days: 1, cycles: 3 }, "es").title, /Los cólicos se concentran en el primer día de tu periodo/);
   assert.match(insightText({ id: "symptomBefore", symptom: "headache", days: 2, cycles: 3 }, "en").title, /Headaches tend to show up/);
   assert.match(insightText({ id: "regularity", regular: true, min: 29, max: 30, variation: 1, atypical: false }, "es").detail, /1 día entre/);
 });

@@ -88,7 +88,7 @@ test("phase follows period duration: day 7 of a 5-day period is follicular, not 
   assert.equal(d3.confirmed, true);
 });
 
-test("logged bleeding = period and menstrual phase together (never «Regla» + Folicular)", () => {
+test("logged bleeding = period and menstrual phase together (never «Periodo» + Folicular)", () => {
   const i = dayInfo("2026-09-26", {
     lastStart: "2026-09-20",
     ...base,
