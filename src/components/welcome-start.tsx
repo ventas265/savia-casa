@@ -22,6 +22,13 @@ export function WelcomeStart() {
       >
         {t.haveAccount}
       </Link>
+      <Link
+        to="/privacidad"
+        data-testid="welcome-privacy"
+        className="mx-auto mt-1 flex min-h-11 w-fit items-center px-3 text-sm font-semibold text-muted underline-offset-4 hover:underline"
+      >
+        {t.navPrivacy}
+      </Link>
       <WelcomeHero />
     </div>
   );

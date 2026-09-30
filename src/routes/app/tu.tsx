@@ -13,6 +13,7 @@ import { latamOf } from "@/lib/latam";
 import type { SaviaProfile } from "@/lib/types";
 import { InstallSavia } from "@/components/install-savia";
 import { PushReminders } from "@/components/push-reminders";
+import { DeleteMyData } from "@/components/delete-my-data";
 
 export const Route = createFileRoute("/app/tu")({ component: TuTab });
 
@@ -138,6 +139,7 @@ function TuTab() {
             {t.navTerms}
           </Link>
         </div>
+        <DeleteMyData />
       </section>
 
       <section className="glass mt-4 rounded-[22px] p-5" aria-labelledby="tu-code-h" data-testid="tu-codigo">
