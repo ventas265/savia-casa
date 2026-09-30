@@ -226,13 +226,13 @@ export function AnotarSheet(props: AnotarProps) {
   const titles = [
     L(lang, "¿Cómo te sientes?", "How do you feel?"),
     L(lang, "¿Y tu cuerpo?", "And your body?"),
-    L(lang, "¿Te llegó la regla?", "Did your period come?"),
+    L(lang, "¿Te llegó tu periodo?", "Did your period come?"),
     L(lang, "Lo íntimo", "Intimate"),
   ];
   const subs = [
     "",
     L(lang, "Lo primero es lo que suele pasarte en esta fase.", "First, what usually shows up in this phase."),
-    nextLbl && phase !== "menstrual" ? L(lang, `Tu regla se espera hacia el ${nextLbl}.`, `Your period is expected around ${nextLbl}.`) : "",
+    nextLbl && phase !== "menstrual" ? L(lang, `Tu periodo se espera hacia el ${nextLbl}.`, `Your period is expected around ${nextLbl}.`) : "",
     L(lang, "Opcional. Solo tú lo ves.", "Optional. Only you see it."),
   ];
 
@@ -372,7 +372,7 @@ export function AnotarSheet(props: AnotarProps) {
 
               {step === 2 ? (
                 <>
-                  <div className="an-fbs" role="radiogroup" aria-label={L(lang, "Regla", "Period")}>
+                  <div className="an-fbs" role="radiogroup" aria-label={L(lang, "Periodo", "Period")}>
                     {FLOWS_V2.map((f) => {
                       const on = d.flow === f.id;
                       return (
@@ -639,7 +639,7 @@ function Saved({
     },
     {
       k: "regla",
-      label: L(lang, "Regla", "Period"),
+      label: L(lang, "Periodo", "Period"),
       value: [lang === "es" ? flowL.es : flowL.en, mucL ? `${L(lang, "flujo", "discharge")} ${(lang === "es" ? mucL.es : mucL.en).toLowerCase()}` : null].filter(Boolean).join(" · "),
       step: 2,
     },

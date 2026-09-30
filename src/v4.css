@@ -190,7 +190,7 @@
 .an-sgt small { font: 500 11.5px/1.2 var(--font-sans); color: var(--color-muted); }
 .an-sg[aria-pressed="true"] .an-sgt small { color: var(--color-accent); }
 .an-ck { position: absolute; top: 8px; right: 8px; width: 20px; height: 20px; border-radius: 50%; background: var(--color-accent); display: grid; place-items: center; color: #fff; }
-/* regla */
+/* periodo (paso) */
 .an-fbs { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-top: 18px; }
 .an-fb { height: 100px; border-radius: 24px; background: #fff; border: 1px solid var(--color-line); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; font: 600 12.5px/1 var(--font-sans); color: var(--color-ink-2); min-width: 0; }
 .an-fb[aria-checked="true"] { background: var(--color-ink); border-color: var(--color-ink); color: #fff; }

@@ -3,7 +3,7 @@
  * every control maps onto an EXISTING DailyLog field/value — no new fields, no new symptom ids.
  *   Paso 1 Ánimo  → mood (1–5), energy (1–5), symptoms anxiety / irritable / low_mood / brain_fog
  *   Paso 2 Cuerpo → symptoms (all remaining stored ids)
- *   Paso 3 Regla  → flow (none/spotting/light/medium/heavy), mucus (sticky/creamy/eggwhite/watery)
+ *   Paso 3 Periodo  → flow (none/spotting/light/medium/heavy), mucus (sticky/creamy/eggwhite/watery)
  *   Paso 4 Íntimo → sexKind (none/protected/unprotected/withdrawal), libido_up / libido_down,
  *                   sleepHours (30-min steps), insomnia, notes (≤ 500)
  * Saving sends only the fields she changed; mergeLog keeps everything else as it was.
