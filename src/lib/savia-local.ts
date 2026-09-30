@@ -227,7 +227,7 @@ export function localUndoPeriod(undo: PeriodUndo) {
 }
 
 /**
- * «Cambiar última regla»: move the latest start to `newDay`. The old start's
+ * «Cambiar último periodo»: move the latest start to `newDay`. The old start's
  * log stops being a start; if it now falls outside the period it loses the
  * automatic flow too, so day/phase stay consistent.
  */

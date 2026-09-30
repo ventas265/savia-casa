@@ -32,7 +32,7 @@ export const Route = createFileRoute("/app/preguntar")({
 /** Empty-state suggestions by phase (avoid-pregnancy framing, never trying-to-conceive). */
 const SUGGEST: Record<Phase, { es: string[]; en: string[] }> = {
   menstrual: {
-    es: ["¿Qué alivia los cólicos sin pastillas?", "¿Cuánto sangrado es normal?", "¿Puedo hacer ejercicio con la regla?", "¿Por qué me siento tan cansada?"],
+    es: ["¿Qué alivia los cólicos sin pastillas?", "¿Cuánto sangrado es normal?", "¿Puedo hacer ejercicio con el periodo?", "¿Por qué me siento tan cansada?"],
     en: ["What eases cramps without pills?", "How much bleeding is normal?", "Can I exercise on my period?", "Why do I feel so tired?"],
   },
   follicular: {

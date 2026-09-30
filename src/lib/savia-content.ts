@@ -65,7 +65,7 @@ export const phases: Record<Exclude<Phase, "none">, { hormone: Copy; body: Copy;
   },
   luteal: {
     hormone: t(
-      "El cuerpo lúteo fabrica progesterona. Si no hay embarazo, a los ~14 días cae y llega la regla. Si hay, la progesterona se sostiene. El PMS vive aquí.",
+      "El cuerpo lúteo fabrica progesterona. Si no hay embarazo, a los ~14 días cae y llega el periodo. Si hay, la progesterona se sostiene. El PMS vive aquí.",
       "The corpus luteum makes progesterone. If there’s no pregnancy, it falls after ~14 days and the period arrives. If there is, progesterone holds. PMS lives here.",
     ),
     body: t(
@@ -219,7 +219,7 @@ export const foods: FoodCard[] = [
   {
     id: "iron",
     title: t("Hierro que se puede comer", "Iron you can actually eat"),
-    why: t("Cada regla se lleva sangre. Sin hierro el cerebro niebla y el pelo se queja.", "Each period spends blood. Without iron the brain fogs and hair complains."),
+    why: t("Cada periodo se lleva sangre. Sin hierro el cerebro niebla y el pelo se queja.", "Each period spends blood. Without iron the brain fogs and hair complains."),
     plate: t("Lentejas + limón. Huevo. Carne roja 1–2 veces. Espinaca no basta sola; súmale C.", "Lentils + lemon. Eggs. Red meat 1–2 times. Spinach alone isn’t enough; add vitamin C."),
     stages: ["cycle", "pregnancy", "postpartum", "peri"],
     phases: ["menstrual"],
@@ -309,7 +309,7 @@ export const hormones: { id: string; name: Copy; what: Copy; when: Copy }[] = [
     id: "progesterone",
     name: t("Progesterona", "Progesterone"),
     what: t("Hija del óvulo que salió. Calma, sube la temperatura, prepara el útero. Sin ovulación, casi no hay.", "Daughter of the egg that left. Calms, raises temperature, readies the uterus. No ovulation, almost none."),
-    when: t("Solo en lútea (o embarazo). En peri a menudo falta antes que el estrógeno — de ahí reglas locas y sueño roto.", "Only in luteal (or pregnancy). In peri it often leaves before estrogen — hence wild bleeding and broken sleep."),
+    when: t("Solo en lútea (o embarazo). En peri a menudo falta antes que el estrógeno — de ahí periodos locos y sueño roto.", "Only in luteal (or pregnancy). In peri it often leaves before estrogen — hence wild bleeding and broken sleep."),
   },
   {
     id: "fsh",
@@ -365,14 +365,14 @@ export const periGuide: { title: Copy; body: Copy }[] = [
   {
     title: t("Qué es, de verdad", "What it actually is"),
     body: t(
-      "No es “un día sin regla”. Es la década (a veces más) en la que los ovarios se vuelven imprevisibles: un mes ovulas, al otro no; el estrógeno pega latigazos; la progesterona falta. Puede empezar a los 40, a veces a los 35. La menopausia es un punto: 12 meses sin regla. La peri es el camino.",
+      "No es “un día sin periodo”. Es la década (a veces más) en la que los ovarios se vuelven imprevisibles: un mes ovulas, al otro no; el estrógeno pega latigazos; la progesterona falta. Puede empezar a los 40, a veces a los 35. La menopausia es un punto: 12 meses sin periodo. La peri es el camino.",
       "It is not “a day without a period.” It is the decade (sometimes more) when ovaries turn unpredictable: you ovulate one month, not the next; estrogen lashes out; progesterone goes missing. It can start at 40, sometimes 35. Menopause is a point: 12 months without a period. Peri is the road.",
     ),
   },
   {
     title: t("Señales que no son “estrés”", "Signs that are not “just stress”"),
     body: t(
-      "Reglas más juntas o más largas, manchado, corazón a mil a las 3 am, calor de la nada, niebla para encontrar una palabra, rabia que no te reconoces, deseo que aparece o se esconde, hombro congelado, migrana nueva. Puedes tener peri con reglas todavía “normales”.",
+      "Periodos más juntos o más largos, manchado, corazón a mil a las 3 am, calor de la nada, niebla para encontrar una palabra, rabia que no te reconoces, deseo que aparece o se esconde, hombro congelado, migrana nueva. Puedes tener peri con periodos todavía “normales”.",
       "Periods closer together or longer, spotting, a racing heart at 3 am, heat from nowhere, fog for a word, rage you don’t recognize, desire that shows up or hides, frozen shoulder, a new migraine. You can be in peri with still-“normal” periods.",
     ),
   },
@@ -396,7 +396,7 @@ export const menoGuide: { title: Copy; body: Copy }[] = [
   {
     title: t("El punto, no el abismo", "A point, not a cliff"),
     body: t(
-      "Menopausia: 12 meses seguidos sin regla (si no te operaron los ovarios). Después eres posmenopáusica el resto de la vida. El estrógeno bajo cambia hueso, vaso, vagina, cerebro. No es un fallo; es otra estación. Se acompaña.",
+      "Menopausia: 12 meses seguidos sin periodo (si no te operaron los ovarios). Después eres posmenopáusica el resto de la vida. El estrógeno bajo cambia hueso, vaso, vagina, cerebro. No es un fallo; es otra estación. Se acompaña.",
       "Menopause: 12 months in a row without a period (if your ovaries weren’t removed). After that you are postmenopausal for life. Low estrogen changes bone, vessel, vagina, brain. Not a failure — another season. It can be accompanied.",
     ),
   },
@@ -420,7 +420,7 @@ export const postpartumGuide: { title: Copy; body: Copy }[] = [
   {
     title: t("El cuarto trimestre", "The fourth trimester"),
     body: t(
-      "Sangrado (loquios), hormonas en caída libre, leche o no, suelo pélvico, sueño roto. La regla puede tardar meses si das pecho — o volver a las 6 semanas. Ninguna de las dos es un examen.",
+      "Sangrado (loquios), hormonas en caída libre, leche o no, suelo pélvico, sueño roto. El periodo puede tardar meses si das pecho — o volver a las 6 semanas. Ninguna de las dos es un examen.",
       "Bleeding (lochia), hormones in free fall, milk or not, pelvic floor, broken sleep. The period may wait months if you nurse — or return at 6 weeks. Neither is a test you pass.",
     ),
   },

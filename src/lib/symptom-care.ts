@@ -20,7 +20,7 @@ const CARE: Record<string, L> = {
   fatigue: { es: "Comida caliente con proteína y dormir cuenta más que rendir.", en: "Warm food with protein; sleep counts more than output." },
   brain_fog: { es: "Una tarea a la vez y pausas cortas; mañana suele aclarar.", en: "One task at a time and short breaks; it usually clears." },
   nausea: { es: "Comidas pequeñas y jengibre; si sigue varios días, consulta.", en: "Small meals and ginger; if it lasts days, get checked." },
-  spotting: { es: "Anota cuándo aparece; si se repite fuera de la regla, coméntalo con un médico.", en: "Note when it shows up; if it repeats off-period, mention it to a doctor." },
+  spotting: { es: "Anota cuándo aparece; si se repite fuera del periodo, coméntalo con un médico.", en: "Note when it shows up; if it repeats off-period, mention it to a doctor." },
   constipation: { es: "Agua, fibra y moverte un poco.", en: "Water, fiber and some movement." },
   diarrhea: { es: "Hidrátate bien y comidas simples.", en: "Hydrate well and keep meals simple." },
   craving: { es: "Antojo normal: combina dulce con algo de proteína.", en: "Normal craving: pair sweet with some protein." },

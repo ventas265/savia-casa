@@ -124,7 +124,7 @@ function buildTtcConclusion(p: {
   if (onPeriod) {
     return pick(
       lang,
-      "Regla anotada. En búsqueda, estos días el cuerpo se reinicia: está bien ir más despacio. Lo que sigue es timing estimado cuando pase el sangrado — no magia.",
+      "Periodo anotado. En búsqueda, estos días el cuerpo se reinicia: está bien ir más despacio. Lo que sigue es timing estimado cuando pase el sangrado — no magia.",
       "Period logged. While trying, these days the body resets — slowing down is fine. What follows is estimated timing after bleeding, not magic.",
     );
   }
@@ -148,7 +148,7 @@ function buildTtcConclusion(p: {
       lang,
         hasBody
         ? "Lútea: el cuerpo espera. Síntomas o ganas de cueva no dicen sí o no a un positivo — solo que la progesterona está en escena. Anotar ya es cuidarte."
-        : "Lútea: fase de espera. El calendario estima; un test tiene más sentido cerca de cuando suele venir la regla, no ya.",
+        : "Lútea: fase de espera. El calendario estima; un test tiene más sentido cerca de cuando suele venir el periodo, no ya.",
       hasBody
         ? "Luteal: the body waits. Symptoms or wanting to hide don’t mean pregnant or not — just progesterone on stage. Logging is already care."
         : "Luteal: waiting phase. The calendar estimates; a test makes more sense near when your period usually comes, not yet.",
@@ -251,13 +251,13 @@ function buildRiskConclusion(p: {
   if (onPeriod) {
     return pick(
       lang,
-      `Relaciones en regla (${kindBit}): posible embarazo es menos probable, no imposible. Si te preocupa, farmacia/clínica orientan mejor que el calendario.`,
+      `Relaciones en el periodo (${kindBit}): posible embarazo es menos probable, no imposible. Si te preocupa, farmacia/clínica orientan mejor que el calendario.`,
       `Period sex (${kindBit}): pregnancy is less likely, not impossible. If you’re worried, a pharmacy/clinic beats the calendar.`,
     );
   }
   return pick(
     lang,
-    `Quedó marcado (${kindBit}). Sin “días seguros”: si la regla se atrasa, un test cerca de esa fecha suele bastar. Mientras, cuida el cuerpo que anotaste hoy.`,
+    `Quedó marcado (${kindBit}). Sin “días seguros”: si el periodo se atrasa, un test cerca de esa fecha suele bastar. Mientras, cuida el cuerpo que anotaste hoy.`,
     `Logged (${kindBit}). No “safe days”: if your period is late, a test near that date is usually enough. Meanwhile, look after the body you logged today.`,
   );
 }
@@ -283,7 +283,7 @@ function buildRiskRecs(p: {
     out.push(
       pick(
         lang,
-        "Si la regla no llega a su tiempo habitual, un test de embarazo entonces. Antes, respira: un día raro no es veredicto.",
+        "Si el periodo no llega a su tiempo habitual, un test de embarazo entonces. Antes, respira: un día raro no es veredicto.",
         "If your period misses its usual timing, take a pregnancy test then. Until then, breathe — one odd day isn’t a verdict.",
       ),
     );
@@ -322,7 +322,7 @@ function buildWellbeingConclusion(p: {
     const feel = lowMood || cramps || lowEnergy
       ? pick(lang, "Con lo que anotaste, tiene sentido que pidas calor y menos exigencia.", "With what you logged, wanting warmth and less demand makes sense.")
       : pick(lang, "Sangrado: el cuerpo está trabajando; no es flojera.", "Bleeding: your body is working — it isn’t laziness.");
-    return pick(lang, `Día de regla anotado. ${feel}`, `Period day logged. ${feel}`);
+    return pick(lang, `Día de periodo anotado. ${feel}`, `Period day logged. ${feel}`);
   }
 
   if (phase === "luteal" && hasBody) {

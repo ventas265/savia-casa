@@ -9,7 +9,7 @@ const menstrual: Letter[] = [
   {
     title: t("Hoy el cuerpo pide cueva", "Today the body asks to hide"),
     body: t(
-      "La regla no es flojera. Es inflamación y un descenso hormonal. Come caliente, hierro con limón, bolsa en el vientre. Si empapas una toalla en una hora, eso no se espera: ve a urgencias.",
+      "El periodo no es flojera. Es inflamación y un descenso hormonal. Come caliente, hierro con limón, bolsa en el vientre. Si empapas una toalla en una hora, eso no se espera: ve a urgencias.",
       "A period is not laziness. It’s inflammation and a hormone drop. Eat warm food, iron with lemon, a bottle on the belly. If you soak a pad in an hour, don’t wait: go in.",
     ),
     ask: t("¿El dolor de hoy es el de siempre, o es otro?", "Is today’s pain the usual one, or another?"),
@@ -189,7 +189,7 @@ const peri: Letter[] = [
   {
     title: t("El ciclo ya no mide igual. Tú sí cuentas.", "The cycle no longer measures the same. You still count."),
     body: t(
-      "Reglas que se adelantan, se atrasan, se van y vuelven. Sofoco, niebla, sueño roto. No es “ya estás vieja”: es peri. Anota lo raro. La consulta necesita fechas, no un “me siento mal”.",
+      "Periodos que se adelantan, se atrasan, se van y vuelven. Sofoco, niebla, sueño roto. No es “ya estás vieja”: es peri. Anota lo raro. La consulta necesita fechas, no un “me siento mal”.",
       "Periods that come early, late, leave and return. Flush, fog, broken sleep. You’re not “old”: it’s peri. Log the odd. The visit needs dates, not “I feel bad.”",
     ),
     ask: t("¿Este mes se pareció al anterior, o no?", "Did this month look like the last, or not?"),
@@ -213,16 +213,16 @@ const peri: Letter[] = [
   {
     title: t("Sangrado raro: fechas, no adivinanza", "Odd bleeding: dates, not a guess"),
     body: t(
-      "Manchado entre reglas, o un mes sí y otro no. Eso es peri. Llévalo escrito. Un sangrado muy abundante de golpe sí es pronto a consulta.",
+      "Manchado entre periodos, o un mes sí y otro no. Eso es peri. Llévalo escrito. Un sangrado muy abundante de golpe sí es pronto a consulta.",
       "Spotting between periods, or one month yes and one no. That’s peri. Take it written. A sudden very heavy bleed is a prompt visit.",
     ),
-    ask: t("¿Este sangrado se parece a tu regla de antes?", "Does this bleed look like your old period?"),
+    ask: t("¿Este sangrado se parece a tu periodo de antes?", "Does this bleed look like your old period?"),
   },
 ];
 
 const meno: Letter[] = [
   {
-    title: t("Después de la regla, el cuerpo sigue hablando", "After periods, the body still talks"),
+    title: t("Después del periodo, el cuerpo sigue hablando", "After periods, the body still talks"),
     body: t(
       "Sofoco, sequedad, hueso, sueño. Fuerza (aunque sea silla y bolsa de arroz). Calcio no basta solo. Si el sofoco no te deja vivir, hay tratamiento: no tienes que “aguantar como tu mamá”.",
       "Flush, dryness, bone, sleep. Strength (even a chair and a rice bag). Calcium alone isn’t enough. If flushes steal your life, there is treatment: you don’t have to “tough it out like your mum.”",
@@ -286,7 +286,7 @@ const postpartum: Letter[] = [
   {
     title: t("Reparar no es rendirse", "Repair is not giving up"),
     body: t(
-      "Loquios, caída hormonal, sueño roto, suelo pélvico. La regla puede tardar meses si das pecho — o volver a las seis semanas. Ninguna de las dos es un examen que apruebas. Si el ánimo se pone negro y no sale, pide ayuda ya.",
+      "Loquios, caída hormonal, sueño roto, suelo pélvico. El periodo puede tardar meses si das pecho — o volver a las seis semanas. Ninguna de las dos es un examen que apruebas. Si el ánimo se pone negro y no sale, pide ayuda ya.",
       "Lochia, hormone drop, broken sleep, pelvic floor. The period may wait months if you nurse — or return at six weeks. Neither is a test you pass. If mood goes black and doesn’t lift, get help now.",
     ),
     ask: t("¿Hoy aguantas, o necesitas que alguien te cargue un rato?", "Are you holding today, or do you need someone to carry you a while?"),
@@ -300,7 +300,7 @@ const postpartum: Letter[] = [
     ask: t("¿Hoy alguien te puede cubrir una hora?", "Can someone cover you for an hour today?"),
   },
   {
-    title: t("El sangrado de ahora no es la regla de antes", "This bleed is not your old period"),
+    title: t("El sangrado de ahora no es el periodo de antes", "This bleed is not your old period"),
     body: t(
       "Loquios: de rojo a rosado a crema. Si de pronto vuelve rojo vivo con coágulos grandes o fiebre, consulta. El resto, cambia y anota.",
       "Lochia: red to pink to cream. If it suddenly goes bright red with large clots or fever, get seen. The rest, change and log.",

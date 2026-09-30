@@ -165,7 +165,7 @@ export const MOMENT_QUESTIONS: Record<Lang, Record<Moment, string[]>> = {
 export const FEELING_QUESTIONS: Record<Lang, Record<Situation, string[]>> = {
   es: {
     periodPain: ["¿Cómo va ese dolor?", "¿Pudiste descansar un poco?", "¿Cómo lo llevas?"],
-    period: ["¿Cómo te sientes?", "¿Cómo llevas la regla?", "¿Cómo está tu cuerpo hoy?"],
+    period: ["¿Cómo te sientes?", "¿Cómo llevas el periodo?", "¿Cómo está tu cuerpo hoy?"],
     lowMood: ["¿Cómo te sientes hoy?", "¿Cómo está tu ánimo?", "¿Quieres contarme cómo vas?"],
     peak: ["¿Cómo te sientes?", "¿Cómo va tu energía?", "¿Qué tal tu ánimo hoy?"],
     fertile: ["¿Cómo te sientes?", "¿Cómo va tu energía?", "¿Qué tal tu ánimo hoy?"],
@@ -203,7 +203,7 @@ export type Opener = {
 /**
  * Name + time-of-day greeting + friend question, e.g.
  * «Claudia, buenas tardes. ¿Cómo va tu día? ¿Cómo te sientes?».
- * No name: «Hola, ¿cómo estás? ¿Cómo llevas la regla?».
+ * No name: «Hola, ¿cómo estás? ¿Cómo llevas el periodo?».
  * `seed` should be the local date so the wording rotates day to day.
  */
 export function companionOpener(opts: {
@@ -247,7 +247,7 @@ export const NOTE_CYCLE_LINES: Record<Lang, Record<BodyKey, string[]>> = {
     follicular: [
       "Día {n}: el estrógeno sube y con él suelen venir ganas y claridad.",
       "Día {n} de tu ciclo: buen momento para moverte, crear o empezar algo.",
-      "Día {n}: tu cuerpo va ganando energía después de la regla.",
+      "Día {n}: tu cuerpo va ganando energía después del periodo.",
     ],
     fertile: [
       "Día {n} de tu ciclo: más energía y, muchas veces, más deseo.",
@@ -260,9 +260,9 @@ export const NOTE_CYCLE_LINES: Record<Lang, Record<BodyKey, string[]>> = {
       "Día {n}: dormir bien y comer a tus horas ayuda mucho estos días.",
     ],
     prePeriod: [
-      "Día {n}: tu regla llegaría en {d} días; puede haber más sensibilidad.",
-      "Día {n} de tu ciclo: faltan unos {d} días para la regla. Tenlo todo a mano.",
-      "Día {n}: la regla se acerca (unos {d} días). Sé amable contigo.",
+      "Día {n}: tu periodo llegaría en {d} días; puede haber más sensibilidad.",
+      "Día {n} de tu ciclo: faltan unos {d} días para el periodo. Tenlo todo a mano.",
+      "Día {n}: el periodo se acerca (unos {d} días). Sé amable contigo.",
     ],
     none: [
       "Anota cómo te sientes y te iré conociendo mejor.",
@@ -312,14 +312,14 @@ export const NOTE_CYCLE_LINES: Record<Lang, Record<BodyKey, string[]>> = {
 export const PUSH_CYCLE_LINES: Record<Lang, Record<BodyKey | "peak", string[]>> = {
   es: {
     menstrual: [
-      "Día {n} de tu regla: hoy vamos despacio.",
+      "Día {n} de tu periodo: hoy vamos despacio.",
       "Día {n}: calor en el vientre y agua cuentan como autocuidado.",
-      "Día {n} de tu regla: si el cuerpo pide descanso, dáselo sin culpa.",
+      "Día {n} de tu periodo: si el cuerpo pide descanso, dáselo sin culpa.",
     ],
     follicular: [
       "Día {n}: tu energía suele ir subiendo estos días.",
       "Día {n}: buen momento para moverte, crear o empezar algo.",
-      "Día {n}: después de la regla, el cuerpo va ganando ganas.",
+      "Día {n}: después del periodo, el cuerpo va ganando ganas.",
     ],
     fertile: [
       "Día {n}: días fértiles (estimación). El calendario no es anticonceptivo.",
@@ -335,8 +335,8 @@ export const PUSH_CYCLE_LINES: Record<Lang, Record<BodyKey | "peak", string[]>> 
       "Día {n}: dormir bien y comer a tus horas ayuda mucho ahora.",
     ],
     prePeriod: [
-      "Tu regla llegaría en unos {d} días. Ten a mano lo que necesitas.",
-      "Faltan unos {d} días para la regla. Sé amable contigo.",
+      "Tu periodo llegaría en unos {d} días. Ten a mano lo que necesitas.",
+      "Faltan unos {d} días para el periodo. Sé amable contigo.",
     ],
     none: ["Estoy para ti.", "Cuéntame en un toque cómo vas.", "Aquí estoy si quieres contarme algo."],
   },
@@ -409,8 +409,8 @@ export const NOTE_EXTRA: Record<Lang, Record<"riskySex" | "pain" | "lowMood" | "
 /** «unos 1 días» never: dedicated lines when the period is due tomorrow / today. */
 export const PERIOD_DUE_LINES: Record<Lang, { tomorrow: string; today: string }> = {
   es: {
-    tomorrow: "Tu regla podría llegar mañana. Deja lista una toalla o tu copa.",
-    today: "Tu regla podría llegar hoy. Ten a mano lo que necesitas.",
+    tomorrow: "Tu periodo podría llegar mañana. Deja lista una toalla o tu copa.",
+    today: "Tu periodo podría llegar hoy. Ten a mano lo que necesitas.",
   },
   en: {
     tomorrow: "Your period could arrive tomorrow. Keep a pad or your cup ready.",
@@ -452,7 +452,7 @@ export const MOOD_REPLIES: Record<Lang, Record<MoodReply, Partial<Record<Situati
         "Me encanta{,nombre}. Guardado: días así también cuentan.",
         "Bien por ti{,nombre}. Lo dejo anotado en tu día.",
       ],
-      periodPain: ["Qué bueno que, aun con regla, vas bien{,nombre}. Lo anoto."],
+      periodPain: ["Qué bueno que, aun con el periodo, vas bien{,nombre}. Lo anoto."],
     },
     meh: {
       any: [
@@ -460,7 +460,7 @@ export const MOOD_REPLIES: Record<Lang, Record<MoodReply, Partial<Record<Situati
         "Gracias por contarme{,nombre}. Vamos con calma hoy.",
         "Anotado{,nombre}. A veces el día solo pide ir paso a paso.",
       ],
-      prePeriod: ["Anotado{,nombre}. Antes de la regla es común sentirse así; no es tu culpa."],
+      prePeriod: ["Anotado{,nombre}. Antes del periodo es común sentirse así; no es tu culpa."],
       luteal: ["Anotado{,nombre}. En esta fase es común sentirse más apagada; ve suave."],
     },
     bad: {
@@ -469,8 +469,8 @@ export const MOOD_REPLIES: Record<Lang, Record<MoodReply, Partial<Record<Situati
         "Gracias por decírmelo{,nombre}. Estoy para ti si quieres contarme más.",
         "Anotado{,nombre}. Sé amable contigo hoy; puedes escribirme cuando quieras.",
       ],
-      periodPain: ["Lo siento{,nombre}, la regla con dolor cansa. Calor, agua y descanso; aquí estoy."],
-      prePeriod: ["Lo siento{,nombre}. Antes de la regla todo pesa más; no es tu culpa. Aquí estoy."],
+      periodPain: ["Lo siento{,nombre}, el periodo con dolor cansa. Calor, agua y descanso; aquí estoy."],
+      prePeriod: ["Lo siento{,nombre}. Antes del periodo todo pesa más; no es tu culpa. Aquí estoy."],
     },
   },
   en: {
@@ -544,7 +544,7 @@ export type PushMessage = { title: string; body: string; text: string };
 
 /**
  * Notification copy: title «Claudia, buenas tardes», body «¿Cómo va tu día?
- * ¿Cómo te sientes? Día 3 de tu regla: hoy vamos despacio.»
+ * ¿Cómo te sientes? Día 3 de tu periodo: hoy vamos despacio.»
  */
 export function pushMessage(c: PushCtx, opts: { name?: string | null; hour: number; lang?: Lang; seed: string }): PushMessage {
   const lang = opts.lang ?? "es";

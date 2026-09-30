@@ -224,7 +224,7 @@ export async function undoPeriod(undo: PeriodUndo) {
   return snap;
 }
 
-/** «Cambiar última regla». */
+/** «Cambiar último periodo». */
 export async function correctLastPeriod(newDay: string) {
   const res = localCorrectLastPeriod(newDay);
   const c = await creds();
