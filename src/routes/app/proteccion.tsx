@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Warning } from "@phosphor-icons/react";
+import { Pill, Question, ShieldCheck, Stethoscope, Warning, type Icon } from "@phosphor-icons/react";
 import type { ReactNode } from "react";
 import { DisclaimerV5 } from "@/components/v5/disclaimer-v5";
 
@@ -30,10 +30,13 @@ function Src({ items }: { items: [string, string][] }) {
   );
 }
 
+const T = { "01": ["salvia", ShieldCheck], "02": ["rosa", ShieldCheck], "03": ["ciruela", Pill], "04": ["ambar", Stethoscope], "05": ["rosa", Question] } as Record<string, [string, Icon]>;
+
 function Sec({ id, n, title, children }: { id?: string; n: string; title: string; children: ReactNode }) {
+  const [tone, I] = T[n] ?? ["rosa", ShieldCheck];
   return (
-    <section id={id} className="v5-card mt-4 scroll-mt-24">
-      <p className="v5-kicker">{n}</p>
+    <section id={id} className={`v5-card v6-t-${tone} mt-4 scroll-mt-24`}>
+      <div className="flex items-center gap-3"><span className={`v6-badge v6-b-${tone}`}><I size={22} weight="light" aria-hidden /></span><p className="v5-kicker">{n}</p></div>
       <h2 className="v5-h2 mt-1">{title}</h2>
       <div className="mt-3 space-y-2 text-[15px] leading-relaxed">{children}</div>
     </section>
@@ -43,8 +46,8 @@ function Sec({ id, n, title, children }: { id?: string; n: string; title: string
 function Proteccion() {
   return (
     <div className="v5 pb-28 pt-2">
-      <h1 className="v5-h1">Sexo y protección</h1>
-      <p className="mt-2 text-[15px] v5-muted">Información de salud pública, clara y sin rodeos. Gratis, siempre.</p>
+      <div className="v6-hero"><h1 className="v5-h1">Sexo y protección</h1>
+      <p className="mt-2 text-[15px] v5-muted">Información de salud pública, clara y sin rodeos. Gratis, siempre.</p></div>
 
       <div className="sticky top-0 z-10 mt-4 flex gap-2 rounded-[14px] border px-4 py-3 text-[14px] font-semibold" style={{ background: "var(--granada-suave)", borderColor: "var(--granada)", color: "var(--granada)" }} role="note">
         <Warning size={18} weight="light" className="mt-0.5 shrink-0" aria-hidden />

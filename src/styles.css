@@ -414,3 +414,15 @@
 .v5-muted{color:var(--cacao-2)}
 .v5-src{font-size:12px;color:var(--cacao-2)}
 .v5-src a{text-decoration:underline;text-underline-offset:2px}
+
+/* v6 color: gradientes cálidos, tintes por sección, profundidad suave */
+:root{--coral:#E07A6B;--rosa:#C9566A;--ciruela:#6E3B5C}
+.v6-hero{background:linear-gradient(135deg,#8E2C3E 0%,#B8475A 55%,#E07A6B 100%);color:#fff;border-radius:24px;padding:24px 20px;box-shadow:0 18px 40px -18px rgb(142 44 62/.55)}
+.v6-hero .v5-muted,.v6-hero .v5-kicker{color:rgb(255 255 255/.82)}
+.v6-grad-serena{background:linear-gradient(135deg,#6E3B5C 0%,#8E2C3E 50%,#B07A3C 100%);color:#fff;box-shadow:0 18px 40px -18px rgb(110 59 92/.6)}
+.v6-t-rosa{background:linear-gradient(160deg,#FBEDEF,#F6E0E3);border-color:#EFCFD5!important;box-shadow:0 10px 28px -20px rgb(142 44 62/.45)}
+.v6-t-salvia{background:linear-gradient(160deg,#EDF4F1,#E0ECE7);border-color:#CADDD5!important;box-shadow:0 10px 28px -20px rgb(63 107 94/.45)}
+.v6-t-ambar{background:linear-gradient(160deg,#FBF2E6,#F4E5D1);border-color:#EBD6B8!important;box-shadow:0 10px 28px -20px rgb(176 122 60/.45)}
+.v6-t-ciruela{background:linear-gradient(160deg,#F5ECF2,#ECDDE7);border-color:#DEC8D7!important;box-shadow:0 10px 28px -20px rgb(110 59 92/.45)}
+.v6-badge{display:inline-grid;place-items:center;width:40px;height:40px;border-radius:999px;flex-shrink:0}
+.v6-b-rosa{background:#F3D9DE;color:#8E2C3E}.v6-b-salvia{background:#D5E6DF;color:#2F5649}.v6-b-ambar{background:#F1DFC5;color:#7A5226}.v6-b-ciruela{background:#E7D3E1;color:#6E3B5C}.v6-b-blanco{background:rgb(255 255 255/.2);color:#fff}

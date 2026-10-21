@@ -31,22 +31,24 @@ function Embarazo() {
 
   return (
     <div className="v5 pb-28 pt-2">
-      <p className="v5-kicker">Modo embarazo</p>
-      <p className="v5-num mt-2">Semana {semana}</p>
-      <p className="mt-1 text-[15px] v5-muted">día {dia}</p>
+      <div className="v6-grad-serena rounded-[24px] px-5 py-6">
+        <p className="v5-kicker !text-white/80">Modo embarazo · Serena</p>
+        <p className="v5-num mt-2">Semana {semana}</p>
+        <p className="mt-1 text-[15px] text-white/85">día {dia}</p>
+      </div>
 
       <div className={locked ? "pointer-events-none select-none blur-[3px]" : ""} aria-hidden={locked}>
-        <section className="v5-card mt-6">
+        <section className="v5-card v6-t-rosa mt-6">
           <p className="v5-kicker">Tu bebé</p>
           <p className="mt-1 text-[15px]">{s.tamano ?? "Tamaño aproximado: dato pendiente de revisión médica."}</p>
           <ul className="mt-3 list-disc space-y-1.5 pl-5 text-[15px] leading-relaxed">{s.bebe.map((b) => <li key={b}>{b}</li>)}</ul>
           <p className="v5-src mt-3">Fuente: <a href={ACOG} target="_blank" rel="noreferrer">ACOG · How your fetus grows</a></p>
         </section>
-        <section className="v5-card mt-4">
+        <section className="v5-card v6-t-ambar mt-4">
           <p className="v5-kicker">Cambios en tu cuerpo</p>
           <p className="mt-2 text-[15px] leading-relaxed">{s.cuerpo}</p>
         </section>
-        <section className="v5-card mt-4">
+        <section className="v5-card v6-t-salvia mt-4">
           <p className="v5-kicker">Controles prenatales</p>
           <p className="mt-2 text-[15px] leading-relaxed">{s.controles}</p>
           <p className="v5-src mt-3"><a href={MAYO} target="_blank" rel="noreferrer">Mayo Clinic · Prenatal care</a> · <a href={NHS} target="_blank" rel="noreferrer">NHS · Pregnancy week by week</a></p>

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Baby, ChartLine, ChatCircle, Thermometer, X } from "@phosphor-icons/react";
 import { WHOP_MONTH, WHOP_YEAR } from "@/lib/pay-links";
 
+const BADGE = ["v6-b-rosa", "v6-b-ciruela", "v6-b-salvia", "v6-b-ambar"];
 const BENEFICIOS = [
   { I: ChartLine, t: "Informe de patrones completo", d: "Con PDF para tu ginecóloga." },
   { I: Baby, t: "Modo embarazo semana a semana", d: "Con fuentes ACOG, NHS y Mayo Clinic." },
@@ -18,12 +19,14 @@ export function Paywall({ onClose }: { onClose: () => void }) {
         <div className="flex justify-end">
           <button type="button" onClick={onClose} aria-label="Cerrar" className="grid size-11 place-items-center"><X size={22} weight="light" /></button>
         </div>
-        <p className="v5-kicker">Savia Serena</p>
-        <h2 id="pw-t" className="v5-h1 mt-2">Serena: entiende tu ciclo a fondo</h2>
+        <div className="v6-grad-serena -mx-1 rounded-[24px] px-5 py-6">
+          <p className="v5-kicker !text-white/80">Savia Serena</p>
+          <h2 id="pw-t" className="v5-h1 mt-2">Serena: entiende tu ciclo a fondo</h2>
+        </div>
         <ul className="mt-6 space-y-4">
-          {BENEFICIOS.map(({ I, t, d }) => (
+          {BENEFICIOS.map(({ I, t, d }, i) => (
             <li key={t} className="flex gap-3">
-              <I size={22} weight="light" color="var(--cacao)" className="mt-0.5 shrink-0" aria-hidden />
+              <span className={`v6-badge ${BADGE[i]}`}><I size={22} weight="light" aria-hidden /></span>
               <div><p className="text-[16px] font-semibold">{t}</p><p className="text-[14px] v5-muted">{d}</p></div>
             </li>
           ))}
@@ -41,7 +44,7 @@ export function Paywall({ onClose }: { onClose: () => void }) {
             </button>
           ))}
         </div>
-        <a href={plan === "year" ? WHOP_YEAR : WHOP_MONTH} className="mt-6 flex h-[52px] w-full items-center justify-center rounded-[14px] bg-[var(--granada)] text-[16px] font-semibold text-white">
+        <a href={plan === "year" ? WHOP_YEAR : WHOP_MONTH} className="mt-6 flex h-[52px] w-full items-center justify-center rounded-[14px] bg-[linear-gradient(135deg,#6E3B5C,#8E2C3E,#C9566A)] shadow-[0_12px_28px_-12px_rgb(142_44_62/.7)] text-[16px] font-semibold text-white">
           Continuar con Whop
         </a>
         <p className="mt-3 text-center text-[13px] v5-muted">Cancela cuando quieras desde Ajustes, en 2 toques.</p>

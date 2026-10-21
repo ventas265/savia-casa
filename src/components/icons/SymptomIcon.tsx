@@ -15,7 +15,7 @@ export const SYMPTOM_ICONS: Record<string, Icon> = {
   temp: Thermometer, sleep: Moon, insomnia: Moon, libido_up: Flame, libido_down: Flame,
 };
 
-export function SymptomIcon({ id, selected = false, size = 22 }: { id: string; selected?: boolean; size?: number }) {
+export function SymptomIcon({ id, selected = false, size = 22, color }: { id: string; selected?: boolean; size?: number; color?: string }) {
   const I = SYMPTOM_ICONS[id] ?? DotOutline;
-  return <I size={size} weight={selected ? "fill" : "light"} color={selected ? "var(--granada)" : "var(--cacao)"} aria-hidden />;
+  return <I size={size} weight={selected ? "fill" : "light"} color={color ?? (selected ? "var(--granada)" : "var(--cacao)")} aria-hidden />;
 }
