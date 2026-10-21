@@ -100,7 +100,8 @@ function HoyTab() {
   useEffect(() => {
     setCode(takeRecovery() || "");
   }, []);
-  const symAsk = useSymptomAsk(ready && Boolean(data) && code === "", onboarded, data?.log ?? null);
+  // v5: sin pop-ups al abrir Hoy (spec §3).
+  const symAsk = useSymptomAsk(false, onboarded, data?.log ?? null);
   const [symManual, setSymManual] = useState(false);
   const [anotar, setAnotar] = useState(false);
   const [paywall, setPaywall] = useState(false);
