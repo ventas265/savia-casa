@@ -5,8 +5,8 @@ export const TILES: T[] = [
   { k: "sintomas", img: "/photos/te.jpg", label: "Revisar síntomas", to: "/app/hoy?anotar=1", I: Stethoscope },
   { k: "proteccion", img: "/photos/manos.jpg", label: "Sexo y protección", to: "/app/proteccion", I: ShieldCheck },
   { k: "embarazo", img: "/v4/serena.webp", label: "Embarazo", to: "/app/embarazo", I: Baby },
-  { k: "calendario", img: "/brand/04-story-calendario.jpg", label: "Calendario", to: "/app/calendario", I: CalendarBlank },
-  { k: "patrones", img: "/brand/05-story-cuaderno.jpg", label: "Patrones", to: "/app/patrones", I: ChartLine },
+  { k: "calendario", img: "/photos/cama.jpg", label: "Calendario", to: "/app/calendario", I: CalendarBlank },
+  { k: "patrones", img: "/photos/inicio.jpg", label: "Patrones", to: "/app/patrones", I: ChartLine },
   { k: "ia", img: "/photos/savia-ia.jpg", label: "Savia IA", to: "/app/preguntar", I: ChatCircle },
   { k: "ajustes", img: "/v4/lutea-sm.webp", label: "Ajustes", to: "/app/tu", I: GearSix },
 ];
