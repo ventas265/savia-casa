@@ -429,7 +429,7 @@
 
 /* v7 glass (ref Dribbble): fondo rosa-lavanda, tarjetas esmeriladas, acento coral */
 :root{--coral:#E8505B;--coral-2:#F07A7A}
-body:has(.v5){background:linear-gradient(165deg,#FBEFF1 0%,#F3E9F5 45%,#EDE9F7 100%) fixed}
+body{background:linear-gradient(165deg,#FBEFF1 0%,#F3E9F5 45%,#EDE9F7 100%) fixed}
 .v5{background:transparent}
 .glass{background:rgb(255 255 255/.55);-webkit-backdrop-filter:blur(18px) saturate(1.4);backdrop-filter:blur(18px) saturate(1.4);border:1px solid rgb(255 255 255/.75);box-shadow:0 10px 30px -18px rgb(150 80 110/.35)}
 .v5-card{background:rgb(255 255 255/.55)!important;-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);border:1px solid rgb(255 255 255/.8)!important;box-shadow:0 10px 30px -18px rgb(150 80 110/.35)!important}
@@ -455,3 +455,4 @@ body:has(.v5){background:linear-gradient(165deg,#FBEFF1 0%,#F3E9F5 45%,#EDE9F7 1
 .v4-day.today > .n{background:var(--cacao);color:#fff}
 .v4-card,.v4-dcard{background:rgb(255 255 255/.55)!important;-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);border:1px solid rgb(255 255 255/.8)}
 :root{--granada:#D63F4C;--granada-suave:#FDE3E5}
+:root{--color-regla:#F07A7A;--color-ovu:#E8505B;--color-ovu-300:#F7B8BC;--color-ovu-50:#FDE3E5;--color-bg:transparent}

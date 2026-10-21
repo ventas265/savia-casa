@@ -83,7 +83,7 @@ export function HoyV5({ data, onLog, onPremium }: { data: TodaySnapshot; onLog: 
   const toFertil = ov - 5 - day;
   const toRegla = Math.max(0, pr.len - day + 1);
   const big = fertil
-    ? { pre: "Estás en tu ventana fértil estimada", n: `Día ${day}`, post: `Ovulación estimada en ${Math.max(0, ov - day)} días` }
+    ? { pre: "Estás en tu ventana fértil estimada", n: `Día ${day}`, post: ov - day > 0 ? `Ovulación estimada en ${ov - day} ${ov - day === 1 ? "día" : "días"}` : "Ovulación estimada: hoy" }
     : toFertil > 0
       ? { pre: "Tu ventana fértil empieza en", n: `${toFertil} ${toFertil === 1 ? "día" : "días"}`, post: `Próxima regla: ${pr.rango ?? "—"}` }
       : { pre: "Tu próxima regla llega en", n: `${toRegla} ${toRegla === 1 ? "día" : "días"}`, post: pr.rango ?? "" };
