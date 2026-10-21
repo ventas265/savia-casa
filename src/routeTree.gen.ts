@@ -23,6 +23,7 @@ import { Route as AppCalendarioRouteImport } from './routes/app/calendario'
 import { Route as AppCicloRouteImport } from './routes/app/ciclo'
 import { Route as AppCuadernoRouteImport } from './routes/app/cuaderno'
 import { Route as AppCuadernosRouteImport } from './routes/app/cuadernos'
+import { Route as AppEmbarazoRouteImport } from './routes/app/embarazo'
 import { Route as AppEstacionesRouteImport } from './routes/app/estaciones'
 import { Route as AppGuiaRouteImport } from './routes/app/guia'
 import { Route as AppHoyRouteImport } from './routes/app/hoy'
@@ -32,6 +33,7 @@ import { Route as AppOnboardingRouteImport } from './routes/app/onboarding'
 import { Route as AppParejaRouteImport } from './routes/app/pareja'
 import { Route as AppPatronesRouteImport } from './routes/app/patrones'
 import { Route as AppPreguntarRouteImport } from './routes/app/preguntar'
+import { Route as AppProteccionRouteImport } from './routes/app/proteccion'
 import { Route as AppRecuperarRouteImport } from './routes/app/recuperar'
 import { Route as AppRegistroRouteImport } from './routes/app/registro'
 import { Route as AppSexoRouteImport } from './routes/app/sexo'
@@ -115,6 +117,11 @@ const AppCuadernosRoute = AppCuadernosRouteImport.update({
   path: '/cuadernos',
   getParentRoute: () => AppRoute,
 } as any)
+const AppEmbarazoRoute = AppEmbarazoRouteImport.update({
+  id: '/embarazo',
+  path: '/embarazo',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppEstacionesRoute = AppEstacionesRouteImport.update({
   id: '/estaciones',
   path: '/estaciones',
@@ -158,6 +165,11 @@ const AppPatronesRoute = AppPatronesRouteImport.update({
 const AppPreguntarRoute = AppPreguntarRouteImport.update({
   id: '/preguntar',
   path: '/preguntar',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppProteccionRoute = AppProteccionRouteImport.update({
+  id: '/proteccion',
+  path: '/proteccion',
   getParentRoute: () => AppRoute,
 } as any)
 const AppRecuperarRoute = AppRecuperarRouteImport.update({
@@ -235,6 +247,7 @@ export interface FileRoutesByFullPath {
   '/app/ciclo': typeof AppCicloRoute
   '/app/cuaderno': typeof AppCuadernoRoute
   '/app/cuadernos': typeof AppCuadernosRoute
+  '/app/embarazo': typeof AppEmbarazoRoute
   '/app/estaciones': typeof AppEstacionesRoute
   '/app/guia': typeof AppGuiaRoute
   '/app/hoy': typeof AppHoyRoute
@@ -244,6 +257,7 @@ export interface FileRoutesByFullPath {
   '/app/pareja': typeof AppParejaRoute
   '/app/patrones': typeof AppPatronesRoute
   '/app/preguntar': typeof AppPreguntarRoute
+  '/app/proteccion': typeof AppProteccionRoute
   '/app/recuperar': typeof AppRecuperarRoute
   '/app/registro': typeof AppRegistroRoute
   '/app/sexo': typeof AppSexoRoute
@@ -271,6 +285,7 @@ export interface FileRoutesByTo {
   '/app/ciclo': typeof AppCicloRoute
   '/app/cuaderno': typeof AppCuadernoRoute
   '/app/cuadernos': typeof AppCuadernosRoute
+  '/app/embarazo': typeof AppEmbarazoRoute
   '/app/estaciones': typeof AppEstacionesRoute
   '/app/guia': typeof AppGuiaRoute
   '/app/hoy': typeof AppHoyRoute
@@ -280,6 +295,7 @@ export interface FileRoutesByTo {
   '/app/pareja': typeof AppParejaRoute
   '/app/patrones': typeof AppPatronesRoute
   '/app/preguntar': typeof AppPreguntarRoute
+  '/app/proteccion': typeof AppProteccionRoute
   '/app/recuperar': typeof AppRecuperarRoute
   '/app/registro': typeof AppRegistroRoute
   '/app/sexo': typeof AppSexoRoute
@@ -309,6 +325,7 @@ export interface FileRoutesById {
   '/app/ciclo': typeof AppCicloRoute
   '/app/cuaderno': typeof AppCuadernoRoute
   '/app/cuadernos': typeof AppCuadernosRoute
+  '/app/embarazo': typeof AppEmbarazoRoute
   '/app/estaciones': typeof AppEstacionesRoute
   '/app/guia': typeof AppGuiaRoute
   '/app/hoy': typeof AppHoyRoute
@@ -318,6 +335,7 @@ export interface FileRoutesById {
   '/app/pareja': typeof AppParejaRoute
   '/app/patrones': typeof AppPatronesRoute
   '/app/preguntar': typeof AppPreguntarRoute
+  '/app/proteccion': typeof AppProteccionRoute
   '/app/recuperar': typeof AppRecuperarRoute
   '/app/registro': typeof AppRegistroRoute
   '/app/sexo': typeof AppSexoRoute
@@ -348,6 +366,7 @@ export interface FileRouteTypes {
     | '/app/ciclo'
     | '/app/cuaderno'
     | '/app/cuadernos'
+    | '/app/embarazo'
     | '/app/estaciones'
     | '/app/guia'
     | '/app/hoy'
@@ -357,6 +376,7 @@ export interface FileRouteTypes {
     | '/app/pareja'
     | '/app/patrones'
     | '/app/preguntar'
+    | '/app/proteccion'
     | '/app/recuperar'
     | '/app/registro'
     | '/app/sexo'
@@ -384,6 +404,7 @@ export interface FileRouteTypes {
     | '/app/ciclo'
     | '/app/cuaderno'
     | '/app/cuadernos'
+    | '/app/embarazo'
     | '/app/estaciones'
     | '/app/guia'
     | '/app/hoy'
@@ -393,6 +414,7 @@ export interface FileRouteTypes {
     | '/app/pareja'
     | '/app/patrones'
     | '/app/preguntar'
+    | '/app/proteccion'
     | '/app/recuperar'
     | '/app/registro'
     | '/app/sexo'
@@ -421,6 +443,7 @@ export interface FileRouteTypes {
     | '/app/ciclo'
     | '/app/cuaderno'
     | '/app/cuadernos'
+    | '/app/embarazo'
     | '/app/estaciones'
     | '/app/guia'
     | '/app/hoy'
@@ -430,6 +453,7 @@ export interface FileRouteTypes {
     | '/app/pareja'
     | '/app/patrones'
     | '/app/preguntar'
+    | '/app/proteccion'
     | '/app/recuperar'
     | '/app/registro'
     | '/app/sexo'
@@ -565,6 +589,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCuadernosRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/embarazo': {
+      id: '/app/embarazo'
+      path: '/embarazo'
+      fullPath: '/app/embarazo'
+      preLoaderRoute: typeof AppEmbarazoRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/estaciones': {
       id: '/app/estaciones'
       path: '/estaciones'
@@ -626,6 +657,13 @@ declare module '@tanstack/react-router' {
       path: '/preguntar'
       fullPath: '/app/preguntar'
       preLoaderRoute: typeof AppPreguntarRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/proteccion': {
+      id: '/app/proteccion'
+      path: '/proteccion'
+      fullPath: '/app/proteccion'
+      preLoaderRoute: typeof AppProteccionRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/recuperar': {
@@ -720,6 +758,7 @@ interface AppRouteChildren {
   AppCicloRoute: typeof AppCicloRoute
   AppCuadernoRoute: typeof AppCuadernoRoute
   AppCuadernosRoute: typeof AppCuadernosRoute
+  AppEmbarazoRoute: typeof AppEmbarazoRoute
   AppEstacionesRoute: typeof AppEstacionesRoute
   AppGuiaRoute: typeof AppGuiaRoute
   AppHoyRoute: typeof AppHoyRoute
@@ -729,6 +768,7 @@ interface AppRouteChildren {
   AppParejaRoute: typeof AppParejaRoute
   AppPatronesRoute: typeof AppPatronesRoute
   AppPreguntarRoute: typeof AppPreguntarRoute
+  AppProteccionRoute: typeof AppProteccionRoute
   AppRecuperarRoute: typeof AppRecuperarRoute
   AppRegistroRoute: typeof AppRegistroRoute
   AppSexoRoute: typeof AppSexoRoute
@@ -741,6 +781,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppCicloRoute: AppCicloRoute,
   AppCuadernoRoute: AppCuadernoRoute,
   AppCuadernosRoute: AppCuadernosRoute,
+  AppEmbarazoRoute: AppEmbarazoRoute,
   AppEstacionesRoute: AppEstacionesRoute,
   AppGuiaRoute: AppGuiaRoute,
   AppHoyRoute: AppHoyRoute,
@@ -750,6 +791,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppParejaRoute: AppParejaRoute,
   AppPatronesRoute: AppPatronesRoute,
   AppPreguntarRoute: AppPreguntarRoute,
+  AppProteccionRoute: AppProteccionRoute,
   AppRecuperarRoute: AppRecuperarRoute,
   AppRegistroRoute: AppRegistroRoute,
   AppSexoRoute: AppSexoRoute,

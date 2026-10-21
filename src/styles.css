@@ -8,43 +8,43 @@
 
 @theme {
   /* v4 · nácar (fondo) · cacao (tinta) · granada (único acento). Tokens en redesign-v4/src/tokens.css */
-  --color-bg: #f6f1ec;
+  --color-bg: #f7f3ee;
   --color-surface: #ffffff;
   --color-surface-2: #eee6de;
-  --color-elevated: #f6f1ec;
-  --color-ink: #2b2124;
-  --color-fg: #2b2124;
-  --color-ink-2: #54464a;
-  --color-muted: #6b5c60;
-  --color-line: #e4d9d0;
-  --color-primary: #8e2a3f;
-  --color-primary-2: #8e2a3f;
+  --color-elevated: #f7f3ee;
+  --color-ink: #2a1e1a;
+  --color-fg: #2a1e1a;
+  --color-ink-2: #6b5a52;
+  --color-muted: #6b5a52;
+  --color-line: #e6ded6;
+  --color-primary: #8e2c3e;
+  --color-primary-2: #8e2c3e;
   --color-primary-fg: #ffffff;
-  --color-accent: #8e2a3f;
-  --color-accent-50: #f6e7e9;
+  --color-accent: #8e2c3e;
+  --color-accent-50: #f3e3e5;
   --color-sand: #eee6de;
   --color-sand-2: #e6dcd2;
-  --color-plum: #8e2a3f;
+  --color-plum: #8e2c3e;
   --color-violet: #8e57a5;
-  --color-border: #e4d9d0;
-  --color-danger: #a1263b;
-  --color-ring: #8e2a3f;
+  --color-border: #e6ded6;
+  --color-danger: #a4461f;
+  --color-ring: #8e2c3e;
   /* Fase: periodo (token regla), fértil orquídea (estimación, no anticonceptivo), resto neutro */
-  --color-regla: #ab3549;
-  --color-regla-50: #f3dadd;
+  --color-regla: #8e2c3e;
+  --color-regla-50: #f3e3e5;
   --color-foli: #e3a07a;
   --color-foli-50: #fae6da;
-  --color-ovu: #8e57a5;
+  --color-ovu: #3f6b5e;
   --color-ovu-300: #d7bce3;
-  --color-ovu-50: #f1e6f5;
-  --color-ovu-ink: #6b3a80;
-  --color-lut: #b98556;
+  --color-ovu-50: #e3ece8;
+  --color-ovu-ink: #3f6b5e;
+  --color-lut: #b07a3c;
   --color-lut-50: #f1e3d3;
   --color-lut-ink: #6e4a2a;
-  --color-cal-period: #ab3549;
-  --color-cal-peak: #8e57a5;
-  --color-cal-fertile: #f1e6f5;
-  --color-cal-fertile-deep: #8e57a5;
+  --color-cal-period: #8e2c3e;
+  --color-cal-peak: #3f6b5e;
+  --color-cal-fertile: #e3ece8;
+  --color-cal-fertile-deep: #3f6b5e;
   --color-cal-rest: #54464a;
   --color-cal-quiet: #eee6de;
   --color-select: #2b2124;
@@ -58,19 +58,28 @@
   --color-pearl: #f6e7e9;
   --color-soft: #54464a;
   --color-rose-dust-soft: #f6e7e9;
-  --shadow-soft: 0 1px 1px rgb(60 30 30 / 0.04), 0 10px 30px -14px rgb(60 30 30 / 0.22);
-  --shadow-bar: 0 -1px 0 #e4d9d0;
+  --shadow-soft: none;
+  --shadow-bar: 0 -1px 0 #e6ded6;
   --font-sans: "Onest Variable", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Newsreader Variable", Georgia, serif;
   --font-mono: "Onest Variable", ui-sans-serif, system-ui, sans-serif;
-  --radius-sm: 12px;
+  --radius-sm: 14px;
   --radius-md: 18px;
-  --radius-lg: 26px;
-  --radius-xl: 26px;
-  --radius-2xl: 34px;
-  --shadow-card: 0 1px 1px rgb(60 30 30 / 0.04), 0 10px 30px -14px rgb(60 30 30 / 0.22);
-  --shadow-border: 0 0 0 1px #e4d9d0;
+  --radius-lg: 20px;
+  --radius-xl: 20px;
+  --radius-2xl: 28px;
+  --shadow-card: none;
+  --shadow-border: 0 0 0 1px #e6ded6;
   --spacing-hit: 2.75rem;
+  --color-nacar: #f7f3ee;
+  --color-cacao: #2a1e1a;
+  --color-cacao-2: #6b5a52;
+  --color-granada: #8e2c3e;
+  --color-granada-suave: #f3e3e5;
+  --color-fertil: #3f6b5e;
+  --color-fertil-suave: #e3ece8;
+  --color-lutea: #b07a3c;
+  --color-aviso: #a4461f;
 }
 
 /* Registered so the Savia orb cross-fades between phase colours */
@@ -393,3 +402,15 @@
     display: none !important;
   }
 }
+
+/* v5 premium — tokens §2 spec_savia_premium */
+:root{--nacar:#F7F3EE;--superficie:#FFFFFF;--linea:#E6DED6;--cacao:#2A1E1A;--cacao-2:#6B5A52;--granada:#8E2C3E;--granada-suave:#F3E3E5;--fertil:#3F6B5E;--fertil-suave:#E3ECE8;--lutea:#B07A3C;--aviso:#A4461F}
+.v5{background:var(--nacar);color:var(--cacao);font-family:var(--font-sans)}
+.v5-card{background:var(--superficie);border:1px solid var(--linea);border-radius:20px;padding:20px}
+.v5-h1{font-family:var(--font-display);font-weight:400;font-size:32px;letter-spacing:-0.01em;line-height:1.1}
+.v5-h2{font-family:var(--font-display);font-weight:400;font-size:22px;letter-spacing:-0.01em;line-height:1.2}
+.v5-num{font-family:var(--font-display);font-weight:400;font-size:56px;letter-spacing:-0.01em;line-height:1}
+.v5-kicker{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--cacao-2)}
+.v5-muted{color:var(--cacao-2)}
+.v5-src{font-size:12px;color:var(--cacao-2)}
+.v5-src a{text-decoration:underline;text-underline-offset:2px}

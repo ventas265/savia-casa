@@ -11,6 +11,7 @@ export const Route = createFileRoute("/app")({ component: AppLayout });
 function tabFromPath(path: string): TabKey {
   if (path.startsWith("/app/hoy") || path.startsWith("/app/registro")) return "hoy";
   if (path.startsWith("/app/calendario") || path.startsWith("/app/ciclo")) return "cal";
+  if (path.startsWith("/app/proteccion")) return "sex";
   if (path.startsWith("/app/patrones")) return "pat";
   if (path.startsWith("/app/preguntar")) return "ia";
   if (path.startsWith("/app/estaciones")) return "hoy";
