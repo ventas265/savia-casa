@@ -69,7 +69,7 @@ export function AnotarV5({ day, cycleDay, log, recent, onClose, onSaved }: {
 
   return (
     <div className="fixed inset-0 z-[70] flex items-end justify-center bg-[rgb(42_30_26/0.4)]" role="dialog" aria-modal="true" aria-label="Anotar mi día">
-      <div className="v5 flex max-h-[94dvh] w-full max-w-[480px] flex-col rounded-t-[28px]">
+      <div className="v5 glass !bg-[rgb(253_242_245/.94)] flex max-h-[94dvh] w-full max-w-[480px] flex-col rounded-t-[28px]">
         <div className="flex items-center justify-between px-5 pt-4">
           <h2 className="v5-h1 !text-[28px]">Anotar mi día</h2>
           <button type="button" onClick={onClose} aria-label="Cerrar" className="grid size-11 place-items-center"><X size={22} weight="light" /></button>

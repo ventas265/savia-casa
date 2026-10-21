@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Pill, Question, ShieldCheck, Stethoscope, Warning, type Icon } from "@phosphor-icons/react";
 import type { ReactNode } from "react";
+import { GlassTiles } from "@/components/v5/glass-tiles";
 import { DisclaimerV5 } from "@/components/v5/disclaimer-v5";
 
 export const Route = createFileRoute("/app/proteccion")({ component: Proteccion });
@@ -96,6 +97,7 @@ function Proteccion() {
         <Src items={[["CDC · Contraception", CDC], ["Planned Parenthood", PP_EC]]} />
       </Sec>
 
+      <GlassTiles title="Explorar" exclude={["proteccion"]} />
       <DisclaimerV5 />
     </div>
   );

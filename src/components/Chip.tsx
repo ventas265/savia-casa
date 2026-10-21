@@ -17,8 +17,8 @@ export function Chip({ id, label, selected, onClick, icon, tone = "rosa" }: { id
       onClick={onClick}
       className="inline-flex min-h-11 items-center gap-2 rounded-full border px-4 text-[14px] font-medium transition-colors"
       style={{
-        background: selected ? sel : bg,
-        borderColor: selected ? fg : "transparent",
+        background: selected ? "#FDE3E5" : "rgb(255 255 255 / .6)",
+        borderColor: selected ? "#E8505B" : "rgb(255 255 255 / .9)",
         color: "var(--cacao)",
         boxShadow: selected ? `0 6px 16px -10px ${fg}` : undefined,
       }}

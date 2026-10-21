@@ -4,6 +4,7 @@ import { loadToday } from "@/lib/savia-api";
 import { localToday } from "@/lib/savia-local";
 import { SAVIA_BETA } from "@/lib/beta";
 import { Paywall } from "@/components/v5/paywall";
+import { GlassTiles } from "@/components/v5/glass-tiles";
 import { DisclaimerV5 } from "@/components/v5/disclaimer-v5";
 import { ACOG, ALARMAS, MAYO, NHS, SEMANAS } from "@/data/embarazo-semanas";
 import type { TodaySnapshot } from "@/lib/types";
@@ -60,6 +61,7 @@ function Embarazo() {
         </section>
         <p className="mt-4 text-[13px] v5-muted">Fecha probable de parto: FUM + 280 días (regla de Naegele) o según ecografía. Contenido en revisión por profesional de salud.</p>
       </div>
+      <GlassTiles title="Explorar" exclude={["embarazo"]} />
       <DisclaimerV5 />
       {locked ? <Paywall onClose={() => void navigate({ to: "/app/hoy" })} /> : null}
     </div>

@@ -15,7 +15,7 @@ export function Paywall({ onClose }: { onClose: () => void }) {
   const [plan, setPlan] = useState<"year" | "month">("year");
   return (
     <div className="fixed inset-0 z-[80] flex items-end justify-center bg-[rgb(42_30_26/0.4)]" role="dialog" aria-modal="true" aria-labelledby="pw-t">
-      <div className="v5 max-h-[92dvh] w-full max-w-[480px] overflow-y-auto rounded-t-[28px] px-5 pb-8 pt-4">
+      <div className="v5 glass !bg-[rgb(253_242_245/.92)] max-h-[92dvh] w-full max-w-[480px] overflow-y-auto rounded-t-[28px] px-5 pb-8 pt-4">
         <div className="flex justify-end">
           <button type="button" onClick={onClose} aria-label="Cerrar" className="grid size-11 place-items-center"><X size={22} weight="light" /></button>
         </div>
@@ -44,7 +44,7 @@ export function Paywall({ onClose }: { onClose: () => void }) {
             </button>
           ))}
         </div>
-        <a href={plan === "year" ? WHOP_YEAR : WHOP_MONTH} className="mt-6 flex h-[52px] w-full items-center justify-center rounded-[14px] bg-[linear-gradient(135deg,#6E3B5C,#8E2C3E,#C9566A)] shadow-[0_12px_28px_-12px_rgb(142_44_62/.7)] text-[16px] font-semibold text-white">
+        <a href={plan === "year" ? WHOP_YEAR : WHOP_MONTH} className="mt-6 flex h-[52px] w-full items-center justify-center rounded-[14px] bg-[linear-gradient(135deg,#E8505B,#F07A7A)] shadow-[0_12px_28px_-12px_rgb(142_44_62/.7)] text-[16px] font-semibold text-white">
           Continuar con Whop
         </a>
         <p className="mt-3 text-center text-[13px] v5-muted">Cancela cuando quieras desde Ajustes, en 2 toques.</p>

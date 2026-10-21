@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowRight, Baby, BookOpen, DropHalf, Lock, ShieldCheck } from "@phosphor-icons/react";
-import { StatusChip } from "@/components/Chip";
+import { ArrowRight, CalendarBlank, Plus, ShieldCheck } from "@phosphor-icons/react";
+import { GlassTiles } from "@/components/v5/glass-tiles";
 import { DisclaimerV5 } from "@/components/v5/disclaimer-v5";
 import { ovulationDayNum } from "@/lib/cycle";
 import { prediccion } from "@/lib/prediccion";
@@ -25,9 +25,9 @@ export function CycleBar({ day, len, periodLength }: { day: number; len: number;
   const fStart = Math.max(periodLength + 1, ov - 5);
   const fEnd = Math.min(len, ov + 1);
   const segs = [
-    { k: "Regla", n: periodLength, c: "linear-gradient(90deg,#7A2133,#B03A4E)", d: "#8E2C3E" },
+    { k: "Regla", n: periodLength, c: "linear-gradient(90deg,#E8505B,#F07A7A)", d: "#E8505B" },
     { k: "Folicular", n: fStart - periodLength - 1, c: "linear-gradient(90deg,#5E8C7D,#3F6B5E)", d: "#3F6B5E" },
-    { k: "Fértil", n: fEnd - fStart + 1, c: "linear-gradient(90deg,#E07A6B,#C9566A)", d: "#E07A6B" },
+    { k: "Fértil", n: fEnd - fStart + 1, c: "linear-gradient(90deg,#F7B8BC,#F59AA0)", d: "#F59AA0" },
     { k: "Lútea", n: len - fEnd, c: "linear-gradient(90deg,#B07A3C,#6E3B5C)", d: "#B07A3C" },
   ];
   const pos = Math.min(100, Math.max(0, ((day - 0.5) / len) * 100));
@@ -41,9 +41,35 @@ export function CycleBar({ day, len, periodLength }: { day: number; len: number;
       </div>
       <div className="mt-4 flex flex-wrap gap-x-4 gap-y-1.5 text-[12px] font-medium">
         {segs.map((s) => (
-          <span key={s.k} className="flex items-center gap-1.5"><span className="size-2.5 rounded-full ring-2 ring-white/70" style={{ background: s.d }} />{s.k}</span>
+          <span key={s.k} className="flex items-center gap-1.5"><span className="size-2.5 rounded-full ring-2 ring-white" style={{ background: s.d }} />{s.k}</span>
         ))}
       </div>
+    </div>
+  );
+}
+
+const PARA_TI = [
+  { img: "/v4/regla-sm.webp", t: "Cólicos: qué es normal", to: "/app/guia" },
+  { img: "/photos/manos.jpg", t: "Sexo y protección", to: "/app/proteccion" },
+  { img: "/photos/te.jpg", t: "Alivio premenstrual", to: "/app/guia" },
+  { img: "/v4/ovulacion-sm.webp", t: "Ventana fértil, sin mitos", to: "/app/guia" },
+];
+
+function WeekStrip() {
+  const t = new Date();
+  const days = Array.from({ length: 7 }, (_, i) => { const d = new Date(t); d.setDate(t.getDate() - t.getDay() + i); return d; });
+  const W = ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"];
+  return (
+    <div className="mt-4 flex justify-between" aria-label="Esta semana">
+      {days.map((d) => {
+        const today = d.toDateString() === t.toDateString();
+        return (
+          <div key={d.toISOString()} className={`flex w-[44px] flex-col items-center gap-1.5 rounded-full pb-1 pt-2 ${today ? "bg-[var(--coral)] text-white shadow-[0_8px_18px_-8px_rgb(232_80_91/.8)]" : ""}`}>
+            <span className={`text-[12px] ${today ? "font-semibold" : "v5-muted"}`}>{W[d.getDay()]}</span>
+            <span className={`grid size-9 place-items-center rounded-full text-[15px] font-medium ${today ? "bg-white text-[var(--cacao)]" : "glass"}`}>{d.getDate()}</span>
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -54,71 +80,59 @@ export function HoyV5({ data, onLog, onPremium }: { data: TodaySnapshot; onLog: 
   const day = data.cycleDay ?? 1;
   const ov = ovulationDayNum(p.periodLength, pr.len);
   const fertil = day >= ov - 5 && day <= ov + 1;
-  const pico = day >= ov - 2 && day <= ov;
-  const chip = fertil
-    ? <StatusChip tone="fertil">Ventana fértil · probabilidad {pico ? "alta" : "media"}</StatusChip>
-    : day <= p.periodLength
-      ? <StatusChip tone="granada">Regla · día {day}</StatusChip>
-      : <StatusChip tone="lutea">Fertilidad baja estimada</StatusChip>;
-  const art = ARTICULO[data.phase] ?? ARTICULO.none!;
+  const toFertil = ov - 5 - day;
+  const toRegla = Math.max(0, pr.len - day + 1);
+  const big = fertil
+    ? { pre: "Estás en tu ventana fértil estimada", n: `Día ${day}`, post: `Ovulación estimada en ${Math.max(0, ov - day)} días` }
+    : toFertil > 0
+      ? { pre: "Tu ventana fértil empieza en", n: `${toFertil} ${toFertil === 1 ? "día" : "días"}`, post: `Próxima regla: ${pr.rango ?? "—"}` }
+      : { pre: "Tu próxima regla llega en", n: `${toRegla} ${toRegla === 1 ? "día" : "días"}`, post: pr.rango ?? "" };
   const initial = (p.displayName || "S").charAt(0).toUpperCase();
   return (
     <div className="v5 pb-36 pt-2">
-      <header className="flex items-center justify-between">
-        <p className="text-[14px] v5-muted">{fechaHoy()}</p>
-        <Link to="/app/tu" aria-label="Tu perfil" className="grid size-11 place-items-center rounded-full border border-[var(--linea)] bg-white text-[15px] font-semibold">{initial}</Link>
+      <header className="flex items-center gap-3">
+        <Link to="/app/tu" aria-label="Tu perfil" className="v7-ib glass text-[16px] font-semibold">{initial}</Link>
+        <div className="flex-1"><p className="text-[13px] v5-muted">{fechaHoy().split(" ")[0]}</p><p className="text-[17px] font-semibold">{fechaHoy().split(" ").slice(1).join(" ")} · Día {day}</p></div>
+        <Link to="/app/calendario" aria-label="Calendario" className="v7-ib glass"><CalendarBlank size={22} weight="light" /></Link>
       </header>
+      <WeekStrip />
 
-      <section className="v6-hero mt-5">
-        <p className="v5-kicker">Tu ciclo hoy</p>
-        <p className="v5-num mt-1">Día {day}</p>
-        <div className="mt-3 [&>span]:!bg-white [&>span]:!text-[#8E2C3E]">{chip}</div>
-        <CycleBar day={day} len={pr.len} periodLength={p.periodLength} />
+      <section className="v6-hero mt-5 text-center">
+        <p className="text-[15px] v5-muted">{big.pre}</p>
+        <p className="v5-num mt-2 v7-coral !text-[52px] !font-medium">{big.n}</p>
+        <p className="mt-2 text-[14px] v5-muted">{big.post}</p>
+        <button type="button" onClick={onLog} className="v7-pill mt-4">Anotar regla</button>
+        <div className="text-left"><CycleBar day={day} len={pr.len} periodLength={p.periodLength} /></div>
+        <p className="mt-3 text-[12px] v5-muted">{pr.texto}</p>
       </section>
 
-      <section className="v5-card v6-t-rosa mt-5 flex gap-3">
-        <span className="v6-badge v6-b-rosa"><DropHalf size={22} weight="light" /></span>
-        <div>
-        <p className="v5-kicker">Próxima regla</p>
-        <p className="v5-h2 mt-1">{pr.rango ?? "Anota tu regla para estimarla"}</p>
-        <p className="mt-2 text-[14px] v5-muted">{pr.texto}</p>
-        </div>
-      </section>
+      <div className="mt-6 flex items-baseline justify-between"><p className="text-[17px] font-semibold">Para ti</p><Link to="/app/guia" className="text-[13px] v5-muted">Ver todo</Link></div>
+      <div className="-mx-5 mt-3 flex gap-3 overflow-x-auto px-5 pb-2">
+        <button type="button" onClick={onLog} aria-label="Anotar mi día" className="glass grid h-[150px] w-[110px] shrink-0 place-items-center rounded-[20px]">
+          <span className="grid size-14 place-items-center rounded-full bg-[var(--coral-2)] text-white shadow-[0_8px_18px_-8px_rgb(232_80_91/.9)]"><Plus size={26} weight="bold" /></span>
+        </button>
+        {PARA_TI.map((c) => (
+          <a key={c.t} href={c.to} className="glass relative h-[150px] w-[120px] shrink-0 overflow-hidden rounded-[20px]">
+            <img src={c.img} alt="" className="h-full w-full object-cover" loading="lazy" />
+            <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-2.5 pt-8 text-[12.5px] font-semibold leading-tight text-white">{c.t}</span>
+          </a>
+        ))}
+      </div>
 
       {p.intention === "avoid" || p.intention === "track" ? (
-        <section className="v5-card v6-t-salvia mt-4">
+        <section className="v5-card mt-4">
           <div className="flex items-center gap-3">
-            <span className="v6-badge v6-b-salvia"><ShieldCheck size={22} weight="light" aria-hidden /></span>
+            <span className="v6-badge"><ShieldCheck size={22} weight="light" aria-hidden /></span>
             <p className="text-[16px] font-semibold">Protección hoy</p>
           </div>
-          <p className="mt-2 text-[15px] leading-relaxed">
-            Si tienes sexo hoy sin condón, hay riesgo de embarazo. Savia no es un anticonceptivo.
-          </p>
-          <Link to="/app/proteccion" className="mt-3 inline-flex min-h-11 items-center gap-1 text-[15px] font-semibold text-[#2F5649]">
-            Qué opciones tengo <ArrowRight size={16} weight="light" />
-          </Link>
+          <p className="mt-2 text-[15px] leading-relaxed">Si tienes sexo hoy sin condón, hay riesgo de embarazo. Savia no es un anticonceptivo.</p>
+          <Link to="/app/proteccion" className="mt-2 inline-flex min-h-11 items-center gap-1 text-[15px] font-semibold v7-coral">Qué opciones tengo <ArrowRight size={16} weight="light" /></Link>
         </section>
       ) : null}
 
-      <Link to="/app/guia" className="v5-card v6-t-ambar mt-4 flex gap-3">
-        <span className="v6-badge v6-b-ambar"><BookOpen size={22} weight="light" /></span>
-        <div>
-        <p className="v5-kicker">Para tu fase</p>
-        <p className="v5-h2 mt-1">{art.t}</p>
-        <p className="mt-1 text-[14px] v5-muted">{art.d}</p>
-        </div>
-      </Link>
-
-      <button type="button" onClick={onPremium} data-premium="embarazo" className="v6-grad-serena mt-4 flex w-full items-center justify-between rounded-[20px] p-5 text-left">
-        <span className="flex items-center gap-3"><span className="v6-badge v6-b-blanco"><Baby size={22} weight="light" aria-hidden /></span><span><span className="block text-[16px] font-semibold">Modo embarazo</span><span className="text-[13px] text-white/85">Semana a semana, con fuentes</span></span></span>
-        <span className="flex items-center gap-1 rounded-full bg-white/20 px-2.5 py-1 text-[12px] font-semibold"><Lock size={14} weight="light" />Serena</span>
-      </button>
+      <GlassTiles onTile={(k) => { if (k === "embarazo") { onPremium(); return true; } if (k === "sintomas") { onLog(); return true; } }} />
 
       <DisclaimerV5 />
-
-      <div className="fixed inset-x-0 bottom-[84px] z-40 mx-auto max-w-[480px] px-5">
-        <button type="button" onClick={onLog} className="h-[52px] w-full rounded-[14px] bg-[linear-gradient(135deg,#8E2C3E,#C9566A)] text-[16px] font-semibold text-white shadow-[0_12px_28px_-12px_rgb(142_44_62/.7)]">Anotar mi día</button>
-      </div>
     </div>
   );
 }
