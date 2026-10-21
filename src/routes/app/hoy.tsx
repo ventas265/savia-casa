@@ -137,7 +137,7 @@ function HoyTab() {
   return (
     <>
       {code ? <RecoveryCard code={code} onDone={() => setCode("")} /> : null}
-      <HoyV5 data={data} onLog={() => setAnotar(true)} onPremium={() => setPaywall(true)} />
+      <HoyV5 data={data} onLog={() => setAnotar(true)} onPremium={() => (data.profile.plan === "serena" || data.profile.plan === "year" ? void navigate({ to: "/app/embarazo" }) : setPaywall(true))} />
       {anotar ? (
         <AnotarV5
           day={todayISO()}
